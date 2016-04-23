@@ -37,6 +37,18 @@ bool is_ptr_object(const exprt &src)
          src.get(ID_ptr_object)!=irep_idt();
 }
 
+/*******************************************************************\
+
+Function: collect_objects_rec
+
+  Inputs:
+
+ Outputs:
+
+ Purpose:
+
+\*******************************************************************/
+
 void collect_objects_rec(
   const exprt &src,
   const namespacet &ns,

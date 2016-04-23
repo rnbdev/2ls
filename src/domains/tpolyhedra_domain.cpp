@@ -50,6 +50,8 @@ void tpolyhedra_domaint::initialize(valuet &value)
     else
       v[row]=false_exprt(); // marker for -oo
   }
+
+  refine(); //initialise refinements
 }
 
 /*******************************************************************\
@@ -731,7 +733,7 @@ void tpolyhedra_domaint::set_row_value(
 \*******************************************************************/
 
 tpolyhedra_domaint::row_valuet tpolyhedra_domaint::get_max_row_value(
-  const tpolyhedra_domaint::rowt &row)
+  const tpolyhedra_domaint::rowt &row) const
 {
   const template_rowt &templ_row=templ[row];
   if(templ_row.expr.type().id()==ID_signedbv)
@@ -764,7 +766,7 @@ tpolyhedra_domaint::row_valuet tpolyhedra_domaint::get_max_row_value(
 \*******************************************************************/
 
 tpolyhedra_domaint::row_valuet tpolyhedra_domaint::get_min_row_value(
-  const tpolyhedra_domaint::rowt &row)
+  const tpolyhedra_domaint::rowt &row) const
 {
   const template_rowt &templ_row=templ[row];
   if(templ_row.expr.type().id()==ID_signedbv)
@@ -909,6 +911,25 @@ bool tpolyhedra_domaint::is_row_value_neginf(
 
 /*******************************************************************\
 
+ Function: tpolyhedra_domaint::is_row_value_neginf
+
+   Inputs:
+
+  Outputs:
+
+  Purpose:
+
+\*******************************************************************/
+
+bool tpolyhedra_domaint::is_row_value_neginf(
+  const valuet &value, const rowt &row) const
+{
+  const templ_valuet &v=static_cast<const templ_valuet &>(value);
+  return v.at(row).get(ID_value)==ID_false;
+}
+
+/*******************************************************************\
+
  Function: tpolyhedra_domaint::is_row_value_inf
 
    Inputs:
@@ -922,6 +943,48 @@ bool tpolyhedra_domaint::is_row_value_neginf(
 bool tpolyhedra_domaint::is_row_value_inf(const row_valuet & row_value) const
 {
   return row_value.get(ID_value)==ID_true;
+}
+
+/*******************************************************************\
+
+ Function: tpolyhedra_domaint::is_row_value_inf
+
+   Inputs:
+
+  Outputs:
+
+  Purpose:
+
+\*******************************************************************/
+
+bool tpolyhedra_domaint::is_row_value_inf(
+  const valuet &value, const rowt &row) const
+{
+  const templ_valuet &v=static_cast<const templ_valuet &>(value);
+  const row_valuet &row_value=v.at(row);
+  if(row_value.get(ID_value)==ID_true)
+    return true;
+  if(row_value==get_max_row_value(row))
+    return true;
+  const row_exprt &row_expr=templ[row].expr;
+  if(row_expr.id()==ID_unary_minus &&
+     row_expr.op0().id()==ID_typecast)
+  {
+    mp_integer rvalue;
+    to_integer(row_value, rvalue);
+    const typet &inner_type=row_expr.op0().op0().type();
+    mp_integer smallest;
+    if(inner_type.id()==ID_unsignedbv) 
+      smallest=to_unsignedbv_type(inner_type).smallest();
+    else if(inner_type.id()==ID_signedbv) 
+      smallest=to_signedbv_type(inner_type).smallest();
+    else 
+      return false;
+    if(smallest==rvalue)
+      return true;
+  }
+
+  return false;
 }
 
 /*******************************************************************\
@@ -962,7 +1025,7 @@ void tpolyhedra_domaint::rename_for_row(exprt &expr, const rowt &row)
 
   Outputs:
 
-  Purpose:
+ Purpose: +-x<=c
 
 \*******************************************************************/
 
@@ -1165,4 +1228,57 @@ void tpolyhedra_domaint::add_sum_template(
         plus_exprt(v1->var, v2->var), pre_g, post_g, aux_expr, k);
     }
   }
+}
+
+/*******************************************************************\
+
+Function: tpolyhedra_domaint::refine
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: non-monotone condition refinement
+
+\*******************************************************************/
+
+void tpolyhedra_domaint::replace_comparison(exprt &expr, bool greater)
+{
+  //TODO
+}
+
+bool tpolyhedra_domaint::refine()
+{
+  return false;
+
+  //TODO
+  if(current_refinement==0) //initialise
+  {
+    if(refinement_exprs.size()==0)
+    {
+      max_refinements = 0;
+      return false;
+    }
+    max_refinements = 3;
+    current_refinement = 1;
+    exprt::operandst c;
+    //TODO    
+    current_refinement_expr = conjunction(c);
+    return true;
+  }
+
+  if(current_refinement>max_refinements) 
+    return false;
+
+  if(current_refinement==1)
+  {
+    exprt::operandst c;
+    //TODO    
+    current_refinement_expr = conjunction(c);
+  }
+  else if(current_refinement==2)
+    current_refinement_expr = true_exprt();
+
+  current_refinement++;
+  return true;
 }

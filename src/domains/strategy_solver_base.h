@@ -19,11 +19,14 @@ class strategy_solver_baset:public messaget
   typedef std::list<exprt> constraintst;
   typedef std::vector<symbol_exprt> var_listt;
   typedef domaint::valuet invariantt;
+  typedef enum {CHANGED, CONVERGED, FAILED} progresst;
 
   explicit strategy_solver_baset(
     incremental_solvert &_solver,
+    literalt _assertion_check,
     const namespacet &_ns):
     solver(_solver),
+    assertion_check(_assertion_check),
     ns(_ns),
     solver_instances(0),
     solver_calls(0)
@@ -31,11 +34,12 @@ class strategy_solver_baset:public messaget
 
   virtual bool iterate(invariantt &inv) { assert(false); }
 
-  inline unsigned get_number_of_solver_calls() { return solver_calls; }
-  inline unsigned get_number_of_solver_instances() { return solver_instances; }
+  unsigned get_number_of_solver_calls() { return solver_calls; }
+  unsigned get_number_of_solver_instances() { return solver_instances; }
 
  protected:
   incremental_solvert &solver;
+  literalt assertion_check;
   const namespacet &ns;
 
   // handles on values to retrieve from model

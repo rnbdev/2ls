@@ -9,6 +9,7 @@ Author: Daniel Kroening, kroening@kroening.com
 #ifndef CPROVER_2LS_SOLVER_SUMMARY_H
 #define CPROVER_2LS_SOLVER_SUMMARY_H
 
+#include <climits>
 #include <iostream>
 #include <set>
 
@@ -50,6 +51,31 @@ class summaryt
 
   predicatet termination_argument;
   threevalt terminates;
+
+  //--------------
+  // the following is for generating interprocedural counterexample
+
+  bool has_assertion; 
+
+  std::list<local_SSAt::nodest::const_iterator> nonpassed_assertions;
+
+  struct call_sitet { //TODO: we also need unwinding information here 
+    call_sitet() 
+      : location_number(UINT_MAX) {}
+    explicit call_sitet(local_SSAt::locationt loc) 
+      : location_number(loc->location_number) {}
+    unsigned location_number;
+
+    bool operator<(const call_sitet &other) const
+      { return (location_number<other.location_number); }
+    bool operator==(const call_sitet &other) const
+      { return (location_number==other.location_number); }
+  };
+
+  const static call_sitet entry_call_site;
+  typedef std::map<call_sitet, predicatet> error_summariest;
+  error_summariest error_summaries;
+  //--------------
 
   bool mark_recompute; // to force recomputation of the summary
                        // (used for invariant reuse in k-induction)

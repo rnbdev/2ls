@@ -174,84 +174,53 @@ Function: cover_goals_extt::assignment
 
 void cover_goals_extt::assignment()
 {
-  // check loop head choices in model
-  bool invariants_involved=false;
-  if(spurious_check)
-  {
-    for(exprt::operandst::const_iterator l_it=loophead_selects.begin();
-        l_it!=loophead_selects.end(); l_it++)
-    {
-      if(solver.get(l_it->op0()).is_true())
-      {
-        invariants_involved=true;
-        break;
-      }
-    }
-  }
-  if(!invariants_involved || !spurious_check)
-  {
-    std::list<cover_goals_extt::cover_goalt>::const_iterator g_it=goals.begin();
-    for(goal_mapt::const_iterator it=goal_map.begin();
-        it!=goal_map.end(); it++, g_it++)
+  std::list<cover_goals_extt::cover_goalt>::const_iterator g_it=goals.begin();
+  for(goal_mapt::const_iterator it=goal_map.begin();
+      it!=goal_map.end(); it++, g_it++)
     {
       if(property_map[it->first].result==property_checkert::UNKNOWN &&
-         solver.l_get(g_it->condition).is_true())
-      {
-        property_map[it->first].result=property_checkert::FAIL;
-        if(build_error_trace)
-        {
-          ssa_build_goto_tracet build_goto_trace(SSA, solver.get_solver());
-          build_goto_trace(property_map[it->first].error_trace);
-          if(!all_properties)
-            break;
-        }
-      }
+	 solver.l_get(g_it->condition).is_true())
+	{
+	  if(spurious_check)
+	    {
+	      assert((g_it->cond_expression).id()==ID_not);
+	      exprt conjunct_expr=(g_it->cond_expression).op0();
+	      
+	      if(conjunct_expr.id()!=ID_and)
+              {
+		solver.pop_context(); //otherwise this would interfere with necessary preconditions
+		summarizer_bw_cex.summarize(g_it->cond_expression);
+		property_map[it->first].result=summarizer_bw_cex.check();
+		solver.new_context();
+	      }
+	      else
+              {
+		exprt::operandst failed_exprs;
+		for(exprt::operandst::const_iterator c_it=
+		      conjunct_expr.operands().begin();
+		    c_it!=conjunct_expr.operands().end(); c_it++)
+                {
+		  literalt conjunct_literal=solver.convert(*c_it);
+		  if(solver.l_get(conjunct_literal).is_false())
+		    failed_exprs.push_back(*c_it);
+		}
+		solver.pop_context(); // otherwise this would interfere with necessary preconditions
+		for(const auto &failed_expr : failed_exprs)
+		{
+		  summarizer_bw_cex.summarize(
+		    not_exprt(failed_expr));
+		  property_map[it->first].result=summarizer_bw_cex.check();
+		  if(property_map[it->first].result==
+		     property_checkert::FAIL)
+		    break;
+		}
+		solver.new_context();
+	      }
+	    }
+	  else
+	    property_map[it->first].result=property_checkert::FAIL;
+	}
     }
-    return;
-  }
-
-  solver.new_context();
-  // force avoiding paths going through invariants
-
-  solver << conjunction(loophead_selects);
-
-  switch(solver())
-  {
-  case decision_proceduret::D_SATISFIABLE:
-  {
-    std::list<cover_goals_extt::cover_goalt>::const_iterator g_it=goals.begin();
-    for(goal_mapt::const_iterator it=goal_map.begin();
-        it!=goal_map.end(); it++, g_it++)
-    {
-      if(property_map[it->first].result==property_checkert::UNKNOWN &&
-         solver.l_get(g_it->condition).is_true())
-      {
-        property_map[it->first].result=property_checkert::FAIL;
-        if(build_error_trace)
-        {
-          ssa_build_goto_tracet build_goto_trace(SSA, solver.get_solver());
-          build_goto_trace(property_map[it->first].error_trace);
-
-#if 0
-          show_raw_countermodel(
-            it->first, SSA, *solver.solver, debug(), get_message_handler());
-#endif
-          if(!all_properties)
-            break;
-        }
-      }
-    }
-    break;
-  }
-  case decision_proceduret::D_UNSATISFIABLE:
-    break;
-
-  case decision_proceduret::D_ERROR:
-  default:
-    throw "error from decision procedure";
-  }
-
-  solver.pop_context();
-
-  _iterations++; // statistics
+  
+  _iterations++; //statistics
 }

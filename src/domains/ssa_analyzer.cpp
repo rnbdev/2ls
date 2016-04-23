@@ -47,20 +47,20 @@ Function: ssa_analyzert::operator()
 
   Inputs:
 
- Outputs:
-
+ Outputs: true if the computation was not aborted due to 
+            assertion_checks that did not pass
  Purpose:
 
 \*******************************************************************/
 
-void ssa_analyzert::operator()(
+bool ssa_analyzert::operator()(
   incremental_solvert &solver,
   local_SSAt &SSA,
   const exprt &precondition,
   template_generator_baset &template_generator)
 {
   if(SSA.goto_function.body.instructions.empty())
-    return;
+    return true;
 
   solver << SSA;
   SSA.mark_nodes();
@@ -72,6 +72,30 @@ void ssa_analyzert::operator()(
   solver << precondition;
 
   domain=template_generator.domain();
+
+  // get assertions if check_assertions is requested
+  literalt assertions_check=const_literal(false);
+  bvt assertion_literals;
+  if(check_assertions)
+  {  
+    exprt::operandst ll;
+    for(local_SSAt::nodest::iterator n_it=SSA.nodes.begin();
+	n_it!=SSA.nodes.end(); n_it++) 
+    {
+      assert(n_it->assertions.size()<=1);
+      for(local_SSAt::nodet::assertionst::const_iterator
+	    a_it=n_it->assertions.begin();
+	  a_it!=n_it->assertions.end();
+	  a_it++)
+      {
+	literalt l=solver.solver->convert(*a_it);
+	assertion_literals.push_back(!l);
+	ll.push_back(literal_exprt(!l));
+	nonpassed_assertions.push_back(n_it);
+      }
+    }
+    assertions_check = solver.solver->convert(disjunction(ll));
+  }
 
   // get strategy solver from options
   strategy_solver_baset *strategy_solver;
@@ -131,17 +155,43 @@ void ssa_analyzert::operator()(
   // initialize inv
   domain->initialize(*result);
 
-  // iterate
-  while(strategy_solver->iterate(*result)) {}
+  strategy_solver_baset::progresst status;
+
+  do
+  {
+    status=strategy_solver->iterate(*result);
+  }
+  while(status==strategy_solver_baset::CHANGED);
+
+#ifdef DEBUG
+  std::cout << "Fixed-point after " << iteration_number
+            << " iteration(s)\n";
+  domain->output_value(std::cout,*result,SSA.ns);
+#endif
+
+  //get status of assertions
+  if(!assertions_check.is_false() && 
+     status==strategy_solver_baset::FAILED)
+  {
+    nonpassed_assertionst::iterator it=nonpassed_assertions.begin();
+    for(unsigned i=0;i<assertion_literals.size(); ++i)
+    {
+      if(!solver.solver->l_get(assertion_literals[i]).is_true())
+	nonpassed_assertions.erase(it++);
+      else ++it;
+    }
+  }
+  else nonpassed_assertions.clear();
 
   solver.pop_context();
 
-  // statistics
-  solver_instances+=strategy_solver->get_number_of_solver_instances();
+  //statistics
   solver_calls+=strategy_solver->get_number_of_solver_calls();
   solver_instances+=strategy_solver->get_number_of_solver_instances();
 
   delete strategy_solver;
+
+  return (status==strategy_solver_baset::CONVERGED);
 }
 
 /*******************************************************************\

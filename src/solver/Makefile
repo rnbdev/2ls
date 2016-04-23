@@ -12,6 +12,8 @@ CP_CXXFLAGS += $(TWOLSFLAGS)
 
 INCLUDES= -I $(CBMC)/src -I ..
 
+CP_CXXFLAGS += $(SUMMARIZERFLAGS)
+
 CLEANFILES = solver$(LIBEXT)
 
 all: solver$(LIBEXT)

@@ -21,11 +21,12 @@ Function: strategy_solver_equalityt::iterate
 
  Outputs:
 
- Purpose:
+ Purpose: Comment: assertion check is not possible 
+          because this is a gfp solver
 
 \*******************************************************************/
 
-bool strategy_solver_equalityt::iterate(invariantt &_inv)
+strategy_solver_baset::progresst strategy_solver_equalityt::iterate(invariantt &_inv)
 {
   equality_domaint::equ_valuet &inv=
     static_cast<equality_domaint::equ_valuet &>(_inv);
@@ -122,5 +123,5 @@ bool strategy_solver_equalityt::iterate(invariantt &_inv)
     todo_disequs.erase(e_it);
   }
 
-  return true;
+  return CHANGED;
 }

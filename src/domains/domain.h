@@ -109,6 +109,8 @@ public:
       result=true_exprt();
   }
 
+  virtual bool is_spec_empty() const { assert(false); }
+  
   static kindt merge_kinds(kindt k1, kindt k2);
 
   static void output_var_specs(

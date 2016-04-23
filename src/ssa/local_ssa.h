@@ -75,6 +75,9 @@ public:
     typedef std::vector<exprt> assertionst;
     assertionst assertions;
 
+    typedef std::vector<exprt> assumptionst;
+    assertionst assumptions;
+
     typedef std::vector<function_application_exprt> function_callst;
     function_callst function_calls;
 
@@ -107,13 +110,13 @@ public:
 
   void mark_nodes()
   {
-    for(nodest::iterator n_it=nodes.begin();
-  n_it!=nodes.end(); n_it++) n_it->marked=true;
+    for(auto &n : nodes) 
+      marked=true;
   }
   void unmark_nodes()
   {
-      for(nodest::iterator n_it=nodes.begin();
-          n_it!=nodes.end(); n_it++) n_it->marked=false;
+    for(auto &n : nodes) 
+      marked=false;
   }
 
   // for incremental unwinding
@@ -198,7 +201,8 @@ public:
     assert(it!=location_map.end());
     return it->second;
   }
-
+  locationt find_location_by_number(unsigned location_number) const;
+  
 protected:
   typedef std::map<unsigned, locationt> location_mapt;
   location_mapt location_map;
@@ -212,12 +216,16 @@ protected:
   void build_guard(locationt loc);
   void build_function_call(locationt loc);
   void build_assertions(locationt loc);
-
+  void build_assumptions(locationt loc);
+  
   // custom templates
   void collect_custom_templates();
   replace_mapt template_newvars;
   exprt template_last_newvar;
 };
+
+std::vector<exprt> & operator <<
+  (std::vector<exprt> &dest, const local_SSAt &src);
 
 std::list<exprt> & operator <<
   (std::list<exprt> &dest, const local_SSAt &src);

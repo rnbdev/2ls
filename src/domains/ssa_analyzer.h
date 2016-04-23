@@ -23,7 +23,7 @@ public:
   typedef strategy_solver_baset::var_listt var_listt;
 
   ssa_analyzert():
-    result(NULL),
+    result(nullptr),
     solver_instances(0),
     solver_calls(0)
   {
@@ -31,7 +31,7 @@ public:
 
   ~ssa_analyzert()
   {
-    if(result!=NULL)
+    if(result!=nullptr)
       delete result;
   }
 
@@ -39,9 +39,17 @@ public:
     incremental_solvert &solver,
     local_SSAt &SSA,
     const exprt &precondition,
-    template_generator_baset &template_generator);
+    template_generator_baset &template_generator,
+    bool check_assertions=false);
 
+  //retrieve the result if operator() returned true
   void get_result(exprt &result, const domaint::var_sett &vars);
+
+  //retrieve the non-passed assertions if operator() returned false
+  typedef std::list<local_SSAt::nodest::const_iterator> 
+    nonpassed_assertionst;
+  nonpassed_assertionst get_nonpassed_assertions() 
+    { return nonpassed_assertions; }
 
   inline unsigned get_number_of_solver_instances() { return solver_instances; }
   inline unsigned get_number_of_solver_calls() { return solver_calls; }
@@ -49,6 +57,7 @@ public:
 protected:
   domaint *domain; // template generator is responsable for the domain object
   domaint::valuet *result;
+  nonpassed_assertionst nonpassed_assertions;
 
   // statistics
   unsigned solver_instances;
@@ -56,4 +65,3 @@ protected:
 };
 
 #endif
-

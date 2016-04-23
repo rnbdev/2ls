@@ -21,26 +21,54 @@ class ssa_inlinert:public messaget
 {
 public:
   explicit ssa_inlinert(summary_dbt &_summary_db):
-    counter(0),
+  counter(0),
     summary_db(_summary_db)
   {
   }
 
+  void get_guard_binding(
+    const local_SSAt &SSA,
+    const local_SSAt &fSSA,
+    local_SSAt::nodest::const_iterator n_it,
+    exprt &guard_binding,
+    int counter);
+
+  void get_bindings(
+    const local_SSAt &SSA,
+    const local_SSAt &fSSA,
+    local_SSAt::nodest::const_iterator n_it,
+    local_SSAt::nodet::function_callst::const_iterator f_it, 
+    exprt::operandst &bindings_in,
+    exprt::operandst &bindings_out,
+    int counter);
+
   void get_summary(
     const local_SSAt &SSA,
     local_SSAt::nodest::const_iterator n_it,
-    local_SSAt::nodet::function_callst::const_iterator f_it,
+    local_SSAt::nodet::function_callst::const_iterator f_it, 
     const summaryt &summary,
-    bool forward,
+    bool forward, 
     exprt::operandst &summaries,
-    exprt::operandst &bindings);
+    exprt::operandst &bindings,
+    int counter,
+    bool error_summ=false);
+
   void get_summaries(
     const local_SSAt &SSA,
     bool forward,
     exprt::operandst &summaries,
-    exprt::operandst &bindings);
-  exprt get_summaries(const local_SSAt &SSA);
+    exprt::operandst &bindings); //TODO: need to explicitly pass the correct counter
 
+  bool get_summaries(
+    const local_SSAt &SSA,
+    const summaryt::call_sitet &current_call_site,
+    bool forward,
+    exprt::operandst &assert_summaries,
+    exprt::operandst &noassert_summaries,
+    exprt::operandst &bindings); //TODO: need to explicitly pass the correct counter
+
+  exprt get_summaries(const local_SSAt &SSA); //TODO: need to explicitly pass the correct counter
+  
   void replace(
     local_SSAt &SSA,
     local_SSAt::nodest::iterator node,
@@ -51,12 +79,14 @@ public:
     // outgoing globals at call site
     const summaryt &summary,
     bool forward,
-    bool preconditions_as_assertions);
+    bool preconditions_as_assertions,
+   int counter);
 
   void replace(
     local_SSAt &SSA,
     bool forward,
-    bool preconditions_as_assertions);
+    bool preconditions_as_assertions,
+    int counte);
 
   void replace(
     local_SSAt::nodest &nodes,
@@ -66,7 +96,8 @@ public:
     // incoming globals at call site
     const local_SSAt::var_sett &cs_globals_out,
     // outgoing globals at call site
-    const local_SSAt &function);
+    const local_SSAt &function,
+    int counte);
 
   void replace(
     local_SSAt &SSA,
@@ -104,7 +135,20 @@ public:
     symbol_exprt &s_found);
 
   static irep_idt get_original_identifier(const symbol_exprt &s);
+  
+  irep_idt rename(irep_idt &id, int counter);
 
+  irep_idt rename(irep_idt &id, int counter, bool attach);
+
+  int get_rename_counter()
+  {
+    counter++;
+    return counter;
+  }
+
+  // moved from protected to public, for use in summarizer_bw_cex_complete
+  void rename(exprt &expr, int counter);
+  
 protected:
   unsigned counter;
   summary_dbt &summary_db;
@@ -114,29 +158,41 @@ protected:
   std::set<local_SSAt::nodet::function_callst::iterator> rm_function_calls;
 
   void replace_globals_in(
-    const local_SSAt::var_sett &globals_in,
-    const local_SSAt::var_sett &globals);
+    const local_SSAt::var_sett &globals_in, 
+    const local_SSAt::var_sett &globals,
+    int counter);
   void replace_params(
     const local_SSAt::var_listt &params,
-    const function_application_exprt &funapp_expr);
+    const function_application_exprt &funapp_expr,
+    int counter);
   void replace_globals_out(
-    const local_SSAt::var_sett &globals_out,
-    const local_SSAt::var_sett &cs_globals_in,
-    const local_SSAt::var_sett &cs_globals_out);
+    const local_SSAt::var_sett &globals_out, 
+    const local_SSAt::var_sett &cs_globals_in,  
+    const local_SSAt::var_sett &cs_globals_out,
+    int counter);
 
-  exprt get_replace_globals_in(
-    const local_SSAt::var_sett &globals_in,
-    const local_SSAt::var_sett &globals);
-  exprt get_replace_params(
+  void get_replace_globals_in(
+    const local_SSAt::var_sett &globals_in, 
+    const function_application_exprt &funapp_expr,
+    const local_SSAt::var_sett &globals,
+    exprt::operandst &c,
+    int counter);
+  void get_replace_params(
+    const local_SSAt &SSA,
     const local_SSAt::var_listt &params,
-    const function_application_exprt &funapp_expr);
-  exprt get_replace_globals_out(
-    const local_SSAt::var_sett &globals_out,
-    const local_SSAt::var_sett &cs_globals_in,
-    const local_SSAt::var_sett &cs_globals_out);
+    local_SSAt::nodest::const_iterator n_it,
+    const function_application_exprt &funapp_expr,
+    exprt::operandst &c,
+    int counter);
+  void get_replace_globals_out(
+    const local_SSAt::var_sett &globals_out, 
+    const function_application_exprt &funapp_expr,
+    const local_SSAt::var_sett &cs_globals_in,  
+    const local_SSAt::var_sett &cs_globals_out,
+    exprt::operandst &c,
+    int counter);
 
-  void rename(exprt &expr);
-  void rename(local_SSAt::nodet &node);
+  void rename(local_SSAt::nodet &node, int counter);
 };
 
 #endif

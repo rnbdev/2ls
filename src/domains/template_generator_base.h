@@ -50,8 +50,8 @@ public:
   }
 
   virtual domaint::var_sett all_vars();
-
-  inline domaint *domain() { assert(domain_ptr!=NULL); return domain_ptr; }
+  bool empty() { assert(domain_ptr!=nullptr); return domain_ptr->is_spec_empty(); }
+  domaint *domain() { assert(domain_ptr!=nullptr); return domain_ptr; }
 
   domaint::var_specst var_specs;
   replace_mapt post_renaming_map;

@@ -26,12 +26,11 @@ class strategy_solver_binsearch2t:public strategy_solver_baset
   {
   }
 
-  virtual bool iterate(invariantt &inv);
+  virtual progresst iterate(invariantt &inv);
 
  protected:
   tpolyhedra_domaint &tpolyhedra_domain;
   unsigned sum_bound_counter;
 };
 
-
-#endif
+#endif // CPROVER_2LS_DOMAINS_STRATEGY_SOLVER_BINSEARCH2_H

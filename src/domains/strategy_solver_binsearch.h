@@ -18,13 +18,14 @@ public:
   strategy_solver_binsearcht(
     tpolyhedra_domaint &_tpolyhedra_domain,
     incremental_solvert &_solver,
+    literalt _assertion_check,
     const namespacet &_ns):
-    strategy_solver_baset(_solver, _ns),
+    strategy_solver_baset(_solver, _assertion_check, _ns),
     tpolyhedra_domain(_tpolyhedra_domain)
   {
   }
 
-  virtual bool iterate(invariantt &inv);
+  virtual progresst iterate(invariantt &inv);
 
 protected:
   tpolyhedra_domaint &tpolyhedra_domain;

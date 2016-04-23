@@ -27,7 +27,7 @@ class strategy_solver_binsearch3t:public strategy_solver_baset
     tpolyhedra_domain(_tpolyhedra_domain),
     sum_bound_counter(0) {}
 
-  virtual bool iterate(invariantt &inv);
+  virtual progresst iterate(invariantt &inv);
 
  protected:
   local_SSAt &SSA;

@@ -244,7 +244,7 @@ mp_integer simplify_const_int(const exprt &expr)
   if(expr.id()==ID_symbol)
   {
 #if 0
-    std::cout << "substituting default value for " << expr << std::endl;
+    std::cerr << "substituting default value for " << expr << std::endl;
 #endif
     return 0; // default value if not substituted in expr
   }
@@ -336,9 +336,11 @@ ieee_floatt simplify_const_float(const exprt &expr)
   {
     ieee_floatt v;
     v.make_zero();
+
 #if 0
-    std::cout << "substituting default value for " << expr << std::endl;
+    std::cerr << "substituting default value for " << expr << std::endl;
 #endif
+
     return v;
   }
   if(expr.id()==ID_index)

@@ -15,6 +15,8 @@ Author: Daniel Kroening, kroening@kroening.com
 #include "../ssa/local_ssa.h"
 #include "../ssa/unwindable_local_ssa.h"
 #include "../domains/incremental_solver.h"
+#include "summarizer_bw_cex.h"
+#include "summarizer_bw_cex_complete.h"
 
 /*******************************************************************\
 
@@ -53,14 +55,16 @@ public:
     const exprt::operandst& _loophead_selects,
     property_checkert::property_mapt &_property_map,
     bool _spurious_check, bool _all_properties,
-    bool _build_error_trace):
+    bool _build_error_trace,
+    summarizer_bw_cex_baset &_summarizer_bw_cex):
     SSA(_SSA),
     solver(_solver),
     property_map(_property_map),
     spurious_check(_spurious_check),
     all_properties(_all_properties),
     build_error_trace(_build_error_trace),
-    loophead_selects(_loophead_selects)
+    loophead_selects(_loophead_selects),
+    summarizer_bw_cex(_summarizer_bw_cex)
   {
   }
 
@@ -74,6 +78,7 @@ public:
   {
     literalt condition;
     bool covered;
+    exprt cond_expression; 
 
     cover_goalt():covered(false)
     {
@@ -111,6 +116,13 @@ public:
     goals.back().condition=condition;
   }
 
+  inline void add(const exprt cond_expression)
+  {
+    goals.push_back(cover_goalt());
+    goals.back().condition=!solver.convert(not_exprt(cond_expression));
+    goals.back().cond_expression=cond_expression;
+  }
+
 protected:
   unwindable_local_SSAt &SSA;
   unsigned _number_covered, _iterations;
@@ -118,6 +130,7 @@ protected:
   property_checkert::property_mapt &property_map;
   bool spurious_check, all_properties, build_error_trace;
   exprt::operandst loophead_selects;
+  summarizer_bw_cex_baset &summarizer_bw_cex;
 
   // this method is called for each satisfying assignment
   virtual void assignment();
