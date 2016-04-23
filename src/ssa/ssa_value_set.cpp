@@ -289,8 +289,7 @@ void ssa_value_domaint::assign_rhs_rec(
       if(m_it!=value_map.end())
       {
         valuest tmp_values=m_it->second;
-        if(offset)
-          tmp_values.offset=true;
+(??)
         tmp_values.alignment=merge_alignment(tmp_values.alignment, alignment);
         dest.merge(tmp_values);
       }
