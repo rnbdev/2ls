@@ -9,12 +9,12 @@ Author: Daniel Kroening, kroening@kroening.com
 #ifndef CPROVER_DELTACHECK_SUMMARY_H
 #define CPROVER_DELTACHECK_SUMMARY_H
 
+#include <climits>
 #include <iostream>
 #include <set>
 
 #include <util/std_expr.h>
-
-typedef enum{YES, NO, UNKNOWN} threevalt;
+#include "../ssa/local_ssa.h"
 
 class summaryt
 {
@@ -31,9 +31,9 @@ class summaryt
     bw_precondition(nil_exprt()), 
     bw_postcondition(nil_exprt()), 
     bw_transformer(nil_exprt()), 
-    bw_invariant(nil_exprt()), 
-    termination_argument(nil_exprt()), 
-    terminates(UNKNOWN) {}
+    bw_invariant(nil_exprt()),
+    mark_recompute(false),
+    has_assertion(false) {}
 
   var_listt params;
   var_sett globals_in, globals_out;
@@ -48,8 +48,33 @@ class summaryt
   predicatet bw_transformer; // backward summary (over- or under-approx)
   predicatet bw_invariant; // backward invariant (over- or under-approx)
 
-  predicatet termination_argument;
-  threevalt terminates;
+  bool mark_recompute; //to force recomputation of the summary
+                       // (used for invariant reuse in k-induction)
+
+  //--------------
+  // the following is for generating interprocedural counterexample
+
+  bool has_assertion; 
+
+  std::list<local_SSAt::nodest::const_iterator> nonpassed_assertions;
+
+  struct call_sitet { //TODO: we also need unwinding information here 
+    call_sitet() 
+      : location_number(UINT_MAX) {}
+    explicit call_sitet(local_SSAt::locationt loc) 
+      : location_number(loc->location_number) {}
+    unsigned location_number;
+
+    bool operator<(const call_sitet &other) const
+      { return (location_number < other.location_number); }
+    bool operator==(const call_sitet &other) const
+      { return (location_number == other.location_number); }
+  };
+
+  const static call_sitet entry_call_site;
+  typedef std::map<call_sitet, predicatet> error_summariest;
+  error_summariest error_summaries;
+  //--------------
 
   void output(std::ostream &out, const namespacet &ns) const;
 
@@ -62,7 +87,6 @@ class summaryt
 
 };
 
-std::string threeval2string(threevalt v);
 
 
 #endif

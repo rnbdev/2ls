@@ -20,12 +20,10 @@ Author: Peter Schrammel
 #include "../domains/ssa_analyzer.h"
 #include "../domains/template_generator_summary.h"
 #include "../domains/template_generator_callingcontext.h"
-#include "../domains/template_generator_ranking.h"
 
 #include "../ssa/local_ssa.h"
 #include "../ssa/simplify_ssa.h"
 
-#define PRECISE_JOIN
 
 /*******************************************************************\
 
@@ -46,7 +44,8 @@ void summarizer_baset::summarize()
       it!=ssa_db.functions().end(); it++)
   {
     status() << "\nSummarizing function " << it->first << eom;
-    if(!summary_db.exists(it->first)) 
+    if(!summary_db.exists(it->first) || 
+     summary_db.get(it->first).mark_recompute) 
       compute_summary_rec(it->first,precondition,false);
     else status() << "Summary for function " << it->first << 
            " exists already" << eom;
@@ -70,7 +69,8 @@ void summarizer_baset::summarize(const function_namet &function_name)
   exprt precondition = true_exprt(); //initial calling context
 
   status() << "\nSummarizing function " << function_name << eom;
-  if(!summary_db.exists(function_name)) 
+  if(!summary_db.exists(function_name) || 
+     summary_db.get(function_name).mark_recompute) 
   {
     compute_summary_rec(function_name,precondition,true);
   }
@@ -278,6 +278,7 @@ bool summarizer_baset::check_precondition(
   if(summary_db.exists(fname)) 
   {
     summaryt summary = summary_db.get(fname);
+    if(summary.mark_recompute) return false;
     if(!context_sensitive ||
        summary.fw_precondition.is_true())  //precondition trivially holds
     {
@@ -399,4 +400,46 @@ bool summarizer_baset::check_end_reachable(
   solver.pop_context();
 
   return result;
+}
+
+/*******************************************************************\
+
+Function: summarizer_baset::get_loophead_selects
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: returns the select guards at the loop heads 
+          e.g. in order to check whether a countermodel is spurious
+
+\*******************************************************************/
+
+exprt::operandst summarizer_baset::get_loophead_selects(
+  const local_SSAt &SSA,
+  const ssa_local_unwindert &ssa_local_unwinder,
+  prop_convt &solver)
+{
+  exprt::operandst loophead_selects;
+  for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
+      n_it != SSA.nodes.end(); n_it++)
+  {
+    if(n_it->loophead==SSA.nodes.end()) continue;
+    symbol_exprt lsguard = SSA.name(SSA.guard_symbol(),
+				    local_SSAt::LOOP_SELECT, n_it->location);
+    ssa_local_unwinder.unwinder_rename(lsguard,*n_it,true);
+    loophead_selects.push_back(not_exprt(lsguard));
+    solver.set_frozen(solver.convert(lsguard));
+  }
+  literalt loophead_selects_literal = solver.convert(conjunction(loophead_selects));
+  if(!loophead_selects_literal.is_constant())
+    solver.set_frozen(loophead_selects_literal);
+
+#if 0
+  std::cout << "loophead_selects: "
+	    << from_expr(SSA.ns,"",conjunction(loophead_selects))
+	    << std::endl;
+#endif
+
+  return loophead_selects;
 }

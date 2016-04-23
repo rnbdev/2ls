@@ -26,10 +26,6 @@ Function: tpolyhedra_domaint::initialize
 
 void tpolyhedra_domaint::initialize(valuet &value)
 {
-#if 0
-  if(templ.size()==0) return domaint::initialize(value);
-#endif
-
   templ_valuet &v = static_cast<templ_valuet&>(value);
   v.resize(templ.size());
   for(unsigned row = 0; row<templ.size(); row++)
@@ -37,6 +33,8 @@ void tpolyhedra_domaint::initialize(valuet &value)
     if(templ[row].kind==IN) v[row] = true_exprt(); //marker for oo
     else v[row] = false_exprt(); //marker for -oo
   }
+
+  refine(); //initialise refinements
 }
 
 /*******************************************************************\
@@ -53,20 +51,16 @@ Function: tpolyhedra_domaint::join
 
 void tpolyhedra_domaint::join(valuet &value1, const valuet &value2)
 {
-#if 0
-  if(templ.size()==0) return domaint::join(value1,value2);
-#endif
-
   templ_valuet &v1 = static_cast<templ_valuet&>(value1);
   const templ_valuet &v2 = static_cast<const templ_valuet&>(value2);
   assert(v1.size()==templ.size());
   assert(v1.size()==v2.size());
   for(unsigned row = 0; row<templ.size(); row++)
   {
-    if(is_row_value_inf(v1[row]) || is_row_value_inf(v2[row])) 
+    if(is_row_value_inf(v1,row) || is_row_value_inf(v2,row)) 
       v1[row] = true_exprt();
-    else if(is_row_value_neginf(v1[row])) v1[row] = v2[row];
-    else if(!is_row_value_neginf(v2[row])) 
+    else if(is_row_value_neginf(v1,row)) v1[row] = v2[row];
+    else if(!is_row_value_neginf(v2,row)) 
     {
       if(less_than(v1[row],v2[row])) v1[row] = v2[row];
     }
@@ -257,13 +251,33 @@ exprt tpolyhedra_domaint::get_row_post_constraint(const rowt &row,
   assert(row<templ.size());
   const template_rowt &templ_row = templ[row];
   if(templ_row.kind==IN) return true_exprt();
+
+#if 0 //TEST for disjunctive domains
+  if(templ.size()==4)
+  {
+  exprt guard = true_exprt();
+  if(row==1 || row==3) 
+    return guard = 
+      binary_relation_exprt(templ_row.expr,ID_gt,from_integer(mp_integer(0),templ_row.expr.type()));
+  else
+    return guard =
+      binary_relation_exprt(templ_row.expr,ID_lt,from_integer(mp_integer(0),templ_row.expr.type()));
   if(is_row_value_neginf(row_value)) 
-    return implies_exprt(templ_row.post_guard, false_exprt());
+    return implies_exprt(templ_row.post_guard, implies_exprt(guard,false_exprt()));
   if(is_row_value_inf(row_value)) 
-    return implies_exprt(templ_row.post_guard, true_exprt());
+    return implies_exprt(templ_row.post_guard, implies_exprt(guard,true_exprt()));
   exprt c = implies_exprt(templ_row.post_guard, 
-    binary_relation_exprt(templ_row.expr,ID_le,row_value));
-  rename(c);
+			  implies_exprt(guard,binary_relation_exprt(templ_row.expr,ID_le,row_value)));
+  }
+#endif
+
+  if(is_row_value_neginf(row_value)) 
+    return implies_exprt(templ_row.post_guard,false_exprt());
+  if(is_row_value_inf(row_value)) 
+    return implies_exprt(templ_row.post_guard,true_exprt());
+  exprt c = implies_exprt(templ_row.post_guard, 
+	    binary_relation_exprt(templ_row.expr,ID_le,row_value));
+  if(templ_row.kind==LOOP) rename(c);
   return c;
 }
 
@@ -323,7 +337,9 @@ void tpolyhedra_domaint::make_not_post_constraints(const templ_valuet &value,
   {
     value_exprs[row] = templ[row].expr;
     rename(value_exprs[row]);
-    cond_exprs[row] = not_exprt(get_row_post_constraint(row,value));
+    cond_exprs[row] = 
+      and_exprt(templ[row].aux_expr,
+		not_exprt(get_row_post_constraint(row,value)));
   }
 }
 
@@ -359,12 +375,12 @@ Function: tpolyhedra_domaint::get_row_symb_pre_constraint
 \*******************************************************************/
 
 exprt tpolyhedra_domaint::get_row_symb_pre_constraint(const rowt &row, 
-  const row_valuet &row_value)
+				    const row_valuet &row_value)
 {
   assert(row<templ.size());
   const template_rowt &templ_row = templ[row];
   if(templ_row.kind==OUT || templ_row.kind==OUTL) return true_exprt();
-  return implies_exprt(templ_row.pre_guard, 
+  return implies_exprt(templ_row.pre_guard,  //REMARK: and_expr ==> loop15 regression
     binary_relation_exprt(templ_row.expr,ID_le,get_row_symb_value(row)));
 }
 
@@ -388,7 +404,7 @@ exprt tpolyhedra_domaint::get_row_symb_post_constraint(const rowt &row)
   exprt c = and_exprt(templ_row.post_guard,
     binary_relation_exprt(templ_row.expr,ID_ge,get_row_symb_value(row)));
   rename(c);
-  return c;
+  return and_exprt(templ_row.aux_expr,c);
 }
 
 
@@ -428,7 +444,7 @@ Function: tpolyhedra_domaint::to_symb_pre_constraints
 \*******************************************************************/
 
 exprt tpolyhedra_domaint::to_symb_pre_constraints(const templ_valuet &value,
-						const std::set<rowt> &symb_rows)
+					const std::set<rowt> &symb_rows)
 {
   assert(value.size()==templ.size());
   exprt::operandst c; 
@@ -454,7 +470,8 @@ Function: tpolyhedra_domaint::to_symb_post_constraints
 
 \*******************************************************************/
 
-exprt tpolyhedra_domaint::to_symb_post_constraints(const std::set<rowt> &symb_rows)
+exprt tpolyhedra_domaint::to_symb_post_constraints(
+   const std::set<rowt> &symb_rows)
 {
   exprt::operandst c; 
   for(std::set<rowt>::const_iterator it = symb_rows.begin(); 
@@ -473,17 +490,17 @@ Function: tpolyhedra_domaint::get_row_symb_value_constraint
 
  Outputs:
 
- Purpose: row_value <= symb_row_value
+ Purpose: row_value_value <= symb_row
 
 \*******************************************************************/
 
 exprt tpolyhedra_domaint::get_row_symb_value_constraint(const rowt &row, 
-						const row_valuet &row_value)
+			    	const row_valuet &row_value, bool geq)
 {
   if(is_row_value_neginf(row_value)) return false_exprt();
   if(is_row_value_inf(row_value)) return true_exprt();
-  exprt c = binary_relation_exprt(row_value,ID_le,get_row_symb_value(row));
-  rename(c);
+  exprt c = binary_relation_exprt(get_row_symb_value(row),
+				  geq ? ID_ge : ID_le,row_value);
   return c;
 }
 
@@ -523,10 +540,6 @@ Function: tpolyhedra_domaint::project_on_vars
 void tpolyhedra_domaint::project_on_vars(valuet &value, 
 				       const var_sett &vars, exprt &result)
 {
-#if 0
-  if(templ.size()==0) return domaint::project_on_vars(value,vars,result);
-#endif
-
   const templ_valuet &v = static_cast<const templ_valuet &>(value);
 
   assert(v.size()==templ.size());
@@ -553,19 +566,20 @@ void tpolyhedra_domaint::project_on_vars(valuet &value,
     const row_valuet &row_v = v[row];
     if(templ_row.kind==LOOP)
     {
-      if(is_row_value_neginf(row_v)) 
-	c.push_back(implies_exprt(templ_row.pre_guard,false_exprt()));
-      else if(is_row_value_inf(row_v)) 
-	c.push_back(implies_exprt(templ_row.pre_guard,true_exprt()));
+      if(is_row_value_neginf(value, row)) 
+	//c.push_back(implies_exprt(templ_row.pre_guard,false_exprt()));
+        c.push_back(not_exprt(templ_row.pre_guard));
+      else if(is_row_value_inf(value, row)) 
+	; //c.push_back(implies_exprt(templ_row.pre_guard,true_exprt()));
       else c.push_back(implies_exprt(templ_row.pre_guard,
 		       binary_relation_exprt(templ_row.expr,ID_le,row_v)));
     }
     else
     {
-      if(is_row_value_neginf(row_v)) 
+      if(is_row_value_neginf(value, row)) 
 	c.push_back(false_exprt());
-      else if(is_row_value_inf(row_v)) 
-	c.push_back(true_exprt());
+      else if(is_row_value_inf(value, row)) 
+	; //c.push_back(true_exprt());
       else c.push_back(binary_relation_exprt(templ_row.expr,ID_le,row_v));
     }
   }
@@ -606,9 +620,9 @@ Function: tpolyhedra_domaint::get_row_max_value
 \*******************************************************************/
 
 tpolyhedra_domaint::row_valuet tpolyhedra_domaint::get_max_row_value(
-  const tpolyhedra_domaint::rowt &row)
+  const tpolyhedra_domaint::rowt &row) const
 {
-  const template_rowt &templ_row = templ[row];
+  const template_rowt &templ_row = templ.at(row);
   if(templ_row.expr.type().id()==ID_signedbv)
   {
     return to_signedbv_type(templ_row.expr.type()).largest_expr();
@@ -639,9 +653,9 @@ Function: tpolyhedra_domaint::get_row_max_value
 \*******************************************************************/
 
 tpolyhedra_domaint::row_valuet tpolyhedra_domaint::get_min_row_value(
-  const tpolyhedra_domaint::rowt &row)
+  const tpolyhedra_domaint::rowt &row) const
 {
-  const template_rowt &templ_row = templ[row];
+  const template_rowt &templ_row = templ.at(row);
   if(templ_row.expr.type().id()==ID_signedbv)
   {
     return to_signedbv_type(templ_row.expr.type()).smallest_expr();
@@ -682,7 +696,8 @@ void tpolyhedra_domaint::output_value(std::ostream &out, const valuet &value,
     {
     case LOOP:
       out << "(LOOP) [ " << from_expr(ns,"",templ_row.pre_guard) << " | ";
-      out << from_expr(ns,"",templ_row.post_guard) << " ] ===> " << std::endl << "       ";
+      out << from_expr(ns,"",templ_row.post_guard) << " | ";
+      out << from_expr(ns,"",templ_row.aux_expr) << " ] ===> " << std::endl << "       ";
       break;
     case IN: out << "(IN)   "; break;
     case OUT: case OUTL: out << "(OUT)  "; break;
@@ -717,7 +732,8 @@ void tpolyhedra_domaint::output_domain(std::ostream &out, const namespacet &ns) 
     {
     case LOOP:
       out << "(LOOP) [ " << from_expr(ns,"",templ_row.pre_guard) << " | ";
-      out << from_expr(ns,"",templ_row.post_guard) << " ] ===> " << std::endl << "      ";
+      out << from_expr(ns,"",templ_row.post_guard) << " | ";
+      out << from_expr(ns,"",templ_row.aux_expr) << " ] ===> " << std::endl << "      ";
       break;
     case IN: 
       out << "(IN)   ";
@@ -762,10 +778,17 @@ Function: tpolyhedra_domaint::is_row_value_neginf
  Purpose:
 
 \*******************************************************************/
-
-bool tpolyhedra_domaint::is_row_value_neginf(const row_valuet & row_value) const
+bool tpolyhedra_domaint::is_row_value_neginf(
+  const row_valuet &row_value) const
 {
   return row_value.get(ID_value)==ID_false;
+}
+
+bool tpolyhedra_domaint::is_row_value_neginf(
+  const valuet &value, const rowt &row) const
+{
+  const templ_valuet &v = static_cast<const templ_valuet &>(value);
+  return v.at(row).get(ID_value)==ID_false;
 }
 
 /*******************************************************************\
@@ -780,21 +803,112 @@ Function: tpolyhedra_domaint::is_row_value_inf
 
 \*******************************************************************/
 
-bool tpolyhedra_domaint::is_row_value_inf(const row_valuet & row_value) const
+bool tpolyhedra_domaint::is_row_value_inf(
+  const row_valuet &row_value) const
 {
   return row_value.get(ID_value)==ID_true;
 }
 
+bool tpolyhedra_domaint::is_row_value_inf(
+  const valuet &value, const rowt &row) const
+{
+  const templ_valuet &v = static_cast<const templ_valuet &>(value);
+  const row_valuet &row_value = v.at(row);
+  if(row_value.get(ID_value)==ID_true)
+    return true;
+  if(row_value==get_max_row_value(row))
+    return true;
+  const row_exprt &row_expr = templ[row].expr;
+  if(row_expr.id()==ID_unary_minus &&
+     row_expr.op0().id()==ID_typecast)
+  {
+    mp_integer rvalue;
+    to_integer(row_value, rvalue);
+    const typet &inner_type = row_expr.op0().op0().type();
+    mp_integer smallest;
+    if(inner_type.id()==ID_unsignedbv) 
+      smallest = to_unsignedbv_type(inner_type).smallest();
+    else if(inner_type.id()==ID_signedbv) 
+      smallest = to_signedbv_type(inner_type).smallest();
+    else 
+      return false;
+    if(smallest == rvalue)
+      return true;
+  }
+
+  return false;
+}
 
 /*******************************************************************\
 
-Function: make_interval_template
+Function: tpolyhedra_domaint::rename_for_row
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: add row suffix to non-symbolic-bound variables in expression 
+          (required for strategy iteration (binsearch3))
+
+\*******************************************************************/
+
+
+void tpolyhedra_domaint::rename_for_row(exprt &expr, const rowt &row)
+{
+  if(row==0) return; //do not rename
+  if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol)
+  {
+    const std::string &old_id = expr.get_string(ID_identifier);
+    if(old_id.find(SYMB_BOUND_VAR)==std::string::npos) 
+    {
+      irep_idt id = old_id + "_" + i2string(row);
+      expr.set(ID_identifier,id);
+    }
+  }
+  for(unsigned i=0; i< expr.operands().size(); i++)
+    rename_for_row(expr.operands()[i],row);
+}
+
+/*******************************************************************\
+
+Function: add_template_row
 
   Inputs:
 
  Outputs:
 
  Purpose:
+
+\*******************************************************************/
+
+tpolyhedra_domaint::template_rowt &tpolyhedra_domaint::add_template_row(
+  const exprt& expr,
+  const exprt& pre_guard,
+  const exprt& post_guard,
+  const exprt& aux_expr,
+  kindt kind
+  )
+{
+  templ.push_back(template_rowt());
+  template_rowt &templ_row = templ.back();
+  templ_row.expr = expr;
+  extend_expr_types(templ_row.expr);
+  templ_row.pre_guard = pre_guard;
+  templ_row.post_guard = post_guard;
+  templ_row.aux_expr = aux_expr;
+  templ_row.kind = kind;
+  return templ_row;
+}
+
+/*******************************************************************\
+
+Function: add_interval_template
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: +-x<=c
 
 \*******************************************************************/
 
@@ -810,75 +924,36 @@ void tpolyhedra_domaint::add_interval_template(const var_specst &var_specs,
     if(v->kind==IN) continue; 
 
     // x
-    {
-      templ.push_back(template_rowt());
-      template_rowt &templ_row = templ.back();
-      templ_row.expr = v->var;
-      templ_row.pre_guard = v->pre_guard;
-      templ_row.post_guard = v->post_guard;
-      templ_row.kind = v->kind;
-    }
+    add_template_row(v->var,v->pre_guard,v->post_guard,
+		     v->aux_expr, v->kind);
 
     // -x
-    {
-      templ.push_back(template_rowt());
-      template_rowt &templ_row = templ.back();
-      unary_minus_exprt um_expr(v->var,v->var.type());
-      extend_expr_types(um_expr);
-      templ_row.expr = um_expr;
-      templ_row.pre_guard = v->pre_guard;
-      templ_row.post_guard = v->post_guard;
-      templ_row.kind = v->kind;
-    }
+    add_template_row(unary_minus_exprt(v->var,v->var.type()),
+		     v->pre_guard,v->post_guard,v->aux_expr, v->kind);
   }
 }
 
 /*******************************************************************\
 
-Function: make_zone_template
+Function: add_difference_template
 
   Inputs:
 
  Outputs:
 
- Purpose:
+ Purpose: x+-y<=c
 
 \*******************************************************************/
 
-void tpolyhedra_domaint::add_zone_template(const var_specst &var_specs,
+void tpolyhedra_domaint::add_difference_template(const var_specst &var_specs,
 					 const namespacet &ns)
 { 
-  unsigned size = 2*var_specs.size()+var_specs.size()*(var_specs.size()-1);
+  unsigned size = var_specs.size()*(var_specs.size()-1);
   templ.reserve(templ.size()+size);
   
   for(var_specst::const_iterator v1 = var_specs.begin(); 
       v1!=var_specs.end(); v1++)
   {
-    if(v1->kind!=IN)
-    {
-      // x
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-	templ_row.expr = v1->var;
-	templ_row.pre_guard = v1->pre_guard;
-	templ_row.post_guard = v1->post_guard;
-	templ_row.kind = v1->kind;
-      }
-
-      // -x
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-	unary_minus_exprt um_expr(v1->var,v1->var.type());
-	extend_expr_types(um_expr);
-	templ_row.expr = um_expr;
-	templ_row.pre_guard = v1->pre_guard;
-	templ_row.post_guard = v1->post_guard;
-	templ_row.kind = v1->kind;
-      }
-    }
-
     var_specst::const_iterator v2 = v1; v2++;
     for(; v2!=var_specs.end(); v2++)
     {
@@ -886,84 +961,73 @@ void tpolyhedra_domaint::add_zone_template(const var_specst &var_specs,
       if(k==IN) continue; 
       if(k==LOOP && v1->pre_guard!=v2->pre_guard) continue; //TEST: we need better heuristics
 
-      exprt pre_g = and_exprt(v1->pre_guard,v2->pre_guard);
-      exprt post_g = and_exprt(v1->post_guard,v2->post_guard);
-      simplify(pre_g,ns);
-      simplify(post_g,ns);
+      exprt pre_g, post_g, aux_expr;
+      merge_and(pre_g, v1->pre_guard, v2->pre_guard, ns);
+      merge_and(post_g, v1->post_guard, v2->post_guard, ns);
+      merge_and(aux_expr, v1->aux_expr, v2->aux_expr, ns);
 
       // x1 - x2
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-        minus_exprt m_expr(v1->var,v2->var);
-        extend_expr_types(m_expr);
-	templ_row.expr = m_expr;
-	templ_row.pre_guard = pre_g;
-	templ_row.post_guard = post_g;
-	templ_row.kind = k;
-      }
+      add_template_row(minus_exprt(v1->var,v2->var),pre_g,post_g,aux_expr,k);
 
       // x2 - x1
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-        minus_exprt m_expr(v2->var,v1->var);
-        extend_expr_types(m_expr);
-	templ_row.expr = m_expr;
-	templ_row.pre_guard = pre_g;
-	templ_row.post_guard = post_g;
-	templ_row.kind = k;
-      }
+      add_template_row(minus_exprt(v2->var,v1->var),pre_g,post_g,aux_expr,k);
     }
   }
 }
 
 /*******************************************************************\
 
-Function: make_octagon_template
+Function: add_quadratic_template
 
   Inputs:
 
  Outputs:
 
- Purpose:
+ Purpose: +-x^2<=c
 
 \*******************************************************************/
 
-void tpolyhedra_domaint::add_octagon_template(const var_specst &var_specs,
+void tpolyhedra_domaint::add_quadratic_template(const var_specst &var_specs,
+					 const namespacet &ns)
+{ 
+  unsigned size = 2*var_specs.size();
+  templ.reserve(templ.size()+size);
+  
+  for(var_specst::const_iterator v = var_specs.begin(); 
+      v!=var_specs.end(); v++)
+  {
+    if(v->kind==IN) continue; 
+
+    // x
+    add_template_row(mult_exprt(v->var,v->var),
+		     v->pre_guard,v->post_guard,v->aux_expr,v->kind);
+
+    // -x
+    add_template_row(unary_minus_exprt(mult_exprt(v->var,v->var),v->var.type()),
+		     v->pre_guard,v->post_guard,v->aux_expr,v->kind);
+  }}
+
+/*******************************************************************\
+
+Function: add_sum_template
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: x+y<=c, -x-y<=c
+
+\*******************************************************************/
+
+void tpolyhedra_domaint::add_sum_template(const var_specst &var_specs,
 					    const namespacet &ns)
 {
-  unsigned size = 2*var_specs.size()+2*var_specs.size()*(var_specs.size()-1);
+  unsigned size = var_specs.size()*(var_specs.size()-1);
   templ.reserve(templ.size()+size);
   
   for(var_specst::const_iterator v1 = var_specs.begin(); 
       v1!=var_specs.end(); v1++)
   {
-    if(v1->kind!=IN) 
-    {
-      // x
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-	templ_row.expr = v1->var;
-	templ_row.pre_guard = v1->pre_guard;
-	templ_row.post_guard = v1->post_guard;
-	templ_row.kind = v1->kind;
-      }
-
-      // -x
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-	unary_minus_exprt um_expr(v1->var,v1->var.type());
-	extend_expr_types(um_expr);
-	templ_row.expr = um_expr;
-	templ_row.pre_guard = v1->pre_guard;
-	templ_row.post_guard = v1->post_guard;
-	templ_row.kind = v1->kind;
-      }
-    }
-
     var_specst::const_iterator v2 = v1; v2++;
     for(; v2!=var_specs.end(); v2++)
     {
@@ -971,59 +1035,71 @@ void tpolyhedra_domaint::add_octagon_template(const var_specst &var_specs,
       if(k==IN) continue; 
       if(k==LOOP && v1->pre_guard!=v2->pre_guard) continue; //TEST: we need better heuristics
 
-      exprt pre_g = and_exprt(v1->pre_guard,v2->pre_guard);
-      exprt post_g = and_exprt(v1->post_guard,v2->post_guard);
-      simplify(pre_g,ns);
-      simplify(post_g,ns);
-
-      // x1 - x2
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-        minus_exprt m_expr(v1->var,v2->var);
-        extend_expr_types(m_expr);
-	templ_row.expr = m_expr;
-	templ_row.pre_guard = pre_g;
-	templ_row.post_guard = post_g;
-	templ_row.kind = k;
-      }
-
-      // -x1 + x2
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-        minus_exprt m_expr(v2->var,v1->var);
-        extend_expr_types(m_expr);
-	templ_row.expr = m_expr;
-	templ_row.pre_guard = pre_g;
-	templ_row.post_guard = post_g;
-	templ_row.kind = k;
-      }
+      exprt pre_g, post_g, aux_expr;
+      merge_and(pre_g, v1->pre_guard, v2->pre_guard, ns);
+      merge_and(post_g, v1->post_guard, v2->post_guard, ns);
+      merge_and(aux_expr, v1->aux_expr, v2->aux_expr, ns);
 
       // -x1 - x2
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-        minus_exprt p_expr(unary_minus_exprt(v1->var,v1->var.type()),v2->var);
-        extend_expr_types(p_expr);
-	templ_row.expr = p_expr;
-	templ_row.pre_guard = pre_g;
-	templ_row.post_guard = post_g;
-	templ_row.kind = k;
-      }
+      add_template_row(minus_exprt(unary_minus_exprt(v1->var,v1->var.type()),v2->var),
+		       pre_g,post_g,aux_expr,k);
 
       // x1 + x2
-      {
-	templ.push_back(template_rowt());
-	template_rowt &templ_row = templ.back();
-        plus_exprt p_expr(v1->var,v2->var);
-        extend_expr_types(p_expr);
-	templ_row.expr = p_expr;
-	templ_row.pre_guard = pre_g;
-	templ_row.post_guard = post_g;
-	templ_row.kind = k;
-      }
+      add_template_row(plus_exprt(v1->var,v2->var),pre_g,post_g,aux_expr,k);
     }
   }
 
+}
+
+/*******************************************************************\
+
+Function: tpolyhedra_domaint::refine
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: non-monotone condition refinement
+
+\*******************************************************************/
+
+void tpolyhedra_domaint::replace_comparison(exprt &expr, bool greater)
+{
+  //TODO
+}
+
+bool tpolyhedra_domaint::refine()
+{
+  return false;
+
+  //TODO
+  if(current_refinement==0) //initialise
+  {
+    if(refinement_exprs.size()==0)
+    {
+      max_refinements = 0;
+      return false;
+    }
+    max_refinements = 3;
+    current_refinement = 1;
+    exprt::operandst c;
+    //TODO    
+    current_refinement_expr = conjunction(c);
+    return true;
+  }
+
+  if(current_refinement>max_refinements) 
+    return false;
+
+  if(current_refinement==1)
+  {
+    exprt::operandst c;
+    //TODO    
+    current_refinement_expr = conjunction(c);
+  }
+  else if(current_refinement==2)
+    current_refinement_expr = true_exprt();
+
+  current_refinement++;
+  return true;
 }

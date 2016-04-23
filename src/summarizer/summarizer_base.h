@@ -31,6 +31,7 @@ class summarizer_baset : public messaget
     ssa_db(_ssa_db),
     ssa_unwinder(_ssa_unwinder),
     ssa_inliner(_ssa_inliner),
+    nonpassed_assertions(false),
     solver_instances(0),
     solver_calls(0),
     summaries_used(0)
@@ -50,12 +51,18 @@ class summarizer_baset : public messaget
   unsigned get_number_of_solver_calls() { return solver_calls; }
   unsigned get_number_of_summaries_used() { return summaries_used; }
 
+  static exprt::operandst get_loophead_selects(
+    const local_SSAt &SSA,
+    const ssa_local_unwindert &ssa_local_unwinder,
+    prop_convt &solver);
+  
  protected:
   optionst &options;
   summary_dbt &summary_db;
   ssa_dbt &ssa_db;
   ssa_unwindert &ssa_unwinder;
   ssa_inlinert &ssa_inliner;
+  bool nonpassed_assertions;
 
   virtual void compute_summary_rec(const function_namet &function_name,
 				   const exprt &precondition,

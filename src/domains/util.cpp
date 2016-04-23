@@ -1,5 +1,6 @@
-#include "util.h"
+#include <util/simplify_expr.h>
 
+#include "util.h"
 
 /*******************************************************************\
 
@@ -21,7 +22,13 @@ unsigned get_bitvector_width(const exprt &expr)
 void extend_expr_types(exprt &expr)
 {
 //  std::cerr << "expr: " << expr << std::endl;
-  if(expr.id()==ID_typecast) return;
+  if(expr.id()==ID_typecast) 
+  {
+    exprt new_expr = expr.op0();
+    extend_expr_types(new_expr);
+    expr = new_expr;
+    return;
+  }
   if(expr.id()==ID_constant) return;
   if(expr.id()==ID_symbol) return;
   if(expr.id()==ID_index) return;
@@ -121,10 +128,37 @@ void extend_expr_types(exprt &expr)
     }
     else assert(false); 
   }
-  std::cerr << "expr: " << expr << std::endl;
+  if(expr.id()==ID_div)
+  {
+    extend_expr_types(expr.op0());
+    extend_expr_types(expr.op1());
+    unsigned size0 = get_bitvector_width(expr.op0());
+    unsigned size1 = get_bitvector_width(expr.op1());
+    assert(size0>0); assert(size1>0); 
+    if((expr.op0().type().id()==ID_unsignedbv || expr.op0().type().id()==ID_signedbv) &&
+       (expr.op1().type().id()==ID_unsignedbv || expr.op1().type().id()==ID_signedbv))
+    {
+      typet new_type;
+      if(expr.op0().type().id()==ID_unsignedbv && expr.op0().type().id()==ID_unsignedbv)
+	new_type = unsignedbv_typet(std::max(size0,size1));
+      else if(expr.op0().type().id()==ID_signedbv && expr.op0().type().id()==ID_unsignedbv)
+        new_type = signedbv_typet(size0>size1 ? size0 : size1+1);
+      else new_type = signedbv_typet(size0>=size1 ? size0+1 : size1);
+
+      expr = div_exprt(typecast_exprt(expr.op0(),new_type),
+		       typecast_exprt(expr.op1(),new_type));
+      return;
+    }
+    else if(expr.op0().type().id()==ID_floatbv || expr.op1().type().id()==ID_floatbv)
+    {
+      // TODO: shall we extend floats? 
+      return;
+    }
+    else assert(false);
+  }
+  std::cerr << "failed expr: " << expr << std::endl;
   assert(false);
 }
-
 
 
 /*******************************************************************\
@@ -154,13 +188,22 @@ mp_integer simplify_const_int(const exprt &expr)
     return simplify_const_int(op0);
   }
   if(expr.id()==ID_unary_minus) return -simplify_const_int(expr.op0());
-  if(expr.id()==ID_plus) return simplify_const_int(expr.op0())+simplify_const_int(expr.op1());
-  if(expr.id()==ID_minus) return simplify_const_int(expr.op0())-simplify_const_int(expr.op1());
-  if(expr.id()==ID_mult) return simplify_const_int(expr.op0())*simplify_const_int(expr.op1());  
+  if(expr.id()==ID_plus) 
+    return simplify_const_int(expr.op0())+simplify_const_int(expr.op1());
+  if(expr.id()==ID_minus) 
+    return simplify_const_int(expr.op0())-simplify_const_int(expr.op1());
+  if(expr.id()==ID_mult) 
+    return simplify_const_int(expr.op0())*simplify_const_int(expr.op1());  
+  if(expr.id()==ID_div) 
+  {
+    mp_integer d = simplify_const_int(expr.op1());
+    assert(d!=0);
+    return simplify_const_int(expr.op0())/d;  
+  }
   if(expr.id()==ID_symbol) 
   {
 #if 0
-    std::cout << "substituting default value for " << expr << std::endl;
+    std::cerr << "substituting default value for " << expr << std::endl;
 #endif
     return 0; //default value if not substituted in expr
   }
@@ -229,13 +272,22 @@ ieee_floatt simplify_const_float(const exprt &expr)
     v1 *= v2;
     return v1; 
   }
+  if(expr.id()==ID_div)
+  {
+    ieee_floatt v1 = simplify_const_float(expr.op0());
+    ieee_floatt v2 = simplify_const_float(expr.op1());
+    v1 /= v2;
+    return v1; 
+  }
   if(expr.id()==ID_symbol)  //default value if not substituted in expr
   {
     ieee_floatt v;
     v.make_zero();
+
 #if 0
-    std::cout << "substituting default value for " << expr << std::endl;
+    std::cerr << "substituting default value for " << expr << std::endl;
 #endif
+
     return v; 
   }
   if(expr.id()==ID_index) 
@@ -256,9 +308,7 @@ ieee_floatt simplify_const_float(const exprt &expr)
 
 constant_exprt simplify_const(const exprt &expr)
 {
-//  std::cerr << "const: " << expr << std::endl;
   if(expr.id()==ID_constant) return to_constant_expr(expr);
-  //TODO: handle "address_of" constants
   if(expr.id()==ID_index) 
   {
     const index_exprt &index_expr = to_index_expr(expr);
@@ -307,82 +357,23 @@ constant_exprt simplify_const(const exprt &expr)
   assert(false); //type not supported
 }
 
-void remove_typecast(exprt& expr)
-{
-  for(exprt::operandst::iterator it = expr.operands().begin();
-            it != expr.operands().end(); ++it)
-    remove_typecast(*it);
-
-  if (expr.id() == ID_typecast)
-    expr = expr.op0();
-}
-
 /*******************************************************************\
 
-Function: pretty_print_termination_argument()
+Function: merge_and
 
   Inputs:
 
  Outputs:
 
- Purpose: print ranking argument expressions in a more readable format
+ Purpose:
 
-\******************************************************************/
+\*******************************************************************/
 
-void pretty_print_termination_argument(std::ostream &out, const namespacet &ns, const exprt &_expr)
+void merge_and(exprt & result, const exprt &expr1, const exprt &expr2, 
+	       const namespacet &ns)
 {
-  exprt expr = _expr;
-  remove_typecast(expr);
-
-  if(expr.id()==ID_and)
-  {
-    // should be of the form /\_i g_i => R_i
-    for(exprt::operandst::const_iterator it = expr.operands().begin(); 
-      it != expr.operands().end(); it++)
-    {
-      out << "\n";
-      if(it == expr.operands().begin()) out << "   "; 
-      else out << "&& ";
-      if(it->id()==ID_implies)
-      {
-        out << from_expr(ns,"",it->op0()) << " ==> ";
-        if(it->op1().id()==ID_gt)
-          out << from_expr(ns,"",it->op1().op0());
-        else if(it->op1().id()==ID_or) // needed for lexicographic ones
-        {
-          for(exprt::operandst::const_iterator it_lex = it->op1().operands().begin();
-              it_lex != it->op1().operands().end(); ++it_lex)
-          {
-            if(it_lex->id() == ID_and)
-	    {
-              if(it_lex == it->op1().operands().begin()) out << "(";
-              else out << "\n   " << "       " << ",";
-              out << from_expr(ns,"",it_lex->op0());
-	    }
-	    else 
-	    {
-              out << "\n   " << "       " << ","
-                  << from_expr(ns,"",*it_lex);
-	    }
-          }
-          out << ")";
-        }
-        else out << from_expr(ns,"",it->op1());
-      }
-      else out << from_expr(ns,"",*it);
-    }
-    return;
-  }
-  else
-  {
-    if(expr.id()==ID_implies)
-    {
-      if(expr.op1().id()==ID_gt)
-      {
-	out << from_expr(ns,"",expr.op0()) << " ==> " << from_expr(ns,"",expr.op1().op0());
-	return;
-      }
-    }
-  }
-  out << from_expr(ns,"",expr);
+  result = expr1;
+  if(expr1!=expr2) result = and_exprt(expr1,expr2);
+  simplify(result,ns);
 }
+

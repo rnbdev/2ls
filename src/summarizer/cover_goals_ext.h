@@ -13,6 +13,8 @@ Author: Daniel Kroening, kroening@kroening.com
 #include <goto-programs/property_checker.h>
 
 #include "../domains/incremental_solver.h"
+#include "summarizer_bw_cex.h"
+#include "summarizer_bw_cex_complete.h"
 
 /*******************************************************************\
 
@@ -48,11 +50,14 @@ public:
       explicit inline cover_goals_extt(incremental_solvert &_solver,
 				   const exprt::operandst& _loophead_selects,
 				   property_checkert::property_mapt &_property_map,
-				   bool _spurious_check):
-          solver(_solver), 
+  			           bool _spurious_check, bool _all_properties,
+				   summarizer_bw_cex_baset &_summarizer_bw_cex):
+          solver(_solver),
           property_map(_property_map), 
 	  spurious_check(_spurious_check),
-	  loophead_selects(_loophead_selects)
+	  all_properties(_all_properties),
+	  loophead_selects(_loophead_selects),
+	  summarizer_bw_cex(_summarizer_bw_cex)
           {}
   
   virtual ~cover_goals_extt();
@@ -65,6 +70,7 @@ public:
   {
     literalt condition;
     bool covered;
+    exprt cond_expression; 
     
     cover_goalt():covered(false)
     {
@@ -102,12 +108,20 @@ public:
     goals.back().condition=condition;
   }
   
+  inline void add(const exprt cond_expression)
+  {
+    goals.push_back(cover_goalt());
+    goals.back().condition=!solver.convert(not_exprt(cond_expression));
+    goals.back().cond_expression=cond_expression;
+  }
+
 protected:
   unsigned _number_covered, _iterations;
   incremental_solvert &solver;
   property_checkert::property_mapt &property_map;
-  bool spurious_check;
+  bool spurious_check, all_properties;
   exprt::operandst loophead_selects;
+  summarizer_bw_cex_baset &summarizer_bw_cex;
 
   // this method is called for each satisfying assignment
   virtual void assignment();

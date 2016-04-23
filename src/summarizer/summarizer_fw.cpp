@@ -20,11 +20,11 @@ Author: Peter Schrammel
 #include "../domains/ssa_analyzer.h"
 #include "../domains/template_generator_summary.h"
 #include "../domains/template_generator_callingcontext.h"
-#include "../domains/template_generator_ranking.h"
 
 #include "../ssa/local_ssa.h"
 #include "../ssa/simplify_ssa.h"
 
+//#define SHOW_WHOLE_RESULT
 
 /*******************************************************************\
 
@@ -77,6 +77,7 @@ void summarizer_fwt::compute_summary_rec(const function_namet &function_name,
     do_summary(function_name,SSA,summary,true_exprt(),context_sensitive);
   }
 
+  if(!options.get_bool_option("competition-mode"))
   {
     std::ostringstream out;
     out << std::endl << "Summary for function " << function_name << std::endl;
@@ -121,20 +122,58 @@ void summarizer_fwt::do_summary(const function_namet &function_name,
   template_generator.set_message_handler(get_message_handler());
   template_generator(solver.next_domain_number(),SSA,true);
 
-  cond = and_exprt(cond,
-		   and_exprt(summary.fw_precondition,
-			     ssa_inliner.get_summaries(SSA)));
+  exprt::operandst conds;
+  conds.reserve(5);
+  conds.push_back(cond);
+  conds.push_back(summary.fw_precondition);
+  conds.push_back(ssa_inliner.get_summaries(SSA));
 
-  analyzer(solver,SSA,cond,template_generator);
-  analyzer.get_result(summary.fw_transformer,template_generator.inout_vars());
-  analyzer.get_result(summary.fw_invariant,template_generator.loop_vars());
-
-  if(context_sensitive && !summary.fw_precondition.is_true())
+#ifdef REUSE_INVARIANTS
+  if(summary_db.exists(function_name)) //reuse existing invariants
   {
-    summary.fw_transformer = 
-      implies_exprt(summary.fw_precondition,summary.fw_transformer);
-    summary.fw_invariant = 
-      implies_exprt(summary.fw_precondition,summary.fw_invariant);
+    const exprt &old_inv = summary_db.get(function_name).fw_invariant;
+    exprt inv = ssa_unwinder.get(function_name).rename_invariant(old_inv);
+    conds.push_back(inv);
+
+#if 0
+    std::ostringstream out;
+    out << "(original inv)" << from_expr(SSA.ns,"",old_inv) << "\n";
+    debug() << out.str() << eom;
+    out << "(renamed inv)" << from_expr(SSA.ns,"",inv)<<"\n";
+    debug() << out.str() << eom;
+#endif
+  }
+#endif
+
+  cond = conjunction(conds);
+
+  bool assertions_check = false; //options.get_bool_option("k-induction");
+  bool assertions_hold = analyzer(solver,SSA,cond,template_generator,
+                                  assertions_check);
+  if(assertions_hold)
+  {
+    analyzer.get_result(summary.fw_transformer,template_generator.inout_vars());
+    analyzer.get_result(summary.fw_invariant,template_generator.loop_vars());
+
+#ifdef SHOW_WHOLE_RESULT
+    // to see all the custom template values
+    exprt whole_result;
+    analyzer.get_result(whole_result,template_generator.all_vars());
+    debug() << "whole result: " << from_expr(SSA.ns,"",whole_result) << eom;
+#endif
+
+    if(context_sensitive && !summary.fw_precondition.is_true())
+    {
+      summary.fw_transformer = 
+	implies_exprt(summary.fw_precondition,summary.fw_transformer);
+      summary.fw_invariant = 
+	implies_exprt(summary.fw_precondition,summary.fw_invariant);
+    }
+  }
+  else //!assertions_hold
+  {
+    nonpassed_assertions = true; 
+    summary.nonpassed_assertions = analyzer.get_nonpassed_assertions();
   }
 
   solver_instances += analyzer.get_number_of_solver_instances();
