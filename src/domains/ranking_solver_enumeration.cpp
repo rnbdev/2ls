@@ -28,12 +28,12 @@ Function: ranking_solver_enumerationt::iterate
 
 \*******************************************************************/
 
-bool ranking_solver_enumerationt::iterate(invariantt &_rank)
+ranking_solver_enumerationt::progresst ranking_solver_enumerationt::iterate(invariantt &_rank)
 {
   linrank_domaint::templ_valuet &rank=
     static_cast<linrank_domaint::templ_valuet &>(_rank);
 
-  bool improved=false;
+  progresst progress=CONVERGED;
 
   // context for "outer" solver
   solver.new_context();
@@ -151,7 +151,7 @@ bool ranking_solver_enumerationt::iterate(invariantt &_rank)
           if(linrank_domain.refine())
           {
             debug() << "refining..." << eom;
-            improved=true; // refinement possible
+            progress=CHANGED; // refinement possible
           }
           else
           {
@@ -174,5 +174,5 @@ bool ranking_solver_enumerationt::iterate(invariantt &_rank)
 
   solver.pop_context();
 
-  return improved;
+  return progress;
 }

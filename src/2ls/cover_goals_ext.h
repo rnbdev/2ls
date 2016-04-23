@@ -63,8 +63,8 @@ public:
     spurious_check(_spurious_check),
     all_properties(_all_properties),
     build_error_trace(_build_error_trace),
-    loophead_selects(_loophead_selects),
-    summarizer_bw_cex(_summarizer_bw_cex)
+    summarizer_bw_cex(_summarizer_bw_cex),
+    loophead_selects(_loophead_selects)
   {
   }
 
@@ -129,8 +129,8 @@ protected:
   incremental_solvert &solver;
   property_checkert::property_mapt &property_map;
   bool spurious_check, all_properties, build_error_trace;
-  exprt::operandst loophead_selects;
   summarizer_bw_cex_baset &summarizer_bw_cex;
+  exprt::operandst loophead_selects;
 
   // this method is called for each satisfying assignment
   virtual void assignment();

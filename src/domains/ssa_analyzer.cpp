@@ -57,7 +57,8 @@ bool ssa_analyzert::operator()(
   incremental_solvert &solver,
   local_SSAt &SSA,
   const exprt &precondition,
-  template_generator_baset &template_generator)
+  template_generator_baset &template_generator,
+  bool check_assertions)
 {
   if(SSA.goto_function.body.instructions.empty())
     return true;
@@ -139,7 +140,8 @@ bool ssa_analyzert::operator()(
     {
       result=new predabs_domaint::templ_valuet();
       strategy_solver=new strategy_solver_predabst(
-        *static_cast<predabs_domaint *>(domain), solver, SSA.ns);
+        *static_cast<predabs_domaint *>(domain), solver, 
+	assertions_check, SSA.ns);
     }
     else if(template_generator.options.get_bool_option("binsearch-solver"))
     {

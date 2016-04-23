@@ -295,10 +295,10 @@ Function: local_SSAt::find_location_by_number
 
 local_SSAt::locationt local_SSAt::find_location_by_number(unsigned location_number) const
 {
-  local_SSAt::nodest::const_iterator n_it =nodes.begin();
-  for(; n_it != nodes.end(); n_it++)
+  local_SSAt::nodest::const_iterator n_it=nodes.begin();
+  for(; n_it!=nodes.end(); n_it++)
   {
-    if(n_it->location->location_number == location_number) break;
+    if(n_it->location->location_number==location_number) break;
   }
   return n_it->location;
 }
@@ -571,9 +571,23 @@ void local_SSAt::build_function_call(locationt loc)
     for(exprt::operandst::iterator it=f.arguments().begin();
         it!=f.arguments().end(); ++it, ++i)
     {
-      symbol_exprt arg(id2string(fname)+"#"+i2string(loc->location_number)+
-                       "#arg"+i2string(i), it->type());
-      n_it->equalities.push_back(equal_exprt(*it, arg));
+      symbol_exprt arg(
+        id2string(fname)+"#"+i2string(loc->location_number)+
+	"#arg"+i2string(i),it->type());
+      const typet &argtype=ns.follow(it->type());
+      if(argtype.id()==ID_struct)
+      {
+	exprt lhs = read_rhs(arg, loc);
+	for(size_t j=0; j<lhs.operands().size(); ++j)
+        {
+	   n_it->equalities.push_back(
+             equal_exprt(lhs.operands()[j], it->operands()[j]));
+        }
+      }
+      else
+      {
+	n_it->equalities.push_back(equal_exprt(arg,*it));
+      }
       *it=arg;
     }
 

@@ -32,19 +32,18 @@ Function: lexlinrank_solver_enumerationt::iterate
 
 \*******************************************************************/
 
-bool lexlinrank_solver_enumerationt::iterate(invariantt &_rank)
+lexlinrank_solver_enumerationt::progresst lexlinrank_solver_enumerationt::iterate(invariantt &_rank)
 {
   lexlinrank_domaint::templ_valuet &rank=
     static_cast<lexlinrank_domaint::templ_valuet &>(_rank);
 
-  bool improved=false;
+  progresst progress=CONVERGED;
   static std::vector<unsigned> number_elements_per_row;
   number_elements_per_row.resize(rank.size());
 
   debug() << "(RANK) no rows=" << rank.size() << eom;
 
   solver.new_context();
-
 
   // choose round to even rounding mode for template computations
   // not clear what its implications on soundness and
@@ -190,7 +189,7 @@ bool lexlinrank_solver_enumerationt::iterate(invariantt &_rank)
             }
           }
 
-          improved=true;
+	  progress=CHANGED;
 
           // update the current template
           lexlinrank_domain.set_row_value(row, new_row_values, rank);
@@ -254,7 +253,7 @@ bool lexlinrank_solver_enumerationt::iterate(invariantt &_rank)
               debug() << "Inner solver: "
                       << "the number of inner iterations for row " << row
                       << " was reset to " << number_inner_iterations << eom;
-              improved=true;
+              progress=CHANGED;
             }
           }
         }
@@ -278,5 +277,5 @@ bool lexlinrank_solver_enumerationt::iterate(invariantt &_rank)
   }
 
   solver.pop_context();
-  return improved;
+  return progress;
 }

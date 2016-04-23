@@ -36,7 +36,7 @@ class lexlinrank_solver_enumerationt:public strategy_solver_baset
     solver_instances++;
   }
 
-  virtual bool iterate(invariantt &inv);
+  virtual progresst iterate(invariantt &inv);
 
  protected:
   lexlinrank_domaint &lexlinrank_domain;

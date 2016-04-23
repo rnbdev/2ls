@@ -251,10 +251,11 @@ void summary_checker_baset::check_properties(
   const ssa_dbt::functionst::const_iterator f_it,
   irep_idt entry_function)
 {
-  local_SSAt &SSA = *f_it->second;
+  unwindable_local_SSAt &SSA = *f_it->second;
   if(!SSA.goto_function.body.has_assertion()) return;
 
   bool all_properties = options.get_bool_option("all-properties");
+  bool build_error_trace = options.get_bool_option("show-trace");
 
   SSA.output(debug()); debug() << eom;
   
@@ -359,9 +360,9 @@ void summary_checker_baset::check_properties(
   summarizer_bw_cex->set_message_handler(get_message_handler());
 
   cover_goals_extt cover_goals(
-    solver,loophead_selects,property_map,
+    SSA,solver,loophead_selects,property_map,
     f_it->first!=entry_function || !fully_unwound,
-    all_properties,
+    all_properties,build_error_trace,
     *summarizer_bw_cex);
 
 #if 0   
