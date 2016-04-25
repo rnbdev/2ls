@@ -177,11 +177,41 @@ void cover_goals_extt::assignment()
   std::list<cover_goals_extt::cover_goalt>::const_iterator g_it=goals.begin();
   for(goal_mapt::const_iterator it=goal_map.begin();
       it!=goal_map.end(); it++, g_it++)
+  {
+    if(property_map[it->first].result==property_checkert::UNKNOWN &&
+       solver.l_get(g_it->condition).is_true())
     {
-      if(property_map[it->first].result==property_checkert::UNKNOWN &&
-	 solver.l_get(g_it->condition).is_true())
+      if(spurious_check)
+      {
+	assert((g_it->cond_expression).id() == ID_not);
+	exprt conjunct_expr = (g_it->cond_expression).op0();
+	      
+	if(conjunct_expr.id() != ID_and)
 	{
-	  if(spurious_check)
+	  solver.pop_context(); //otherwise this would interfere with necessary preconditions
+	  summarizer_bw_cex.summarize(g_it->cond_expression);
+	  property_map[it->first].result = summarizer_bw_cex.check();
+	  solver.new_context();
+	}
+	else
+	{
+	  exprt::operandst failed_exprs;
+	  for(exprt::operandst::const_iterator c_it = 
+		conjunct_expr.operands().begin();
+	      c_it != conjunct_expr.operands().end(); c_it++)
+	  {
+	    literalt conjunct_literal = solver.convert(*c_it);
+	    if(solver.l_get(conjunct_literal).is_false())
+	      failed_exprs.push_back(*c_it);
+	  }
+	  solver.pop_context(); //otherwise this would interfere with necessary preconditions
+	  for(unsigned i=0; i<failed_exprs.size(); ++i)
+	  {
+	    summarizer_bw_cex.summarize(
+	      not_exprt(failed_exprs[i]));
+	    property_map[it->first].result = summarizer_bw_cex.check();
+	    if(property_map[it->first].result == 
+	       property_checkert::FAIL)
 	    {
 	      assert((g_it->cond_expression).id()==ID_not);
 	      exprt conjunct_expr=(g_it->cond_expression).op0();
@@ -220,6 +250,13 @@ void cover_goals_extt::assignment()
 	  else
 	    property_map[it->first].result=property_checkert::FAIL;
 	}
+      }
+      else
+	property_map[it->first].result = property_checkert::FAIL;
+    }
+    if(!all_properties &&
+       property_map[it->first].result == property_checkert::FAIL) 
+      break;
     }
   
   _iterations++; //statistics

@@ -321,14 +321,15 @@ void summary_checker_baset::check_properties(
   incremental_solvert* cex_complete_solver = 
     incremental_solvert::allocate(SSA.ns,
 				  options.get_bool_option("refine"));
-  if(options.get_option("spurious-check") == "concrete")
+  if(options.get_bool_option("inline") ||
+     options.get_option("spurious-check") == "concrete")
   {
     summarizer_bw_cex = new summarizer_bw_cex_concretet(
       options,summary_db,ssa_db,
       ssa_unwinder,ssa_inliner,
       entry_function,f_it->first);
   }
-  if(options.get_option("spurious-check") == "abstract")
+  else if(options.get_option("spurious-check") == "abstract")
   {
     summarizer_bw_cex = new summarizer_bw_cex_ait(
       options,summary_db,ssa_db,
