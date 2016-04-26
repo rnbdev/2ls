@@ -265,10 +265,10 @@ void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
     c.push_back(conjunction(assert_postcond)); //with negative information would need: not_exprt
     c.push_back(conjunction(noassert_postcond)); //with negative information would need: not_exprt dis
 
-    //std::cout << "unsimplified constraints: " << from_expr(SSA.ns, "", conjunction(c)) << "\n\n\n";
+    //std::cout << "unsimplified constraints (if): " << from_expr(SSA.ns, "", conjunction(c)) << "\n\n\n";
     exprt cc = simplify_expr(conjunction(c), SSA.ns);
     //exprt cc = conjunction(c);
-    //std::cout << "simplified constraints passed: " << from_expr(SSA.ns, "", cc) << "\n\n\n";
+    //std::cout << "simplified constraints passed (if): " << from_expr(SSA.ns, "", cc) << "\n\n\n";
 
     /*
     ssa_analyzert analyzer;
@@ -277,13 +277,14 @@ void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
     analyzer.get_result(summary.error_summaries[call_site],
 			template_generator.inout_vars());
     */
-
+    /**/
     disjunctive_analyzert disjunctive_analyzer;
     disjunctive_analyzer.set_message_handler(get_message_handler());
     disjunctive_analyzer(solver,SSA,cc,template_generator,
 			 cc,summary.error_summaries[call_site],
 			 template_generator.inout_vars());
-    
+    /**/
+
 #if 0
     std::cout << "SUM: " << from_expr(SSA.ns, "", summary.error_summaries[call_site]) << std::endl;
 #endif
@@ -308,20 +309,24 @@ void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
   }
   else // TODO: yet another workaround for ssa_analyzer not being able to handle empty templates properly
   {
-    c.push_back(not_exprt(conjunction(assert_postcond)));
-    c.push_back(not_exprt(disjunction(noassert_postcond)));
+    c.push_back(conjunction(assert_postcond)); //with negative information would need: not_exprt
+    c.push_back(conjunction(noassert_postcond)); //with negative information would need: not_exprt dis
+    //c.push_back(not_exprt(conjunction(assert_postcond)));
+    //c.push_back(not_exprt(disjunction(noassert_postcond)));
 
-    //std::cout << "unsimplified constraints: " << from_expr(SSA.ns, "", conjunction(c)) << "\n\n\n";
+    //std::cout << "unsimplified constraints (else): " << from_expr(SSA.ns, "", conjunction(c)) << "\n\n\n";
     exprt cc = simplify_expr(conjunction(c), SSA.ns);
     //exprt cc = conjunction(c);
-    //std::cout << "simplified constraints passed: " << from_expr(SSA.ns, "", cc) << "\n\n\n";
+    //std::cout << "simplified constraints passed (else): " << from_expr(SSA.ns, "", cc) << "\n\n\n";
+
+    //std::cout << "enabling expressions (else): " << from_expr(SSA.ns, "", SSA.get_enabling_exprs()) << "\n\n\n";
 
     solver << SSA;
     solver.new_context();
     solver << SSA.get_enabling_exprs();
     solver << cc;
-    exprt result = false_exprt();
-    if(solver()!=decision_proceduret::D_SATISFIABLE) result = true_exprt();
+    exprt result = true_exprt();
+    if(solver()!=decision_proceduret::D_SATISFIABLE) result = false_exprt();
     solver.pop_context();
     summary.error_summaries[call_site] = result;
 
