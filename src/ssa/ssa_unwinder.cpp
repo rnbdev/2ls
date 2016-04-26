@@ -262,6 +262,45 @@ void ssa_local_unwindert::build_exit_conditions()
   }
 }
 
+/*****************************************************************************
+ *
+ *  Function : ssa_local_unwindert::unwind_loop_at_location()
+ *
+ *  Input : 
+ *
+ *  Output : 
+ *
+ *  Purpose : unwind the loop at the given location, up to k starting from
+ *            previous unwindings
+ *
+ *
+ *****************************************************************************/
+
+void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
+{
+  if(SSA.current_unwinding>=(long)k)
+    return;
+
+  current_enabling_expr=
+    symbol_exprt("unwind::"+id2string(fname)+"::enable"+i2string(k),
+                 bool_typet());
+  SSA.enabling_exprs.push_back(current_enabling_expr);
+  SSA.current_unwinding=k; //TODO: just for exploratory integration, must go away
+  //recursively unwind everything
+  SSA.current_unwindings.clear();
+  
+  loopt &loop=loops[loc];
+  
+  if(loop.is_root){
+    unwind(loop,k,false); //recursive
+    assert(SSA.current_unwindings.empty());
+  }
+
+  loop.current_unwinding=k;
+  
+  return;
+}
+
 /*******************************************************************\
 
 Function: ssa_local_unwindert::unwind
@@ -806,6 +845,26 @@ void ssa_local_unwindert::unwinder_rename(
 #ifdef DEBUG
   std::cout << "new id: " << var.get_identifier() << std::endl;
 #endif
+}
+
+/*****************************************************************************\
+ *
+ * Function : ssa_unwindert::unwind_loop_alone()
+ *
+ * Input :
+ *
+ * Output :
+ *
+ * Purpose :
+ *
+ *****************************************************************************/
+
+void ssa_unwindert::unwind_loop_alone(const irep_idt fname, unsigned loc, unsigned int k)
+{
+  assert(is_initialized);
+  unwinder_mapt::iterator it = unwinder_map.find(fname);
+  assert(it != unwinder_map.end());
+  it->second.unwind_loop_at_location(loc, k);
 }
 
 

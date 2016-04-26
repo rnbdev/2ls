@@ -42,6 +42,51 @@ property_checkert::resultt summary_checker_ait::operator()(
     ssa_unwinder.output(debug()); debug() <<eom;
   }
 
+  /*********************************************************************************/
+  /**************** code to test the loop-specific unwind function *****************/
+  /**/
+  if(unwind > 0){
+    forall_goto_functions(f_it, goto_model.goto_functions){
+      if(!f_it->second.body_available()) continue;
+      if(has_prefix(id2string(f_it->first),TEMPLATE_DECL)) continue;
+      local_SSAt &SSA = ssa_db.get(f_it->first);
+      std::cout << "==>> Output SSA for function: " << f_it->first << "\n";
+      SSA.output(std::cout);
+    }
+  }
+  else{
+    ssa_unwinder.init_localunwinders(); // possibly required;
+    
+    // iterate over the SSA to unwind loops
+    forall_goto_functions(f_it, goto_model.goto_functions){
+      
+      if(!f_it->second.body_available()) continue;
+      if(has_prefix(id2string(f_it->first),TEMPLATE_DECL)) continue;
+      
+      local_SSAt &SSA = ssa_db.get(f_it->first);
+      for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
+          n_it != SSA.nodes.end(); n_it++){
+        if(n_it->loophead!=SSA.nodes.end()){
+          std::cout << "==>> unwinding loop with location number: "
+                    << n_it->loophead->location->location_number << "\n";
+          ssa_unwinder.unwind_loop_alone(f_it->first,
+                                         n_it->loophead->location->location_number, 1);
+        }
+      }
+    }
+    
+    forall_goto_functions(f_it, goto_model.goto_functions){
+      if(!f_it->second.body_available()) continue;
+      if(has_prefix(id2string(f_it->first),TEMPLATE_DECL)) continue;
+      local_SSAt &SSA = ssa_db.get(f_it->first);
+      std::cout << "==>> Output SSA for function: " << f_it->first << "\n";
+      SSA.output(std::cout);
+    }
+    
+  }
+  /**/
+  /*********************************************************************************/
+
   irep_idt entry_function = goto_model.goto_functions.entry_point();
   if(options.get_bool_option("unit-check"))
      entry_function = "";
