@@ -342,11 +342,12 @@ void summarizer_bw_cex_concretet::do_summary(
     summary.has_assertion = assertion_flag;
     solver.pop_context();
 
-    /**/
+    /*
     // if the summary is true, print the postcondition and the list of loops in this function
     // this postcondition is modified, possibly twice, from what is returned by compute_calling_context2
     // pc = end_guard => original_pc, and
     // pc = pc && not(assertion), if this is error function
+    
     std::cout << "==>>\n";
     std::cout << "==>> Summary: true\n";
     std::cout << "==>> Postcondition: " << from_expr(SSA.ns, "", postcondition) << "\n";
@@ -359,7 +360,7 @@ void summarizer_bw_cex_concretet::do_summary(
       }
     }
     std::cout << "==>>\n";
-    /**/
+    */
     return;
   }
  
