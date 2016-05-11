@@ -51,6 +51,7 @@ void extend_expr_types(exprt &expr)
   }
   if(expr.id()==ID_constant ||
      expr.id()==ID_symbol ||
+     expr.id()==ID_nondet_symbol ||
      expr.id()==ID_index)
     return;
   if(expr.id()==ID_unary_minus)
@@ -241,7 +242,7 @@ mp_integer simplify_const_int(const exprt &expr)
     assert(d!=0);
     return simplify_const_int(expr.op0())/d;
   }
-  if(expr.id()==ID_symbol)
+  if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol) 
   {
 #if 0
     std::cerr << "substituting default value for " << expr << std::endl;
@@ -332,7 +333,7 @@ ieee_floatt simplify_const_float(const exprt &expr)
     v1/=v2;
     return v1;
   }
-  if(expr.id()==ID_symbol)  // default value if not substituted in expr
+  if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol)  //default value if not substituted in expr
   {
     ieee_floatt v;
     v.make_zero();

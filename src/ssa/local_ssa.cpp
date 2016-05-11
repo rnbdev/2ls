@@ -136,7 +136,7 @@ Function: local_SSAt::get_nondet_vars
 
 void local_SSAt::get_nondet_vars(const exprt &expr)
 {
-  if(expr.id()==ID_nondet)
+  if(expr.id()==ID_nondet_symbol)
     nondets.insert(expr);
   else
     forall_operands(it, expr)

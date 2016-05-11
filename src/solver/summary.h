@@ -24,6 +24,7 @@ class summaryt
 
   typedef std::list<symbol_exprt> var_listt;
   typedef std::set<symbol_exprt> var_sett;
+  typedef std::set<exprt> expr_sett;
 
   summaryt() :
     fw_precondition(nil_exprt()),
@@ -39,7 +40,7 @@ class summaryt
 
   var_listt params;
   var_sett globals_in, globals_out;
-
+  expr_sett nondets;
   predicatet fw_precondition; // accumulated calling contexts (over-approx)
   //  predicatet fw_postcondition; // we are not projecting that out currently
   predicatet fw_transformer; // forward summary (over-approx)

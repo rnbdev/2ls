@@ -130,6 +130,7 @@ void summarizer_bw_cex_concretet::compute_summary_rec(
     summary.params = SSA.params;
     summary.globals_in = SSA.globals_in;
     summary.globals_out = SSA.globals_out;
+    summary.nondets = SSA.nondets;
   }
 
     // insert assertion
@@ -226,6 +227,8 @@ void summarizer_bw_cex_concretet::do_summary(
   bool assertion_flag;
   assertion_flag = ssa_inliner.get_summaries(SSA,call_site,false,assert_postcond,noassert_postcond,c); //backward summaries
   assert_postcond.push_back(postcondition);  //context
+
+  //TODO: add nondet variables from callees to summary.nondets
 
   //std::cout << "Assert Summary: " << from_expr(SSA.ns, "", conjunction(assert_postcond)) << "\n\n";
   //std::cout << "Noassert Summary: " << from_expr(SSA.ns, "", conjunction(noassert_postcond)) << "\n\n";
@@ -383,6 +386,13 @@ void summarizer_bw_cex_concretet::do_summary(
 
   for(local_SSAt::var_sett::const_iterator it = SSA.globals_out.begin();
       it != SSA.globals_out.end(); it++){
+    exprt summ_value = solver.get(*it);
+    if(!summ_value.is_nil())
+      var_values.push_back(equal_exprt(*it, summ_value));
+  }
+
+  for(std::set<exprt>::const_iterator it = summary.nondets.begin();
+      it != summary.nondets.end(); it++){
     exprt summ_value = solver.get(*it);
     if(!summ_value.is_nil())
       var_values.push_back(equal_exprt(*it, summ_value));

@@ -137,6 +137,7 @@ void summarizer_bw_cex_ait::compute_summary_rec(
     summary.params = SSA.params;
     summary.globals_in = SSA.globals_in;
     summary.globals_out = SSA.globals_out;
+    summary.nondets = SSA.nondets;
   }
 
     // insert assertion
@@ -238,6 +239,7 @@ void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
 
   assert_postcond.push_back(postcondition);  //context
 
+  //TODO: add nondet variables from callees to summary.nondets
 
   // assumptions must hold
   for(local_SSAt::nodest::const_iterator 
