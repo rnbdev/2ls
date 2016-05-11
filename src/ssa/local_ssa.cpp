@@ -117,7 +117,57 @@ void local_SSAt::get_entry_exit_vars()
   goto_programt::const_targett
     last=goto_function.body.instructions.end(); last--;
   get_globals(last, globals_out, true, true, last->function);
+
+  //get nondeterministic variables
+  get_nondet_vars();
 }
+
+/*******************************************************************\
+
+Function: local_SSAt::get_nondet_vars
+
+  Inputs:
+
+ Outputs:
+
+ Purpose:
+
+\*******************************************************************/
+
+void local_SSAt::get_nondet_vars(const exprt &expr)
+{
+  if(expr.id()==ID_nondet)
+    nondets.insert(expr);
+  else
+    forall_operands(it, expr)
+      get_nondet_vars(*it);
+}
+
+void local_SSAt::get_nondet_vars()
+{
+  for(nodest::iterator n_it=nodes.begin(); 
+      n_it!=nodes.end(); n_it++)
+  {
+    for(nodet::equalitiest::const_iterator
+	  e_it=n_it->equalities.begin();
+	e_it!=n_it->equalities.end();
+	e_it++)
+      get_nondet_vars(*e_it);
+
+    for(nodet::constraintst::const_iterator
+	  c_it=n_it->constraints.begin();
+	c_it!=n_it->constraints.end();
+	c_it++)
+      get_nondet_vars(*c_it);
+
+    for(nodet::assertionst::const_iterator
+	  a_it=n_it->assertions.begin();
+	a_it!=n_it->assertions.end();
+	a_it++)
+      get_nondet_vars(*a_it);
+  }
+}
+
 
 /*******************************************************************\
 

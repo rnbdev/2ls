@@ -128,6 +128,7 @@ public:
   typedef std::set<symbol_exprt> var_sett;
   var_listt params;
   var_sett globals_in, globals_out;
+  std::set<exprt> nondets;  
 
   bool has_function_calls() const;
 
@@ -222,6 +223,9 @@ protected:
   void collect_custom_templates();
   replace_mapt template_newvars;
   exprt template_last_newvar;
+
+  void get_nondet_vars(const exprt &expr);
+  void get_nondet_vars();
 };
 
 std::vector<exprt> & operator <<
