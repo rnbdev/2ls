@@ -75,6 +75,9 @@ public:
     bool is_dowhile;
     bool is_root;
     long current_unwinding;
+
+    // to have an enabling_expr and current_unwindings (odometert)
+
     typedef std::map<exprt, exprt::operandst> exit_mapt;
     exit_mapt exit_map;
     std::map<symbol_exprt, symbol_exprt> pre_post_map;
@@ -142,12 +145,12 @@ public:
   void unwind(const irep_idt fname, unsigned k);
   void unwind_all(unsigned k);
 
-  inline ssa_local_unwindert &get(const irep_idt& fname)
+  ssa_local_unwindert &get(const irep_idt& fname)
   {
     return unwinder_map.at(fname);
   }
 
-  inline const ssa_local_unwindert &get(const irep_idt& fname) const
+  const ssa_local_unwindert &get(const irep_idt& fname) const
   {
     return unwinder_map.at(fname);
   }
