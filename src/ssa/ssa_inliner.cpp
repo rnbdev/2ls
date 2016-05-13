@@ -2,7 +2,7 @@
 
 Module: SSA Inliner
 
-Author: Peter Schrammel
+Author: Peter Schrammel, Madhukar Kumar
 
 \*******************************************************************/
 
@@ -80,21 +80,14 @@ void ssa_inlinert::get_bindings(
   std::cout << std::endl;
 #endif
 
-  // equalities for arguments
-  // bindings_in.push_back(get_replace_params(SSA.params, *f_it));
-  get_replace_params(SSA,fSSA.params, n_it, *f_it,bindings_in,counter);
+  //equalities for arguments
+  get_replace_params(SSA,fSSA.params,n_it,*f_it,bindings_in,counter);
 
-  // equalities for globals_in
-  // bindings_in.push_back(get_replace_globals_in(SSA.globals_in, cs_globals_in));
+  //equalities for globals_in
+  get_replace_globals_in(fSSA.globals_in,*f_it,cs_globals_in,bindings_in,counter);
 
-  // get_replace_globals_in(fSSA.globals_in, cs_globals_in, bindings_in, counter);
-  get_replace_globals_in(fSSA.globals_in, *f_it, cs_globals_in, bindings_in, counter);
-
-  // equalities for globals out (including unmodified globals)
-  // bindings_out.push_back(get_replace_globals_out(SSA.globals_out, cs_globals_in, cs_globals_out));
-
-  // get_replace_globals_out(fSSA.globals_out, cs_globals_in, cs_globals_out, bindings_out, counter);
-  get_replace_globals_out(fSSA.globals_out, *f_it, cs_globals_in, cs_globals_out, bindings_out, counter);
+  //equalities for globals out (including unmodified globals)
+  get_replace_globals_out(fSSA.globals_out,*f_it,cs_globals_in,cs_globals_out,bindings_out,counter);
 
 }
 
@@ -613,8 +606,6 @@ void ssa_inlinert::get_replace_params(
   exprt::operandst &c,
   int counter)
 {
-  //std::string suffix = id2string(funapp_expr.get(ID_suffix));
-
   //equalities for arguments
   local_SSAt::var_listt::const_iterator p_it = params.begin();
   for(exprt::operandst::const_iterator it = funapp_expr.arguments().begin();
@@ -660,9 +651,6 @@ void ssa_inlinert::get_replace_params(
 	exprt lhs = *p_it; //copy
 	rename(lhs,counter);
         c.push_back(equal_exprt(lhs,*it));
-        //symbol_exprt sexpr = to_symbol_expr(*it);
-        //sexpr.set_identifier(id2string(sexpr.get_identifier())+suffix);
-        //c.push_back(equal_exprt(lhs,sexpr));
       }
     }
 }
