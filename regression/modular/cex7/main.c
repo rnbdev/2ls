@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 
   while(y<30){
     y++;
-    assert(y<5);
+    assert(y<3);
   }
 
   return 0;
