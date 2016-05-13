@@ -121,19 +121,11 @@ void ssa_inlinert::get_summary(
   int counter,
   bool error_summ)
 {
-  // getting globals at call site
-  local_SSAt::var_sett cs_globals_in, cs_globals_out;
-  goto_programt::const_targett loc=n_it->location;
-  if(forward)
-  {
-    SSA.get_globals(loc, cs_globals_in);
-    SSA.get_globals(loc, cs_globals_out, false);
-  }
-  else
-  {
-    SSA.get_globals(loc, cs_globals_out);
-    SSA.get_globals(loc, cs_globals_in, false);
-  }
+  //getting globals at call site
+  local_SSAt::var_sett cs_globals_in, cs_globals_out; 
+  goto_programt::const_targett loc = n_it->location;
+ SSA.get_globals(loc,cs_globals_in);
+  SSA.get_globals(loc,cs_globals_out,false);
 
 #if 0
   std::cout << "cs_globals_in: ";
@@ -153,16 +145,7 @@ void ssa_inlinert::get_summary(
   get_replace_params(SSA,summary.params, n_it, *f_it, bindings, counter);
 
   //equalities for globals_in
-  if(forward)
-  {
-    //get_replace_globals_in(summary.globals_in, cs_globals_in, bindings, counter);
-    get_replace_globals_in(summary.globals_in, *f_it, cs_globals_in, bindings, counter);
-  }
-  else
-  {
-    //get_replace_globals_in(summary.globals_out, cs_globals_out, bindings, counter);
-    get_replace_globals_in(summary.globals_out, *f_it, cs_globals_out, bindings, counter);
-  }
+  get_replace_globals_in(summary.globals_in,*f_it,cs_globals_in,bindings,counter);
 
   // constraints for transformer
 
@@ -195,14 +178,7 @@ void ssa_inlinert::get_summary(
 				    transformer));
   
   //equalities for globals out (including unmodified globals)
-  if(forward){
-    //get_replace_globals_out(summary.globals_out,cs_globals_in,cs_globals_out,bindings,counter);
     get_replace_globals_out(summary.globals_out,*f_it,cs_globals_in,cs_globals_out,bindings,counter);
-  }
-  else{
-    //get_replace_globals_out(summary.globals_in,cs_globals_out,cs_globals_in,bindings,counter);
-    get_replace_globals_out(summary.globals_in,*f_it,cs_globals_out,cs_globals_in,bindings,counter);
-  }
 }
 
 /*******************************************************************\
@@ -735,7 +711,7 @@ void ssa_inlinert::get_replace_globals_out(
   int counter)
 {
   std::string suffix = id2string(funapp_expr.get(ID_suffix));
-  
+
   //equalities for globals_out
   for(summaryt::var_sett::const_iterator it = cs_globals_out.begin();
       it != cs_globals_out.end(); it++)
@@ -747,7 +723,8 @@ void ssa_inlinert::get_replace_globals_out(
       symbol_exprt rhs;
       if(find_corresponding_symbol(*it,globals_out,rhs))
 	rename(rhs,counter);
-      else{
+      else
+      {
 	bool found = find_corresponding_symbol(*it,cs_globals_in,rhs);
 	assert(found);
 	rhs.set_identifier(id2string(rhs.get_identifier())+suffix);

@@ -198,22 +198,24 @@ void local_SSAt::get_globals(
                 << from_expr(ns, "", read_lhs(it->get_expr(), loc))
                 << std::endl;
 #endif
-      if(!with_returns &&
-         id2string(it->get_identifier()).find(
-           "#return_value")!=std::string::npos)
-        continue;
+      bool is_return=id2string(it->get_identifier()).find(
+	"#return_value")!=std::string::npos;
+      if(!with_returns && is_return) 
+	continue;
 
       // filter out return values of other functions
       if(with_returns && returns_for_function!="" &&
-         id2string(it->get_identifier()).find(
-           "#return_value")!=std::string::npos &&
+         is_return &&
          id2string(it->get_identifier()).find(
            id2string(returns_for_function)+"#return_value")==std::string::npos)
         continue;
 
       if(rhs_value)
       {
-        const exprt &expr=read_rhs(it->get_expr(), loc);
+        //workaround for the problem that 
+        //  rhs() for a return value is always the "input" return value
+	const exprt &expr=is_return ? 
+          read_lhs(it->get_expr(),--loc) : read_rhs(it->get_expr(),loc);
         globals.insert(to_symbol_expr(expr));
       }
       else
