@@ -288,15 +288,25 @@ void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
   SSA.current_unwinding=k; //TODO: just for exploratory integration, must go away
   //recursively unwind everything
   SSA.current_unwindings.clear();
-  
-  loopt &loop=loops[loc];
-  
-  if(loop.is_root){
-    unwind(loop,k,false); //recursive
+
+  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it){
+    if(!it->second.is_root)
+      continue;
+
+    if(it->first == loc)
+      unwind(it->second,k,false); //recursive
+    else
+      unwind(it->second,it->second.current_unwinding,false); //recursive
+    
     assert(SSA.current_unwindings.empty());
   }
-
-  loop.current_unwinding=k;
+  
+  //update current unwinding
+  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it)
+  {
+    if(it->first == loc)
+      it->second.current_unwinding=k;
+  }
   
   return;
 }
