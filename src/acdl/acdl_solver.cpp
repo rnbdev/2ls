@@ -11,7 +11,7 @@ Author: Rajdeep Mukherjee, Peter Schrammel
 #include <util/find_symbols.h>
 #include "acdl_solver.h"
 #include "acdl_domain.h"
-#include "acdl_worklist_ordered.h"
+//#include "acdl_worklist_ordered.h"
 #include <string>
 
 #define DEBUG
@@ -59,9 +59,27 @@ property_checkert::resultt acdl_solvert::propagate(const local_SSAt &SSA)
 
     // compute update of abstract value
     acdl_domaint::valuet v;
+    acdl_domaint::valuet v1;
     acdl_domaint::deductionst deductions;
      
     implication_graph.to_value(v);
+    // Do we need to normalize value here since 
+    // this will remove all old decisions that are 
+    // still stored in the implication graph. These 
+    // old decisions can still contribute towards the 
+    // future deductions called in domain operator() below
+    //domain.normalize_val(v);
+
+    // check if domain.normalize_val is correct
+    /*domain.normalize_val(v1);
+    // check if (v != v1) is UNSAT
+    std::unique_ptr<incremental_solvert> solver(
+      incremental_solvert::allocate(SSA.ns,true));
+    not_equal_exprt eqexp(v,v1);
+    *solver << eqexp;
+    decision_proceduret::resultt result = (*solver)();
+    assert(result == decision_proceduret::D_UNSATISFIABLE);
+    */
 
 #ifdef DEBUG
     std::cout << "Computing old abstract value of implication graph: " << std::endl;
@@ -165,6 +183,7 @@ acdl_solvert::decide (const local_SSAt &SSA)
 {
   acdl_domaint::valuet v;
   implication_graph.to_value(v);
+  domain.normalize_val(v);
   acdl_domaint::meet_irreduciblet dec_expr=decision_heuristics(SSA, v);
   // no new decisions can be made
   if(dec_expr == false_exprt())
@@ -204,8 +223,12 @@ acdl_solvert::decide (const local_SSAt &SSA)
   
   // Take a meet of the decision expression (decision) with the current abstract state (v).
   // The new abstract state is now in v
-  domain.meet(dec_expr,v);
 #ifdef DEBUG
+    std::cout << "FINAL DECISION: " << from_expr (SSA.ns, "", dec_expr) << std::endl;
+    domain.meet(dec_expr,v);
+    std::cout << "Before normalize: " << std::endl;
+    domain.output(std::cout, v) << std::endl;
+    domain.normalize_val(v);
     std::cout << "New: ";
     domain.output(std::cout, v) << std::endl;
 #endif
@@ -251,6 +274,7 @@ acdl_solvert::analyze_conflict(const local_SSAt &SSA)
 
     acdl_domaint::valuet v;
     implication_graph.to_value(v);
+    domain.normalize_val(v);
     exprt dec_expr = implication_graph.dec_trail.back();
 
     //exprt dec_expr = cond_dec_heuristic.dec_trail.back();
@@ -411,16 +435,37 @@ property_checkert::resultt acdl_solvert::operator()(const local_SSAt &SSA)
   worklist.initialize(SSA);
   // call initialize live variables
   worklist.initialize_live_variables();
+  std::set<exprt> decision_variable;
   // initialize the decision variables
-  //decision_heuristics.decision_variables.insert(worklist.worklist_vars.begin(), worklist.worklist_vars.end());
+  // Note that the decision variable contains
+  // variables only in the slicing, that is, 
+  // related to the property
+  decision_variable.insert(worklist.worklist_vars.begin(), worklist.worklist_vars.end());
+
+  // do not insert guard and phi 
+  // variables in the decision variables
+  std::string str1("guard");
+  std::string str2("#phi");
+  std::string name;
+  for(std::set<exprt>::const_iterator 
+    it = decision_variable.begin(); 
+    it != decision_variable.end(); ++it)
+  {
+    const irep_idt &identifier = it->get(ID_identifier);
+    name = id2string(identifier);
+    std::size_t found1 = name.find(str1);
+    std::size_t found2 = name.find(str2);
+    if (found1==std::string::npos && found2==std::string::npos) {
+      decision_heuristics.decision_variables.insert(*it);
+    }
+  } 
    
-   decision_heuristics.decision_variables.insert(worklist.live_variables.begin(), worklist.live_variables.end());
 #ifdef DEBUG
   std::cout << "Printing all decision variables inside solver" << std::endl;
   for(std::set<exprt>::const_iterator 
     it = decision_heuristics.decision_variables.begin(); 
     it != decision_heuristics.decision_variables.end(); ++it)
-      std::cout << *it << "," << std::endl;
+      std::cout << from_expr(SSA.ns, "", *it) << "  ," << std::endl;
 #endif
   // collect variables for completeness check
   std::set<symbol_exprt> all_vars;
@@ -442,6 +487,7 @@ property_checkert::resultt acdl_solvert::operator()(const local_SSAt &SSA)
   implication_graph.clear(); //set to top
   acdl_domaint::valuet v;
   implication_graph.to_value(v);
+  domain.normalize_val(v);
   // check if abstract value v of the 
   // implication graph is top for the first time 
   // because ACDL starts with TOP
@@ -469,6 +515,7 @@ property_checkert::resultt acdl_solvert::operator()(const local_SSAt &SSA)
       // check for satisfying assignment
       acdl_domaint::valuet v;
       implication_graph.to_value(v);
+      domain.normalize_val(v);
       if(domain.is_complete(v, all_vars))
         return property_checkert::FAIL;
       

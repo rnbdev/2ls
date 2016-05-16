@@ -7,6 +7,7 @@ Author: Rajdeep Mukherjee, Peter Schrammel
 \*******************************************************************/
 
 #include "acdl_implication_graph.h"
+#include "acdl_graph_dominator.h"
 
 /*******************************************************************\
 
@@ -75,7 +76,12 @@ void acdl_implication_grapht::add_deductions
        add_edge(nb, na);
      }
     }
-    else continue;
+    else { 
+      // only update the decision level of the consequent node
+      // with the decision level of the current decision
+      nodes[na].level = current_level;
+      continue;
+    }
   } 
 }
 
@@ -105,6 +111,44 @@ void acdl_implication_grapht::add_decision
   dec_trail.push_back(m_ir);
 }
  
+/*******************************************************************\
+
+ Function: acdl_implication_grapht::mark_node()
+
+  Inputs:
+
+  Outputs:
+
+ Purpose: mark nodes of the implication graph starting from 
+          the current decision node to the BOTTOM node using 
+          forward reachability
+
+ \*******************************************************************/
+void acdl_implication_grapht::mark_node(node_indext start)
+{
+  nodet &node=nodes[start];
+  unsigned size = node.out.size();
+  // base case
+  if(size == 0) {
+   if(node.expr == false_exprt()) {
+     assert(node.level == current_level);
+     assert(node.deleted == false); 
+     node.marked = true;
+   }
+  }
+  else {
+   for(typename edgest::const_iterator
+      it=node.out.begin();
+      it!=node.out.end();
+      it++) {
+    if(nodes[it->first].level == current_level 
+             && (!nodes[it->first].deleted)) {
+      mark_node(it->first);
+      nodes[it->first].marked = true;
+    }
+   }
+  }
+}
 
 /*******************************************************************\
 
@@ -119,7 +163,44 @@ Function: acdl_implication_grapht::first_uip
  \*******************************************************************/
 void acdl_implication_grapht::first_uip(nodest &cut)
 {
+  acdl_domaint::meet_irreduciblet dec_expr =  dec_trail.back();
+  node_indext na = find_node(dec_expr);
+  assert(na != -1);
+  int nb = find_node(false_exprt());
+  assert(nb != -1);
+  const nodet &node=nodes[na];
+  assert(node.in.size() == 0);
+  assert(node.is_decision == true);
+  assert(node.level == current_level);
+  //entry_node start;
+  graph::node_indext entry_node=na;
+  // call mark node
+  mark_node(na);  
+  acdl_graph_dominatort dominator;
+  dominator(*this, na);
+  
+  int size = dominator.dominators.size();
+  // print the dominator
+  dominator.output(std::cout); 
+
+  
+  // find the dominator that is the smallest and 
+  // contains the false_node
+  for(acdl_graph_dominatort::dominatorst::const_iterator it = dominator.dominators.begin();
+      it != dominator.dominators.end(); ++it)
+  {
+    for(acdl_graph_dominatort::target_sett::const_iterator d_it = it->second.begin();
+        d_it!=it->second.end();)
+    {
+      std::cout << *d_it;
+      if (++d_it!=it->second.end()) 
+        std::cout << ", ";
+    }
+    std::cout << "\n";
+  }
    
+  // create a conflict clause
+  //std::cout << "The first UIP is " << dominator.dominators[size]->first std::endl;  
   assert(false);
 }
 
@@ -404,3 +485,4 @@ void acdl_implication_grapht::delete_graph_nodes()
     }
   }
 }
+
