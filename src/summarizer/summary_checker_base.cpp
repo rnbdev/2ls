@@ -321,6 +321,9 @@ void summary_checker_baset::check_properties(
   incremental_solvert* cex_complete_solver = 
     incremental_solvert::allocate(SSA.ns,
 				  options.get_bool_option("refine"));
+#if 1
+  cex_complete_solver->set_message_handler(get_message_handler());
+#endif
   if(options.get_bool_option("inline") ||
      options.get_option("spurious-check") == "concrete")
   {

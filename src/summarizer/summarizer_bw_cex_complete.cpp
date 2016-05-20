@@ -26,6 +26,8 @@ Author: Peter Schrammel
 
 #include "summarizer_bw_cex_complete.h"
 
+#define SHOW_UNSAT_CORE
+
 /*******************************************************************\
 
 Function: summarizer_bw_cex_completet::summarize()
@@ -494,6 +496,19 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
     //std::cout << "Solver <-- renamed info ~ SAT\n"; 
     return property_checkert::FAIL;
   }
+#ifdef SHOW_UNSAT_CORE
+  else
+  {
+    for(unsigned i=0; i<solver.formula.size(); i++) 
+    {
+      if(solver.solver->is_in_conflict(solver.formula[i]))
+        debug() << "is_in_conflict: " << solver.formula[i] << eom;
+      else
+        debug() << "not_in_conflict: " << solver.formula[i] << eom;
+     }
+  }
+#endif    
+
   //std::cout << "Solver <-- renamed info ~ UNSAT\n"; 
   return property_checkert::UNKNOWN;
 }

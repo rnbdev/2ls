@@ -138,7 +138,7 @@ void summarizer_bw_cex_concretet::compute_summary_rec(
   exprt postcondition = implies_exprt(end_guard,_postcondition);
   if(function_name == error_function)
   {
-    postcondition = not_exprt(error_assertion); //and_exprt(postcondition,not_exprt(error_assertion));
+    postcondition = and_exprt(postcondition,not_exprt(error_assertion));
   }
     
   summary.bw_postcondition = _postcondition;
@@ -327,8 +327,8 @@ void summarizer_bw_cex_concretet::do_summary(
 #endif
 
 #ifdef OPT_12
-#ifdef DEBUG
-  std::cout << "\n\n\n pushing to the solver in do_summary:" << from_expr(SSA.ns, "", simplify_expr(conjunction(store), SSA.ns)) << "\n\n\n";
+#if 1
+  std::cout << "\n\n\n pushing to the solver in do_summary:" << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
 #endif
   solver << simplify_expr(conjunction(store), SSA.ns);
 #endif
@@ -560,7 +560,7 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
 #endif
     
 #ifdef OPT_12
-#ifdef DEBUG
+#if 1
   std::cout << "\n\n\n pushing to the solver in compute_calling_context2:" << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
 #endif
   solver << simplify_expr(conjunction(store), SSA.ns);
