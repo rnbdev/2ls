@@ -1836,6 +1836,7 @@ Function: local_SSAt::has_function_calls
 
 bool local_SSAt::has_function_calls() const
 {
+  /*
   bool found=false;
   for(local_SSAt::nodest::const_iterator n_it=nodes.begin();
       n_it!=nodes.end(); n_it++)
@@ -1847,4 +1848,7 @@ bool local_SSAt::has_function_calls() const
     }
   }
   return found;
+  */
+
+  return combined_enabling_expr;
 }

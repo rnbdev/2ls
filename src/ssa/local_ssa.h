@@ -121,6 +121,8 @@ public:
 
   // for incremental unwinding
   std::list<symbol_exprt> enabling_exprs;
+
+  exprt combined_enabling_expr; // combined enabling expr for loop-specific unwindings
   exprt get_enabling_exprs() const;
 
   // function entry and exit variables
