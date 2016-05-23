@@ -45,6 +45,45 @@ Author: Peter Schrammel
 #include "summarizer_fw_contexts.h"
 #endif
 
+
+/*******************************************************************\
+
+Function: summary_checker_baset::SSA_dependency_graphs
+
+  Inputs:
+
+ Outputs:
+
+ Purpose:
+
+\*******************************************************************/
+
+void summary_checker_baset::SSA_dependency_graphs(
+  const goto_modelt &goto_model,  
+  const namespacet &ns)
+{
+  // compute dependency graph for all the functions
+  forall_goto_functions(f_it, goto_model.goto_functions)
+  {
+    if(!f_it->second.body_available()) continue;
+    if(has_prefix(id2string(f_it->first),TEMPLATE_DECL)) continue;
+	  
+    status() << "Computing dependency graph of " << f_it->first << messaget::eom;
+	  
+    //ssa_db.depgraph_create(f_it->first, ns, ssa_inliner);
+	  
+    if(entry_function == f_it->first)
+      ssa_db.depgraph_create(f_it->first, ns, ssa_inliner, true);
+    else
+      ssa_db.depgraph_create(f_it->first, ns, ssa_inliner, false); // change to true if all functions are to be treated equal
+	  
+    ssa_dependency_grapht &ssa_depgraph = ssa_db.get_depgraph(f_it->first);
+    ssa_depgraph.output(debug()); debug() << eom;
+    std::cout << "output SSA for function: " << f_it->first << "\n";
+    ssa_db.get(f_it->first).output_verbose(std::cout);
+  }
+}
+
 /*******************************************************************\
 
 Function: summary_checker_baset::SSA_functions

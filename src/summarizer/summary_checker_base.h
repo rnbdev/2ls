@@ -72,6 +72,7 @@ protected:
     const local_SSAt::nodet::assertionst::const_iterator &);
 
   void SSA_functions(const goto_modelt &, const namespacet &ns);
+  void SSA_dependency_graphs(const goto_modelt &, const namespacet &ns);
 
   void summarize(const goto_modelt &, 
 		 bool forward=true, bool termination=false);

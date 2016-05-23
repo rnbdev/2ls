@@ -44,6 +44,16 @@ property_checkert::resultt summary_checker_kindt::operator()(
     status() << "Unwinding (k=" << unwind << ")" << eom;
     summary_db.mark_recompute_all(); //TODO: recompute only functions with loops
     ssa_unwinder.unwind_all(unwind+1);
+
+    //dependency graphs
+    if(!(options.get_bool_option("inline")))
+    {
+      if((options.get_option("spurious-check")!="concrete") &&
+	 (options.get_option("spurious-check")!="abstract"))
+      {
+	SSA_dependency_graphs(goto_model, ns);
+      }
+    }
     
     std::set<irep_idt> seen_function_calls;
     result =  check_properties(entry_function, entry_function, seen_function_calls); 
