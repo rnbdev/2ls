@@ -837,10 +837,9 @@ Function: ssa_inlinert::rename
 
 void ssa_inlinert::rename(exprt &expr, int counter) 
 {
-  if(expr.id()==ID_symbol) 
+  if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol) 
     {
-      symbol_exprt &sexpr = to_symbol_expr(expr);
-      std::string id_str = id2string(sexpr.get_identifier());
+      std::string id_str = id2string(expr.get(ID_identifier));
       irep_idt id;
 
       if(id_str.find('@') != std::string::npos)
@@ -848,7 +847,7 @@ void ssa_inlinert::rename(exprt &expr, int counter)
       else
 	id = id_str+"@"+i2string(counter);
       
-      sexpr.set_identifier(id);
+      expr.set(ID_identifier,id);
     }
   for(exprt::operandst::iterator it = expr.operands().begin();
       it != expr.operands().end(); it++)
