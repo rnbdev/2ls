@@ -239,7 +239,13 @@ void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
 
   assert_postcond.push_back(postcondition);  //context
 
-  //TODO: add nondet variables from callees to summary.nondets
+  //add nondet variables from callees to summary.nondets
+  std::set<exprt> summary_vars;
+  find_symbols(conjunction(assert_postcond),summary_vars);
+  for(std::set<exprt>::const_iterator it = summary_vars.begin();
+      it != summary_vars.end(); ++it)
+    if(it->id()==ID_nondet_symbol)
+      summary.nondets.insert(*it);
 
   // assumptions must hold
   for(local_SSAt::nodest::const_iterator 

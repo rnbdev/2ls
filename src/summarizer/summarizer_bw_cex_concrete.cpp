@@ -229,7 +229,13 @@ void summarizer_bw_cex_concretet::do_summary(
   assertion_flag = ssa_inliner.get_summaries(SSA,call_site,false,assert_postcond,noassert_postcond,c); //backward summaries
   assert_postcond.push_back(postcondition);  //context
 
-  //TODO: add nondet variables from callees to summary.nondets
+  //add nondet variables from callees to summary.nondets
+  std::set<exprt> summary_vars;
+  find_symbols(conjunction(assert_postcond),summary_vars);
+  for(std::set<exprt>::const_iterator it = summary_vars.begin();
+      it != summary_vars.end(); ++it)
+    if(it->id()==ID_nondet_symbol)
+      summary.nondets.insert(*it);
 
 #ifdef DEBUG
   std::cout << "Assert Summary: " << from_expr(SSA.ns, "", conjunction(assert_postcond)) << "\n\n";
