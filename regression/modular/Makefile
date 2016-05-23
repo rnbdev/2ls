@@ -1,6 +1,6 @@
 default: tests.log
 
-FLAGS = --verbosity 10 --spurious-check concrete
+FLAGS = --verbosity 10 --spurious-check complete
 
 test:
 	@../test.pl -c "../../../src/summarizer/2ls $(FLAGS)"
