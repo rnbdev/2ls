@@ -357,24 +357,26 @@ void summarizer_bw_cex_concretet::do_summary(
     solver.pop_context();
 #endif
 
-    // if the summary is true, print the postcondition and the list of loops in this function
-    // this postcondition is modified, possibly twice, from what is returned by compute_calling_context2
-    // pc = end_guard => original_pc, and
-    // pc = pc && not(assertion), if this is error function
-#ifdef DEBUG
-    std::cout << "==>>\n";
-    std::cout << "==>> Summary: true\n";
-    std::cout << "==>> Postcondition: " << from_expr(SSA.ns, "", postcondition) << "\n";
-    std::cout << "==>> Function: " << function_name << "\n";
-    std::cout << "==>> Loophead selects: " << from_expr(SSA.ns, "", conjunction(loophead_selects)) << "\n";
-    for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
-	n_it != SSA.nodes.end(); n_it++){
-      if(n_it->loophead!=SSA.nodes.end()){
-	std::cout << "==>> Loop found: " << n_it->loophead->location->location_number << "\n";
-      }
-    }
-    std::cout << "==>>\n";
-#endif
+(??)#ifdef DEBUG
+(??)    /*
+(??)    // if the summary is true, print the postcondition and the list of loops in this function
+(??)    // this postcondition is modified, possibly twice, from what is returned by compute_calling_context2
+(??)    // pc = end_guard => original_pc, and
+(??)    // pc = pc && not(assertion), if this is error function
+(??)    std::cout << "==>>\n";
+(??)    std::cout << "==>> Summary: true\n";
+(??)    std::cout << "==>> Postcondition: " << from_expr(SSA.ns, "", postcondition) << "\n";
+(??)    std::cout << "==>> Function: " << function_name << "\n";
+(??)    std::cout << "==>> Loophead selects: " << from_expr(SSA.ns, "", conjunction(loophead_selects)) << "\n";
+(??)    for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
+(??)	n_it != SSA.nodes.end(); n_it++){
+(??)      if(n_it->loophead!=SSA.nodes.end()){
+(??)	std::cout << "==>> Loop found: " << n_it->loophead->location->location_number << "\n";
+(??)      }
+(??)    }
+(??)    std::cout << "==>>\n";
+(??)    */
+(??)#endif
     return;
   }
  

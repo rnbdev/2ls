@@ -19,6 +19,9 @@ Author: Daniel Kroening, kroening@kroening.com
 #include <util/decision_procedure.h>
 #include <util/byte_operators.h>
 
+#include <util/simplify_expr.h>
+
+
 #include <goto-symex/adjust_float_expressions.h>
 
 #include "local_ssa.h"
@@ -1849,6 +1852,14 @@ bool local_SSAt::has_function_calls() const
   }
   return found;
   */
-
-  return combined_enabling_expr;
+  
+  
+  if(combined_enabling_expr.is_not_nil()){
+    std::cout << "combined enabling expr:" << from_expr(ns, "", combined_enabling_expr) << "\n";
+    return combined_enabling_expr;
+  }
+  else{
+    std::cout << "combined enabling expr is nil; returning true\n";
+    return true_exprt();
+  }
 }
