@@ -22,16 +22,24 @@ Author: Kumar Madhukar, Peter Schrammel
 class summarizer_bw_cex_baset : public summarizer_bwt
 {
  public:
+  struct reasont
+  {
+    std::set<irep_idt> function_names;
+    std::set<local_SSAt::locationt> loop_ids;
+  };
+
   virtual void summarize();
   virtual void summarize(const function_namet &entry_function);
   virtual void summarize(const exprt &_error_assertion);
 
   virtual property_checkert::resultt check();
-  
+  virtual void get_reason(reasont &_reason) { _reason = reason; }  
+
  protected:
   function_namet entry_function;
   function_namet error_function;
   exprt error_assertion;
+  reasont reason;
 
   explicit summarizer_bw_cex_baset(optionst &_options, 
 	     summary_dbt &_summary_db,

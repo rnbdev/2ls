@@ -21,6 +21,7 @@ Author: Peter Schrammel
 #include "../domains/incremental_solver.h"
 #include "ssa_db.h"
 #include "summary_db.h"
+#include "summarizer_bw_cex.h"
 
 class summary_checker_baset:public property_checkert
 {
@@ -60,6 +61,8 @@ protected:
   ssa_inlinert ssa_inliner;
 
   irep_idt entry_function;
+
+  summarizer_bw_cex_baset::reasont reason;
 
   unsigned solver_instances;
   unsigned solver_calls;
