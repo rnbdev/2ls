@@ -2,7 +2,7 @@
 
 Module: Simple Complete Counterexample-based Backward Analysis 
 
-Author: Peter Schrammel
+Author: Madhukar Kumar, Peter Schrammel
 
 \*******************************************************************/
 
@@ -95,7 +95,11 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
  int counter)
 {
   local_SSAt &SSA = ssa_db.get(function_name);
-  //solver << SSA.get_enabling_exprs();
+#ifdef SHOW_UNSAT_CORE
+  add_to_formula(SSA.get_enabling_exprs());
+#else
+  solver << SSA.get_enabling_exprs();
+#endif
   
   exprt::operandst loophead_selects;
   loophead_selects = this->get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver);
@@ -111,7 +115,11 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
   	    << "\t  renamed info ~ " << from_expr(ssa_db.get(function_name).ns, "", c) << "\n";
 #endif
 
+#ifdef SHOW_UNSAT_CORE
+  add_to_formula(c);
+#else
   solver << c;
+#endif
 
   ssa_dependency_grapht &ssa_depgraph = ssa_db.get_depgraph(function_name);
   
@@ -302,7 +310,11 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 		      << worknode.node_index << "\t  renamed info ~ "
 		      << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
 #endif
+#ifdef SHOW_UNSAT_CORE
+	    add_to_formula(worknode_info);
+#else
 	    solver << worknode_info;
+#endif
 	  }
 	}
 	else{
@@ -318,7 +330,11 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 		    << worknode.node_index << "\t  renamed info ~ "
 		    << from_expr(ssa_db.get(function_name).ns, "", guard_binding) << "\n";
 #endif
-	  solver << guard_binding;
+#ifdef SHOW_UNSAT_CORE
+	    add_to_formula(guard_binding);
+#else
+	    solver << guard_binding;
+#endif
 	}
       }
     }
@@ -492,6 +508,9 @@ Function: summarizer_bw_cex_completet::check()
 property_checkert::resultt summarizer_bw_cex_completet::check()
 {
   solver_calls++; // for statistics
+#ifdef SHOW_UNSAT_CORE
+  solver.solver->set_assumptions(formula);
+#endif
   if(solver() == decision_proceduret::D_SATISFIABLE){
     //std::cout << "Solver <-- renamed info ~ SAT\n"; 
     return property_checkert::FAIL;
@@ -499,12 +518,11 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
 #ifdef SHOW_UNSAT_CORE
   else
   {
-    for(unsigned i=0; i<solver.formula.size(); i++) 
+    for(unsigned i=0; i<formula.size(); i++) 
     {
-      if(solver.solver->is_in_conflict(solver.formula[i]))
-        debug() << "is_in_conflict: " << solver.formula[i] << eom;
-      else
-        debug() << "not_in_conflict: " << solver.formula[i] << eom;
+      const local_SSAt &SSA = ssa_db.get(entry_function);
+      if(solver.solver->is_in_conflict(formula[i]))
+        debug() << "is_in_conflict: " << from_expr(SSA.ns, "", formula_expr[i]) << eom;
      }
   }
 #endif    
@@ -537,4 +555,21 @@ void summarizer_bw_cex_completet::debug_print
     std::cout << *d_it << ", ";
   }
   std::cout << "\n";
+}
+
+void summarizer_bw_cex_completet::add_to_formula(const exprt &expr) 
+{
+  literalt l = solver.solver->convert(expr);
+  if(l.is_false())
+  {
+    literalt dummy = solver.solver->convert(symbol_exprt("goto_symex::\\dummy", 
+						 bool_typet()));
+    formula.push_back(dummy);
+    formula.push_back(!dummy);
+  }
+  else if(!l.is_true()) 
+  {
+    formula.push_back(l);
+    formula_expr.push_back(expr);
+  }
 }
