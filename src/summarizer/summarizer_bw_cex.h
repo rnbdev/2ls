@@ -25,7 +25,14 @@ class summarizer_bw_cex_baset : public summarizer_bwt
   struct reasont
   {
     std::set<irep_idt> function_names;
-    std::set<local_SSAt::locationt> loop_ids;
+    std::set<local_SSAt::locationt> loop_ids; //TODO: location_number should be sufficient
+
+    void merge(const reasont &other)
+    {
+      function_names.insert(other.function_names.begin(), 
+			    other.function_names.end());
+      loop_ids.insert(other.loop_ids.begin(), other.loop_ids.end());
+    }
   };
 
   virtual void summarize();
@@ -33,7 +40,7 @@ class summarizer_bw_cex_baset : public summarizer_bwt
   virtual void summarize(const exprt &_error_assertion);
 
   virtual property_checkert::resultt check();
-  virtual void get_reason(reasont &_reason) { _reason = reason; }  
+  virtual void get_reason(reasont &_reason) { _reason.merge(reason); }  
 
  protected:
   function_namet entry_function;

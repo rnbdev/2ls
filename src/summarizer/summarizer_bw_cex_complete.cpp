@@ -95,12 +95,25 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
  int counter)
 {
   local_SSAt &SSA = ssa_db.get(function_name);
+
+  //add enabling expressions
+  exprt enable_exprs = SSA.get_enabling_exprs();
+  ssa_inliner.rename(enable_exprs, counter);
+
 #ifdef SHOW_UNSAT_CORE
-  add_to_formula(SSA.get_enabling_exprs());
+  add_to_formula(enable_exprs);
 #else
-  solver << SSA.get_enabling_exprs();
+  solver << enable_exprs;
 #endif
-  
+
+  //TODO: let's just put everything into the reason
+  reason.function_names.insert(function_name);
+  for(local_SSAt::nodest::iterator n_it = SSA.nodes.begin();
+      n_it != SSA.nodes.end(); ++n_it)
+    if (n_it->loophead != SSA.nodes.end())
+      reason.loop_ids.insert(n_it->loophead->location);
+
+  //add loop selects
   exprt::operandst loophead_selects;
   loophead_selects = this->get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver);
   exprt c = conjunction(loophead_selects);
