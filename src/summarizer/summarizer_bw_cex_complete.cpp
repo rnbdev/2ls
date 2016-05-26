@@ -106,12 +106,11 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
   solver << enable_exprs;
 #endif
 
-  //TODO: let's just put everything into the reason
-  reason.function_names.insert(function_name);
+  //TODO: let's just put all loops into the reason
   for(local_SSAt::nodest::iterator n_it = SSA.nodes.begin();
       n_it != SSA.nodes.end(); ++n_it)
     if (n_it->loophead != SSA.nodes.end())
-      reason.loop_ids.insert(n_it->loophead->location);
+      reason[function_name].loops.insert(n_it->loophead->location);
 
   //add loop selects
   exprt::operandst loophead_selects;
@@ -271,6 +270,10 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
       */
       /////////////////////////////////////////////////////////////////////////////////////
 
+      //TODO: just put all function calls into reason
+      reason[function_name].functions.insert(ssa_depgraph.depnodes_map[worknode.node_index].location);
+
+      //recurse
       worknode.dependency_set = 
 	compute_summary_rec(fname,worknode.dependency_set,
 			    ssa_depgraph.depnodes_map[worknode.node_index].rename_counter);

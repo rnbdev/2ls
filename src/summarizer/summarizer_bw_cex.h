@@ -22,16 +22,27 @@ Author: Kumar Madhukar, Peter Schrammel
 class summarizer_bw_cex_baset : public summarizer_bwt
 {
  public:
-  struct reasont
+  struct reason_infot
   {
-    std::set<irep_idt> function_names;
-    std::set<local_SSAt::locationt> loop_ids; //TODO: location_number should be sufficient
+    typedef local_SSAt::locationt function_infot; //call_site; restriction: we assume that there is a single function call in an SSA node
+    typedef local_SSAt::locationt loop_infot;
+    std::set<function_infot> functions;
+    std::set<loop_infot> loops; 
+  };
 
+  class reasont : public std::map<irep_idt, reason_infot>
+  {
+  public:
     void merge(const reasont &other)
     {
-      function_names.insert(other.function_names.begin(), 
-			    other.function_names.end());
-      loop_ids.insert(other.loop_ids.begin(), other.loop_ids.end());
+      for(reasont::const_iterator it = other.begin();
+	  it != other.end(); ++it)
+      {
+	reason_infot &r = (*this)[it->first];
+        r.functions.insert(it->second.functions.begin(), 
+			   it->second.functions.end());
+        r.loops.insert(it->second.loops.begin(), it->second.loops.end());
+      }
     }
   };
 
