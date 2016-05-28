@@ -1,6 +1,6 @@
 default: tests.log
 
-FLAGS = --verbosity 10
+FLAGS = --verbosity 10 --inline
 
 test:
 	@../test.pl -c "../../../src/2ls/2ls $(FLAGS)"

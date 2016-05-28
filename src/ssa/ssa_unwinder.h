@@ -46,6 +46,7 @@ public:
   // TODO: this should be loop specific in future,
   // maybe move to unwindable_local_ssa as it is not really unwinder related
   void compute_loop_continuation_conditions();
+  void compute_enable_expr();
   void loop_continuation_conditions(exprt::operandst &loop_cont) const;
   void loop_continuation_conditions(const locationt& loop_id, 
                                     exprt::operandst &loop_cont) const;

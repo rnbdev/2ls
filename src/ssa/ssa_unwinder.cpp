@@ -30,6 +30,7 @@ void ssa_local_unwindert::init()
   build_pre_post_map();
   build_exit_conditions();
   unwind(0);
+  compute_enable_expr();
 #ifdef DEBUG
   SSA.output_verbose(std::cout);
 #endif
@@ -287,20 +288,6 @@ void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
                  bool_typet());
   
   loop.loop_enabling_exprs.push_back(loop.loop_enabling_expr_current);
-  exprt::operandst ssa_current_enabling_expr;
-  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it){
-    exprt::operandst result;
-    for(exprt::operandst::iterator e_it = ((it->second).loop_enabling_exprs).begin();
-	e_it != ((it->second).loop_enabling_exprs).end(); e_it++){
-      exprt::operandst::iterator lh = e_it; lh++;
-      if(lh != ((it->second).loop_enabling_exprs).end()) result.push_back(not_exprt(*e_it));
-      else result.push_back(*e_it);
-    }
-    ssa_current_enabling_expr.push_back(conjunction(result));
-  }
-
-  SSA.combined_enabling_expr = conjunction(ssa_current_enabling_expr);
-
 
   //current_enabling_expr =
   //  symbol_exprt("unwind::"+id2string(fname)+"::enable"+i2string(k),
@@ -330,7 +317,8 @@ void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
     if(it->first == loc)
       it->second.current_unwinding=k;
   }
-  
+
+  compute_enable_expr();
   return;
 }
 
@@ -354,7 +342,10 @@ void ssa_local_unwindert::unwind(unsigned k)
   current_enabling_expr=
     symbol_exprt("unwind::"+id2string(fname)+"::enable"+i2string(k),
                  bool_typet());
-  SSA.enabling_exprs.push_back(current_enabling_expr);
+  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it)
+  {
+     it->second.loop_enabling_exprs.push_back(current_enabling_expr);
+  }
 
   // TODO: just for exploratory integration, must go away
   SSA.current_unwinding=k;
@@ -373,6 +364,8 @@ void ssa_local_unwindert::unwind(unsigned k)
   {
     it->second.current_unwinding=k;
   }
+
+  compute_enable_expr();
 }
 
 /*******************************************************************\
@@ -763,6 +756,39 @@ void ssa_local_unwindert::add_hoisted_assertions(loopt &loop, bool is_last)
     }
   }
 }
+
+/*****************************************************************************\
+ *
+ * Function : ssa_local_unwindert::compute_enable_expr
+ *
+ * Input :
+ *
+ * Output :
+ *
+ * Purpose : updates the enable_expr
+ *
+ *****************************************************************************/
+
+void ssa_local_unwindert::compute_enable_expr()
+{
+  exprt::operandst ssa_current_enabling_expr;
+  for(loop_mapt::const_iterator it = loops.begin(); it != loops.end(); ++it)
+  {
+    for(exprt::operandst::const_iterator 
+          e_it = ((it->second).loop_enabling_exprs).begin(); 
+        e_it != ((it->second).loop_enabling_exprs).end(); e_it++)
+    {
+      exprt::operandst::const_iterator lh = e_it; lh++;
+      if(lh != ((it->second).loop_enabling_exprs).end()) 
+        ssa_current_enabling_expr.push_back(not_exprt(*e_it));
+      else 
+        ssa_current_enabling_expr.push_back(*e_it);
+    }
+  }
+
+  SSA.combined_enabling_expr = conjunction(ssa_current_enabling_expr);
+}
+
 
 /*******************************************************************\
 
