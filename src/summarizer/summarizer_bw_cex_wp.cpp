@@ -100,7 +100,7 @@ find_symbols_sett summarizer_bw_cex_wpt::inline_summaries
   //solver << SSA.get_enabling_exprs();
   
   exprt::operandst loophead_selects;
-  loophead_selects = this->get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver);
+  get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver,loophead_selects);
   exprt c = conjunction(loophead_selects);
 
   //std::cout << "Solver <-- " << function_name << ": (conjunction of loophead_selects):"

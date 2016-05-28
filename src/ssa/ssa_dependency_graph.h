@@ -29,9 +29,10 @@ class ssa_dependency_grapht{
 
   struct depnodet{
     exprt node_info;
-    exprt guard;
+    exprt guard; //guard binding or loop-head select
     bool is_assertion;
     bool is_function_call;
+    bool is_loop;
     //bool trivial_guard;
     int rename_counter;
     find_symbols_sett used_symbols;

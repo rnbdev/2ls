@@ -351,9 +351,9 @@ void summary_checker_baset::check_properties(
   solver << ssa_inliner.get_summaries(SSA);
 
   //freeze loop head selects
-  exprt::operandst loophead_selects = 
-    summarizer_baset::get_loophead_selects(SSA,
-      ssa_unwinder.get(f_it->first),*solver.solver);
+  exprt::operandst loophead_selects;
+  summarizer_baset::get_loophead_selects(SSA,
+    ssa_unwinder.get(f_it->first),*solver.solver, loophead_selects);
 
   //spuriousness checkers
   summarizer_bw_cex_baset *summarizer_bw_cex = NULL;
@@ -403,7 +403,7 @@ void summary_checker_baset::check_properties(
   summarizer_bw_cex->set_message_handler(get_message_handler());
 
   cover_goals_extt cover_goals(
-    SSA, solver,loophead_selects, property_map,
+    SSA, solver, property_map,
     all_properties, build_error_trace,
     *summarizer_bw_cex);
 

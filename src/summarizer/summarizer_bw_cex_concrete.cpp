@@ -106,9 +106,15 @@ property_checkert::resultt summarizer_bw_cex_concretet::check()
      entry_function == error_function)
   {
     incremental_solvert &solver = ssa_db.get_solver(entry_function);
-    //these have not been collected yet
-    get_loop_continues(entry_function, 
-      ssa_db.get(entry_function), solver, loop_continues);
+    const local_SSAt &ssa = ssa_db.get(entry_function);
+    const ssa_local_unwindert &ssa_local_unwinder = 
+      ssa_unwinder.get(entry_function);
+    exprt::operandst loophead_selects;
+    exprt::operandst loop_continues;
+    get_loophead_selects(ssa, ssa_local_unwinder, 
+                         *solver.solver, loophead_selects);
+    get_loop_continues(ssa, ssa_local_unwinder, 
+                       *solver.solver, loop_continues);
     //check whether loops have been fully unwound
     bool fully_unwound = 
       is_fully_unwound(loop_continues,loophead_selects,solver);
@@ -116,7 +122,7 @@ property_checkert::resultt summarizer_bw_cex_concretet::check()
              << "fully unwound" << eom;
 
     if(fully_unwound)
-      result = property_heckert::PASS;
+      result = property_checkert::PASS;
   }
 
   return result;
@@ -336,7 +342,7 @@ void summarizer_bw_cex_concretet::do_summary(
 #endif
   
   exprt::operandst loophead_selects;
-  loophead_selects = this->get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver);
+  get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver,loophead_selects);
   
 #ifdef OPT_11
   solver << simplify_expr(conjunction(loophead_selects), SSA.ns);
@@ -575,7 +581,7 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
 #endif
   
   exprt::operandst loophead_selects;
-  loophead_selects = this->get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver);
+  get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver,loophead_selects);
 
 #ifdef OPT_11
   solver << simplify_expr(conjunction(loophead_selects), SSA.ns);

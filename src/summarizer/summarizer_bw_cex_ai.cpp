@@ -82,19 +82,45 @@ Function: summarizer_bw_cex_ait::check()
 
 property_checkert::resultt summarizer_bw_cex_ait::check()
 {
-  //TODO: store information about why have UNKNOWN
-  //      we have to distinguish the case when we cannot decide about spuriousness
-  
+  property_checkert::resultt result = property_checkert::FAIL;
   if(!summary_db.exists(entry_function))
-    return property_checkert::UNKNOWN;
+  {
+    result = property_checkert::UNKNOWN;
+  }
+  else
+  {
+    const summaryt &summary = summary_db.get(entry_function);
+    if(summary.error_summaries.empty() ||
+       summary.error_summaries.begin()->second.is_nil() ||
+       summary.error_summaries.begin()->second.is_true())
+      result = property_checkert::UNKNOWN;
+  }
 
-  const summaryt &summary = summary_db.get(entry_function);
-  if(summary.error_summaries.empty() ||
-     summary.error_summaries.begin()->second.is_nil() ||
-     summary.error_summaries.begin()->second.is_true())
-    return property_checkert::UNKNOWN;
+  //we are only complete if we are in the entry function
+  if(result == property_checkert::UNKNOWN &&
+     entry_function == error_function)
+  {
+    incremental_solvert &solver = ssa_db.get_solver(entry_function);
+    const local_SSAt &ssa = ssa_db.get(entry_function);
+    const ssa_local_unwindert &ssa_local_unwinder = 
+      ssa_unwinder.get(entry_function);
+    exprt::operandst loophead_selects;
+    exprt::operandst loop_continues;
+    get_loophead_selects(ssa, ssa_local_unwinder, 
+                         *solver.solver, loophead_selects);
+    get_loop_continues(ssa, ssa_local_unwinder, 
+                       *solver.solver, loop_continues);
+    //check whether loops have been fully unwound
+    bool fully_unwound = 
+      is_fully_unwound(loop_continues,loophead_selects,solver);
+    status() << "Loops " << (fully_unwound ? "" : "not ") 
+             << "fully unwound" << eom;
 
-  return property_checkert::FAIL;
+    if(fully_unwound)
+      result = property_checkert::PASS;
+  }
+
+  return result;
 }
 
 /*******************************************************************\

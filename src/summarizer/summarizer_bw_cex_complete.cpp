@@ -42,7 +42,7 @@ Function: summarizer_bw_cex_completet::summarize()
 
 void summarizer_bw_cex_completet::summarize
 (
- const function_namet &entry_function)
+  const function_namet &entry_function)
 {
   // no dependencies to begin with
   find_symbols_sett dependency_set;
@@ -68,9 +68,9 @@ void summarizer_bw_cex_completet::summarize(const exprt &_error_assertion)
   status() << "\nBackward error analysis (complete)..." << eom;
   error_assertion = _error_assertion;
   /*
-  std::cout << "error assertion: "
-	    << from_expr(ssa_db.get(entry_function).ns, "", error_assertion)
-	    << "\n";
+    std::cout << "error assertion: "
+    << from_expr(ssa_db.get(entry_function).ns, "", error_assertion)
+    << "\n";
   */
   summarize(entry_function);
 }
@@ -90,9 +90,9 @@ Function: summarizer_bw_cex_completet::inline_summaries()
 
 find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 (
- const function_namet &function_name,
- find_symbols_sett &dependency_set,
- int counter)
+  const function_namet &function_name,
+  find_symbols_sett &dependency_set,
+  int counter)
 {
   local_SSAt &SSA = ssa_db.get(function_name);
 
@@ -112,26 +112,6 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
     if (n_it->loophead != SSA.nodes.end())
       reason[function_name].loops.insert(n_it->loophead->location);
 
-  //add loop selects
-  exprt::operandst loophead_selects;
-  loophead_selects = this->get_loophead_selects(SSA,ssa_unwinder.get(function_name),*solver.solver);
-  exprt c = conjunction(loophead_selects);
-
-  //std::cout << "Solver <-- " << function_name << ": (conjunction of loophead_selects):"
-  //	    << "\t original info ~ " << from_expr(ssa_db.get(function_name).ns, "", c) << "\n";
-
-  ssa_inliner.rename(c, counter);
-
-#if 0
-  std::cout << "Solver <-- " << function_name << ": (conjunction of loophead_selects):"
-  	    << "\t  renamed info ~ " << from_expr(ssa_db.get(function_name).ns, "", c) << "\n";
-#endif
-
-#ifdef SHOW_UNSAT_CORE
-  add_to_formula(c);
-#else
-  solver << c;
-#endif
 
   ssa_dependency_grapht &ssa_depgraph = ssa_db.get_depgraph(function_name);
   
@@ -153,33 +133,35 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
   while(!worklist.empty()){
     
     /*
-    std::cout << "worklist: ";
-    for(worklistt::const_iterator w_it=worklist.begin();
-	w_it != worklist.end(); w_it++){
+      std::cout << "worklist: ";
+      for(worklistt::const_iterator w_it=worklist.begin();
+      w_it != worklist.end(); w_it++){
       std::cout << w_it->node_index << " ";
-    }
-    std::cout << "\n";
+      }
+      std::cout << "\n";
     
-    std::cout << "\t waitlist: ";
-    for(worklistt::const_iterator w_it=work_waitlist.begin();
-	w_it != work_waitlist.end(); w_it++){
+      std::cout << "\t waitlist: ";
+      for(worklistt::const_iterator w_it=work_waitlist.begin();
+      w_it != work_waitlist.end(); w_it++){
       std::cout << w_it->node_index << " ";
-    }
-    std::cout << "\n";
+      }
+      std::cout << "\n";
     */
 
     worknodet &worknode = worklist.front();
+    const ssa_dependency_grapht::depnodet &depnode = 
+      ssa_depgraph.depnodes_map[worknode.node_index];
     
     //std::cout << "working node: " << function_name << ": " << worknode.node_index << "\n";
     /////////////////////////////////////////////////////////////////////////////////////
     //std::cout << "\t size of dependency set: " << worknode.dependency_set.size() << "\n";
     /*
-    std::cout << "\t dependency set: ";
-    for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
-	d_it != worknode.dependency_set.end(); d_it++){
+      std::cout << "\t dependency set: ";
+      for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
+      d_it != worknode.dependency_set.end(); d_it++){
       std::cout << *d_it;
-    }
-    std::cout << "\n\n\n";
+      }
+      std::cout << "\n\n\n";
     */
     /////////////////////////////////////////////////////////////////////////////////////
 
@@ -189,24 +171,24 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
       return worknode.dependency_set;
     
     // modify worknode_dependency_set if the node is an assertion
-    if(ssa_depgraph.depnodes_map[worknode.node_index].is_assertion == true){
+    if(depnode.is_assertion == true){
 
       //std::cout << "\t\t an assertion node\n";
-      for(find_symbols_sett::const_iterator d_it = ssa_depgraph.depnodes_map[worknode.node_index].used_symbols.begin();
-	  d_it != ssa_depgraph.depnodes_map[worknode.node_index].used_symbols.end(); d_it++){
-	worknode.dependency_set.insert(*d_it);
+      for(find_symbols_sett::const_iterator d_it = depnode.used_symbols.begin();
+          d_it != depnode.used_symbols.end(); d_it++){
+        worknode.dependency_set.insert(*d_it);
       }
 
       /////////////////////////////////////////////////////////////////////////////////////
       /*
-      std::cout << "\t size of dependency set: " << worknode.dependency_set.size() << "\n";
+        std::cout << "\t size of dependency set: " << worknode.dependency_set.size() << "\n";
 
-      std::cout << "\t dependency set: ";
-      for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
-	  d_it != worknode.dependency_set.end(); d_it++){
-	std::cout << *d_it;
-      }
-      std::cout << "\n";
+        std::cout << "\t dependency set: ";
+        for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
+        d_it != worknode.dependency_set.end(); d_it++){
+        std::cout << *d_it;
+        }
+        std::cout << "\n";
       */
       /////////////////////////////////////////////////////////////////////////////////////
 
@@ -215,90 +197,90 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
     }
 
     // if this is a function call
-    if(ssa_depgraph.depnodes_map[worknode.node_index].is_function_call == true){
+    if(depnode.is_function_call == true){
       //std::cout << "fcall: working node: " << function_name << ": " << worknode.node_index << "\n";
       irep_idt fname = 
-	to_symbol_expr((to_function_application_expr(ssa_depgraph.depnodes_map[worknode.node_index].node_info)).function()).get_identifier();
+        to_symbol_expr((to_function_application_expr(depnode.node_info)).function()).get_identifier();
      
       find_symbols_sett renamed_dependencies;
 
       /////////////////////////////////////////////////////////////////////////////////////
       /*
-      std::cout << "\t size of dependency set: " << worknode.dependency_set.size() << "\n";
+        std::cout << "\t size of dependency set: " << worknode.dependency_set.size() << "\n";
 
-      std::cout << "\t dependency set: ";
-      for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
-	  d_it != worknode.dependency_set.end(); d_it++){
-	std::cout << *d_it;
-      }
-      std::cout << "\n";
+        std::cout << "\t dependency set: ";
+        for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
+        d_it != worknode.dependency_set.end(); d_it++){
+        std::cout << *d_it;
+        }
+        std::cout << "\n";
       */
       /////////////////////////////////////////////////////////////////////////////////////
 
       for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
-	  d_it != worknode.dependency_set.end(); d_it++){
-	irep_idt id = *d_it;
-	// detach the '@' symbol if there
-	irep_idt renamed_id = ssa_inliner.rename 
-	  (id,
-	   ssa_depgraph.depnodes_map[worknode.node_index].rename_counter, false);
-	renamed_dependencies.insert(renamed_id);
+          d_it != worknode.dependency_set.end(); d_it++){
+        irep_idt id = *d_it;
+        // detach the '@' symbol if there
+        irep_idt renamed_id = ssa_inliner.rename 
+          (id,
+           depnode.rename_counter, false);
+        renamed_dependencies.insert(renamed_id);
       }
 
       worknode.dependency_set = renamed_dependencies;
 
       if(!worknode.dependency_set.empty()){
-	find_symbols_sett guard_dependencies;
-	find_symbols(ssa_depgraph.depnodes_map[worknode.node_index].guard,
-		     guard_dependencies);
-	for(find_symbols_sett::const_iterator d_it = guard_dependencies.begin();
-	    d_it != guard_dependencies.end(); d_it++){
-	  worknode.dependency_set.insert(*d_it);
+        find_symbols_sett guard_dependencies;
+        find_symbols(depnode.guard,
+                     guard_dependencies);
+        for(find_symbols_sett::const_iterator d_it = guard_dependencies.begin();
+            d_it != guard_dependencies.end(); d_it++){
+          worknode.dependency_set.insert(*d_it);
         }
       }
 
       /////////////////////////////////////////////////////////////////////////////////////
       /*
-      std::cout << "\t size of dependency set: " << worknode.dependency_set.size() << "\n";
+        std::cout << "\t size of dependency set: " << worknode.dependency_set.size() << "\n";
 
-      std::cout << "\t dependency set: ";
-      for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
-	  d_it != worknode.dependency_set.end(); d_it++){
-	std::cout << *d_it;
-      }
-      std::cout << "\n";
+        std::cout << "\t dependency set: ";
+        for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
+        d_it != worknode.dependency_set.end(); d_it++){
+        std::cout << *d_it;
+        }
+        std::cout << "\n";
       */
       /////////////////////////////////////////////////////////////////////////////////////
 
       //TODO: just put all function calls into reason
-      reason[function_name].functions.insert(ssa_depgraph.depnodes_map[worknode.node_index].location);
+      reason[function_name].functions.insert(depnode.location);
 
       //recurse
       worknode.dependency_set = 
-	compute_summary_rec(fname,worknode.dependency_set,
-			    ssa_depgraph.depnodes_map[worknode.node_index].rename_counter);
+        compute_summary_rec(fname,worknode.dependency_set,
+                            depnode.rename_counter);
 
 
       renamed_dependencies.clear();
 
       for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
-	  d_it != worknode.dependency_set.end(); d_it++){
-	irep_idt id = *d_it;
-	// attach the '@' symbol if not already there
-	irep_idt renamed_id = ssa_inliner.rename
-	  (id,
-	   ssa_depgraph.depnodes_map[worknode.node_index].rename_counter, true);
-	renamed_dependencies.insert(renamed_id);
+          d_it != worknode.dependency_set.end(); d_it++){
+        irep_idt id = *d_it;
+        // attach the '@' symbol if not already there
+        irep_idt renamed_id = ssa_inliner.rename
+          (id,
+           depnode.rename_counter, true);
+        renamed_dependencies.insert(renamed_id);
       }
 
       worknode.dependency_set = renamed_dependencies;
 
       if(!worknode.dependency_set.empty()){
-	find_symbols_sett guard_dependencies;
-	find_symbols(ssa_depgraph.depnodes_map[worknode.node_index].guard, guard_dependencies);
-	for(find_symbols_sett::const_iterator d_it = guard_dependencies.begin();
-	  d_it != guard_dependencies.end(); d_it++){
-	  worknode.dependency_set.insert(*d_it);
+        find_symbols_sett guard_dependencies;
+        find_symbols(depnode.guard, guard_dependencies);
+        for(find_symbols_sett::const_iterator d_it = guard_dependencies.begin();
+            d_it != guard_dependencies.end(); d_it++){
+          worknode.dependency_set.insert(*d_it);
         }
       }
 
@@ -306,74 +288,94 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 
     // if the dependency set is non-empty
     if(!worknode.dependency_set.empty()){
-      exprt worknode_info = ssa_depgraph.depnodes_map[worknode.node_index].node_info;
-      if(ssa_depgraph.depnodes_map[worknode.node_index].is_assertion == true)
-	worknode_info = not_exprt(worknode_info);
+      exprt worknode_info = depnode.node_info;
+      if(depnode.is_assertion == true)
+        worknode_info = not_exprt(worknode_info);
       
       if(worknode.node_index != 0){
-	if(!(ssa_depgraph.depnodes_map[worknode.node_index].is_function_call)){
-	  if((ssa_depgraph.depnodes_map[worknode.node_index].is_assertion == false) ||
-	     (worknode_info == error_assertion)){
-	    /*
-	    std::cout << "Solver <-- " << function_name << ": (node) node#:"
-		      << worknode.node_index << "\t original info ~ "
-		      << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
-	    */
-	    ssa_inliner.rename(worknode_info, counter);
+        if(!(depnode.is_function_call)){
+          if((depnode.is_assertion == false) ||
+             (worknode_info == error_assertion)){
+            /*
+              std::cout << "Solver <-- " << function_name << ": (node) node#:"
+              << worknode.node_index << "\t original info ~ "
+              << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
+            */
+            ssa_inliner.rename(worknode_info, counter);
 #if 0
-	    std::cout << "Solver <-- renamed assertion: " << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
-	    std::cout << "Solver <-- " << function_name << ": (node) node#:"
-		      << worknode.node_index << "\t  renamed info ~ "
-		      << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
+            std::cout << "Solver <-- renamed assertion: " << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
+            std::cout << "Solver <-- " << function_name << ": (node) node#:"
+                      << worknode.node_index << "\t  renamed info ~ "
+                      << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
 #endif
 #ifdef SHOW_UNSAT_CORE
-	    add_to_formula(worknode_info);
+            add_to_formula(worknode_info);
 #else
-	    solver << worknode_info;
+            solver << worknode_info;
 #endif
-	  }
-	}
-	else{
-	  exprt guard_binding = ssa_depgraph.depnodes_map[worknode.node_index].guard;
-	  /*
-	  std::cout << "Solver <-- " << function_name << ": (bind) node#:"
-		    << worknode.node_index << "\t original info ~ "
-		    << from_expr(ssa_db.get(function_name).ns, "", guard_binding) << "\n";
-	  */
-	  ssa_inliner.rename(guard_binding, counter);
+
+            if(depnode.is_loop)
+            {
+              //loop head selects
+              exprt lsguard = depnode.guard;
+              ssa_inliner.rename(lsguard, counter);
+              loophead_selects.push_back(lsguard);
+              solver.solver->set_frozen(solver.convert(lsguard));
+
+              //loop continuations
+              exprt::operandst local_loop_continues;
+/*              ssa_local_unwinder.get_loop_continuations(depnode.location, 
+                local_loop_continues);*/
+              for(size_t i=0; i<local_loop_continues.size(); ++i)
+                ssa_inliner.rename(local_loop_continues[i], counter);
+              loop_continues.insert(loop_continues.end(),
+                                    local_loop_continues.begin(),
+                                    local_loop_continues.end());
+            }
+
+          }
+        }
+        else{
+          exprt guard_binding = depnode.guard;
+          /*
+            std::cout << "Solver <-- " << function_name << ": (bind) node#:"
+            << worknode.node_index << "\t original info ~ "
+            << from_expr(ssa_db.get(function_name).ns, "", guard_binding) << "\n";
+          */
+          ssa_inliner.rename(guard_binding, counter);
 #if 0
-	  std::cout << "Solver <-- " << function_name << ": (bind) node#:"
-		    << worknode.node_index << "\t  renamed info ~ "
-		    << from_expr(ssa_db.get(function_name).ns, "", guard_binding) << "\n";
+          std::cout << "Solver <-- " << function_name << ": (bind) node#:"
+                    << worknode.node_index << "\t  renamed info ~ "
+                    << from_expr(ssa_db.get(function_name).ns, "", guard_binding) << "\n";
 #endif
 #ifdef SHOW_UNSAT_CORE
-	    add_to_formula(guard_binding);
+          add_to_formula(guard_binding);
 #else
-	    solver << guard_binding;
+          solver << guard_binding;
 #endif
-	}
+        }
       }
     }
     
     // if not a function call and the dependency set is non-empty
-    if((ssa_depgraph.depnodes_map[worknode.node_index].is_function_call == false) &&
+    if((depnode.is_function_call == false) &&
        (!worknode.dependency_set.empty())){
 
-      exprt worknode_info = ssa_depgraph.depnodes_map[worknode.node_index].node_info;
-      if(ssa_depgraph.depnodes_map[worknode.node_index].is_assertion == true)
-	worknode_info = not_exprt(worknode_info);
+      exprt worknode_info = depnode.node_info;
+      if(depnode.is_assertion == true)
+        worknode_info = not_exprt(worknode_info);
 
-      if((ssa_depgraph.depnodes_map[worknode.node_index].is_assertion == false) ||
-	 (worknode_info == error_assertion)){
-	worknode.dependency_set =
-	  ssa_depgraph.depnodes_map[worknode.node_index].used_symbols;
+      if((depnode.is_assertion == false) ||
+         (worknode_info == error_assertion)){
+        worknode.dependency_set =
+          depnode.used_symbols;
       }
     }
     
     for(ssa_dependency_grapht::annotated_predecessorst::const_iterator
-	  p_it = ssa_depgraph.depnodes_map[worknode.node_index].predecessors.begin();
-	p_it != ssa_depgraph.depnodes_map[worknode.node_index].predecessors.end();
-	p_it++){
+          p_it = depnode.predecessors.begin();
+        p_it != depnode.predecessors.end();
+        p_it++){
       
       ssa_dependency_grapht::annotated_predecessort pred = *p_it;
       int pred_node_index = pred.predecessor_node_index;
@@ -381,42 +383,42 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 
       bool dependencies_merged = false;
       for(worklistt::iterator w_it = work_waitlist.begin(); w_it != work_waitlist.end(); w_it++){
-	if(w_it->node_index == pred_node_index){
+        if(w_it->node_index == pred_node_index){
 	  
-	  dependencies_merged = true;
+          dependencies_merged = true;
 	  
-	  for(find_symbols_sett::const_iterator
-		a_it=pred_annotation.begin(); a_it!=pred_annotation.end(); a_it++)
-	    {
-	      if(worknode.dependency_set.find(*a_it) != worknode.dependency_set.end()){
-		if((w_it->dependency_set).find(*a_it) == (w_it->dependency_set).end()){
-		  (w_it->dependency_set).insert(*a_it);
-		}
-	      }
-	    }
-	  break;
-	}
+          for(find_symbols_sett::const_iterator
+                a_it=pred_annotation.begin(); a_it!=pred_annotation.end(); a_it++)
+          {
+            if(worknode.dependency_set.find(*a_it) != worknode.dependency_set.end()){
+              if((w_it->dependency_set).find(*a_it) == (w_it->dependency_set).end()){
+                (w_it->dependency_set).insert(*a_it);
+              }
+            }
+          }
+          break;
+        }
       }
       
       if(dependencies_merged == false){
-	worknodet new_worknode;
-	new_worknode.node_index = pred_node_index;
+        worknodet new_worknode;
+        new_worknode.node_index = pred_node_index;
 	
-	for(find_symbols_sett::const_iterator
-	      a_it=pred_annotation.begin(); a_it!=pred_annotation.end(); a_it++)
-	  {
-	    if(worknode.dependency_set.find(*a_it) != worknode.dependency_set.end())
-	      new_worknode.dependency_set.insert(*a_it);
-	  }
+        for(find_symbols_sett::const_iterator
+              a_it=pred_annotation.begin(); a_it!=pred_annotation.end(); a_it++)
+        {
+          if(worknode.dependency_set.find(*a_it) != worknode.dependency_set.end())
+            new_worknode.dependency_set.insert(*a_it);
+        }
 	
-	work_waitlist.push_back(new_worknode);
+        work_waitlist.push_back(new_worknode);
       }
     }
 
 #if 0
     std::cout << function_name << ": worklist: ";
     for(worklistt::const_iterator w_it=worklist.begin();
-	w_it != worklist.end(); w_it++){
+        w_it != worklist.end(); w_it++){
       std::cout << w_it->node_index << " ";
     }
     std::cout << "\n";
@@ -424,7 +426,7 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 
     std::cout << "\t" << function_name << ": waitlist: ";
     for(worklistt::const_iterator w_it=work_waitlist.begin();
-	w_it != work_waitlist.end(); w_it++){
+        w_it != work_waitlist.end(); w_it++){
       std::cout << w_it->node_index << " ";
     }
     std::cout << "\n";
@@ -450,31 +452,31 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
       bool uncovered_successor = false;
       
       std::vector<int> &waitlisted_worknode_successors =
-	ssa_depgraph.depnodes_map[waitlisted_worknode.node_index].successors;
+        ssa_depgraph.depnodes_map[waitlisted_worknode.node_index].successors;
       
       for(unsigned i = 0; i < waitlisted_worknode_successors.size(); i++){
-	bool check_covered = false;
-	for(unsigned j = 0; j < covered_nodes.size(); j++){
-	  if(waitlisted_worknode_successors[i] == covered_nodes[j]){
-	    check_covered = true;
-	    break;
-	  }
-	}
-	if(!check_covered){
+        bool check_covered = false;
+        for(unsigned j = 0; j < covered_nodes.size(); j++){
+          if(waitlisted_worknode_successors[i] == covered_nodes[j]){
+            check_covered = true;
+            break;
+          }
+        }
+        if(!check_covered){
 #if 0
-	  std::cout << function_name << ": an uncovered successor of " << waitlisted_worknode.node_index << " : "
-		    << waitlisted_worknode_successors[i] << "\n";
+          std::cout << function_name << ": an uncovered successor of " << waitlisted_worknode.node_index << " : "
+                    << waitlisted_worknode_successors[i] << "\n";
 #endif
-	  uncovered_successor = true;
-	  break;
-	}
+          uncovered_successor = true;
+          break;
+        }
       }
       
       if(!uncovered_successor){
-	worklist.push_back(waitlisted_worknode);
+        worklist.push_back(waitlisted_worknode);
       }
       else{
-	work_waitlist.push_back(waitlisted_worknode);
+        work_waitlist.push_back(waitlisted_worknode);
       }
 
     }
@@ -500,10 +502,10 @@ Function: summarizer_bw_cex_completet::compute_summary_rec()
 \*******************************************************************/
 
 find_symbols_sett summarizer_bw_cex_completet::compute_summary_rec
-  (
-   const function_namet &function_name,
-   find_symbols_sett &dependency_set,
-   int counter)
+(
+  const function_namet &function_name,
+  find_symbols_sett &dependency_set,
+  int counter)
 {
   // recursively compute summaries for function calls
   return inline_summaries(function_name,dependency_set,counter);
@@ -523,12 +525,20 @@ Function: summarizer_bw_cex_completet::check()
 
 property_checkert::resultt summarizer_bw_cex_completet::check()
 {
-  solver_calls++; // for statistics
+//add loophead selects
+#ifdef SHOW_UNSAT_CORE
+  add_to_formula(conjunction(loophead_selects));
+#else
+  solver << conjunction(loophead_selects);
+#endif
+
 #ifdef SHOW_UNSAT_CORE
   solver.solver->set_assumptions(formula);
 #endif
-  if(solver() == decision_proceduret::D_SATISFIABLE){
-    //std::cout << "Solver <-- renamed info ~ SAT\n"; 
+
+  solver_calls++; // for statistics
+  if(solver() == decision_proceduret::D_SATISFIABLE)
+  {
     return property_checkert::FAIL;
   }
 #ifdef SHOW_UNSAT_CORE
@@ -536,10 +546,10 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
   {
     for(unsigned i=0; i<formula.size(); i++) 
     {
-      const local_SSAt &SSA = ssa_db.get(entry_function);
+      const namespacet &ns = ssa_db.get(entry_function).ns;
       if(solver.solver->is_in_conflict(formula[i]))
-        debug() << "is_in_conflict: " << from_expr(SSA.ns, "", formula_expr[i]) << eom;
-     }
+        debug() << "is_in_conflict: " << from_expr(ns, "", formula_expr[i]) << eom;
+    }
   }
 #endif    
 
@@ -547,10 +557,10 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
   bool fully_unwound = 
     is_fully_unwound(loop_continues,loophead_selects,solver);
   status() << "Loops " << (fully_unwound ? "" : "not ") 
-	   << "fully unwound" << eom;
+           << "fully unwound" << eom;
 
   if(fully_unwound)
-    return property_heckert::PASS;
+    return property_checkert::PASS;
 
   return property_checkert::UNKNOWN;
 }
@@ -568,16 +578,16 @@ Function: summarizer_bw_cex_completet::debug_print()
 \*******************************************************************/
 
 void summarizer_bw_cex_completet::debug_print
-(
- const function_namet &function_name,
- find_symbols_sett &dependency_set)
+  (
+  const function_namet &function_name,
+    find_symbols_sett &dependency_set)
 {
   std::cout << "DebugInfo: function -> " << function_name
-	    << " ; dependency_set -> ";
+            << " ; dependency_set -> ";
   for(find_symbols_sett::iterator d_it = dependency_set.begin();
-      d_it != dependency_set.end(); d_it++){
-    std::cout << *d_it << ", ";
-  }
+  d_it != dependency_set.end(); d_it++){
+  std::cout << *d_it << ", ";
+}
   std::cout << "\n";
 }
 
@@ -586,14 +596,14 @@ void summarizer_bw_cex_completet::add_to_formula(const exprt &expr)
   literalt l = solver.solver->convert(expr);
   if(l.is_false())
   {
-    literalt dummy = solver.solver->convert(symbol_exprt("goto_symex::\\dummy", 
-						 bool_typet()));
-    formula.push_back(dummy);
-    formula.push_back(!dummy);
-  }
+  literalt dummy = solver.solver->convert(symbol_exprt("goto_symex::\\dummy", 
+    bool_typet()));
+  formula.push_back(dummy);
+  formula.push_back(!dummy);
+}
   else if(!l.is_true()) 
   {
-    formula.push_back(l);
-    formula_expr.push_back(expr);
-  }
+  formula.push_back(l);
+  formula_expr.push_back(expr);
+}
 }

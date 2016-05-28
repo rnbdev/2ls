@@ -46,6 +46,8 @@ class summarizer_bw_cex_completet : public summarizer_bw_cex_baset
   incremental_solvert &solver;
   bvt formula; //for UNSAT core
   exprt::operandst formula_expr; //for debugging
+  exprt::operandst loophead_selects;
+  exprt::operandst loop_continues;
 
   virtual find_symbols_sett inline_summaries(
 				     const function_namet &function_name,
