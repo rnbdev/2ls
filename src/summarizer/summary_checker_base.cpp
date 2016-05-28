@@ -39,7 +39,9 @@ Author: Peter Schrammel
 #include "summarizer_bw_cex_all.h"
 
 #include "summarizer_fw.h"
+#include "summarizer_fw_term.h"
 #include "summarizer_bw.h"
+#include "summarizer_bw_term.h"
 
 #ifdef SHOW_CALLING_CONTEXTS
 #include "summarizer_fw_contexts.h"
@@ -154,8 +156,14 @@ void summary_checker_baset::summarize(const goto_modelt &goto_model,
   if(forward && !termination)
     summarizer = new summarizer_fwt(
       options,summary_db,ssa_db,ssa_unwinder,ssa_inliner);
+  if(forward && termination)
+    summarizer = new summarizer_fw_termt(
+      options,summary_db,ssa_db,ssa_unwinder,ssa_inliner);
   if(!forward && !termination)
     summarizer = new summarizer_bwt(
+      options,summary_db,ssa_db,ssa_unwinder,ssa_inliner);
+  if(!forward && termination)
+    summarizer = new summarizer_bw_termt(
       options,summary_db,ssa_db,ssa_unwinder,ssa_inliner);
   }
   assert(summarizer != NULL);
@@ -344,15 +352,8 @@ void summary_checker_baset::check_properties(
 
   //freeze loop head selects
   exprt::operandst loophead_selects = 
-    summarizer_baset::get_loophead_selects(SSA,ssa_unwinder.get(f_it->first),*solver.solver);
-  //check whether loops have been fully unwound
-  exprt::operandst loop_continues = 
-    get_loop_continues(f_it->first,SSA,*solver.solver);
-  bool fully_unwound = 
-    is_fully_unwound(loop_continues,loophead_selects,solver);
-  status() << "Loops " << (fully_unwound ? "" : "not ") 
-	   << "fully unwound" << eom;
-
+    summarizer_baset::get_loophead_selects(SSA,
+      ssa_unwinder.get(f_it->first),*solver.solver);
 
   //spuriousness checkers
   summarizer_bw_cex_baset *summarizer_bw_cex = NULL;
@@ -402,9 +403,8 @@ void summary_checker_baset::check_properties(
   summarizer_bw_cex->set_message_handler(get_message_handler());
 
   cover_goals_extt cover_goals(
-    SSA,solver,loophead_selects,property_map,
-    f_it->first!=entry_function || !fully_unwound,
-    all_properties,build_error_trace,
+    SSA, solver,loophead_selects, property_map,
+    all_properties, build_error_trace,
     *summarizer_bw_cex);
 
 #if 0   
@@ -573,87 +573,87 @@ void summary_checker_baset::do_show_vcc(
   std::cout << "\n";
 }
 
-/*******************************************************************\
-
-Function: summary_checker_baset::get_loop_continues
-
-  Inputs:
-
- Outputs:
-
- Purpose: returns the loop continuation guards at the end of the
-          loops in order to check whether we can unroll further
-
-\*******************************************************************/
-
-exprt::operandst summary_checker_baset::get_loop_continues(
-  const irep_idt &function_name, 
-  const local_SSAt &SSA, prop_convt &solver)
-{
-  exprt::operandst loop_continues;
-
-  ssa_unwinder.get(function_name).loop_continuation_conditions(loop_continues);
-  if(loop_continues.size()==0) 
-  {
-    //TODO: this should actually be done transparently by the unwinder
-    for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
-	n_it != SSA.nodes.end(); n_it++)
-    {
-      if(n_it->loophead==SSA.nodes.end()) continue;
-      symbol_exprt guard = SSA.guard_symbol(n_it->location);
-      symbol_exprt cond = SSA.cond_symbol(n_it->location);
-      loop_continues.push_back(and_exprt(guard,cond));
-    }
-  }
-
-#if 0
-  std::cout << "loophead_continues: " << from_expr(SSA.ns,"",disjunction(loop_continues)) << std::endl;
-#endif
-
-  return loop_continues;
-}
-
-/*******************************************************************\
-
-Function: summary_checker_baset::is_fully_unwound
-
-  Inputs:
-
- Outputs:
-
- Purpose: checks whether the loops have been fully unwound
-
-\*******************************************************************/
-
-bool summary_checker_baset::is_fully_unwound(
-  const exprt::operandst &loop_continues, 
-  const exprt::operandst &loophead_selects,
-  incremental_solvert &solver)
-{
-  solver.new_context();
-  solver << and_exprt(conjunction(loophead_selects),
-		      disjunction(loop_continues));
-
-  solver_calls++; //statistics
-
-  switch(solver())
-  {
-  case decision_proceduret::D_SATISFIABLE:
-    solver.pop_context();
-    return false;
-    break;
-      
-  case decision_proceduret::D_UNSATISFIABLE:
-    solver.pop_context();
-    solver << conjunction(loophead_selects); 
-    return true;
-    break;
-
-  case decision_proceduret::D_ERROR:    
-  default:
-    throw "error from decision procedure";
-  }
-}
+(??)/*******************************************************************\
+(??)
+(??)Function: summary_checker_baset::get_loop_continues
+(??)
+(??)  Inputs:
+(??)
+(??) Outputs:
+(??)
+(??) Purpose: returns the loop continuation guards at the end of the
+(??)          loops in order to check whether we can unroll further
+(??)
+(??)\*******************************************************************/
+(??)
+(??)exprt::operandst summary_checker_baset::get_loop_continues(
+(??)  const irep_idt &function_name, 
+(??)  const local_SSAt &SSA, prop_convt &solver)
+(??){
+(??)  exprt::operandst loop_continues;
+(??)
+(??)  ssa_unwinder.get(function_name).loop_continuation_conditions(loop_continues);
+(??)  if(loop_continues.size()==0) 
+(??)  {
+(??)    //TODO: this should actually be done transparently by the unwinder
+(??)    for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
+(??)	n_it != SSA.nodes.end(); n_it++)
+(??)    {
+(??)      if(n_it->loophead==SSA.nodes.end()) continue;
+(??)      symbol_exprt guard = SSA.guard_symbol(n_it->location);
+(??)      symbol_exprt cond = SSA.cond_symbol(n_it->location);
+(??)      loop_continues.push_back(and_exprt(guard,cond));
+(??)    }
+(??)  }
+(??)
+(??)#if 0
+(??)  std::cout << "loophead_continues: " << from_expr(SSA.ns,"",disjunction(loop_continues)) << std::endl;
+(??)#endif
+(??)
+(??)  return loop_continues;
+(??)}
+(??)
+(??)/*******************************************************************\
+(??)
+(??)Function: summary_checker_baset::is_fully_unwound
+(??)
+(??)  Inputs:
+(??)
+(??) Outputs:
+(??)
+(??) Purpose: checks whether the loops have been fully unwound
+(??)
+(??)\*******************************************************************/
+(??)
+(??)bool summary_checker_baset::is_fully_unwound(
+(??)  const exprt::operandst &loop_continues, 
+(??)  const exprt::operandst &loophead_selects,
+(??)  incremental_solvert &solver)
+(??){
+(??)  solver.new_context();
+(??)  solver << and_exprt(conjunction(loophead_selects),
+(??)		      disjunction(loop_continues));
+(??)
+(??)  solver_calls++; //statistics
+(??)
+(??)  switch(solver())
+(??)  {
+(??)  case decision_proceduret::D_SATISFIABLE:
+(??)    solver.pop_context();
+(??)    return false;
+(??)    break;
+(??)      
+(??)  case decision_proceduret::D_UNSATISFIABLE:
+(??)    solver.pop_context();
+(??)    solver << conjunction(loophead_selects); 
+(??)    return true;
+(??)    break;
+(??)
+(??)  case decision_proceduret::D_ERROR:    
+(??)  default:
+(??)    throw "error from decision procedure";
+(??)  }
+(??)}
 
 /*******************************************************************\
 

@@ -543,7 +543,15 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
   }
 #endif    
 
-  //std::cout << "Solver <-- renamed info ~ UNSAT\n"; 
+  //check whether loops have been fully unwound
+  bool fully_unwound = 
+    is_fully_unwound(loop_continues,loophead_selects,solver);
+  status() << "Loops " << (fully_unwound ? "" : "not ") 
+	   << "fully unwound" << eom;
+
+  if(fully_unwound)
+    return property_heckert::PASS;
+
   return property_checkert::UNKNOWN;
 }
 
