@@ -101,9 +101,9 @@ property_checkert::resultt summarizer_bw_cex_concretet::check()
       result = property_checkert::UNKNOWN;
   }
 
-  //we are only complete if we are in the entry function
+  //we are only complete if everything was inlined
   if(result == property_checkert::UNKNOWN &&
-     entry_function == error_function)
+     options.get_bool_option("inline"))
   {
     incremental_solvert &solver = ssa_db.get_solver(entry_function);
     const local_SSAt &ssa = ssa_db.get(entry_function);

@@ -78,11 +78,13 @@ void summary_checker_baset::SSA_dependency_graphs(
       ssa_db.depgraph_create(f_it->first, ns, ssa_inliner, true);
     else
       ssa_db.depgraph_create(f_it->first, ns, ssa_inliner, false); // change to true if all functions are to be treated equal
-	  
+
+#if 0	  
     ssa_dependency_grapht &ssa_depgraph = ssa_db.get_depgraph(f_it->first);
     ssa_depgraph.output(debug()); debug() << eom;
     std::cout << "output SSA for function: " << f_it->first << "\n";
     ssa_db.get(f_it->first).output_verbose(std::cout);
+#endif
   }
 }
 
