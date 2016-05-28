@@ -102,14 +102,13 @@ property_checkert::resultt summarizer_bw_cex_ait::check()
   {
     incremental_solvert &solver = ssa_db.get_solver(entry_function);
     const local_SSAt &ssa = ssa_db.get(entry_function);
-    const ssa_local_unwindert &ssa_local_unwinder = 
+    ssa_local_unwindert &ssa_local_unwinder = 
       ssa_unwinder.get(entry_function);
     exprt::operandst loophead_selects;
     exprt::operandst loop_continues;
     get_loophead_selects(ssa, ssa_local_unwinder, 
                          *solver.solver, loophead_selects);
-    get_loop_continues(ssa, ssa_local_unwinder, 
-                       *solver.solver, loop_continues);
+    get_loop_continues(ssa, ssa_local_unwinder, loop_continues);
     //check whether loops have been fully unwound
     bool fully_unwound = 
       is_fully_unwound(loop_continues,loophead_selects,solver);

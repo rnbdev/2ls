@@ -45,7 +45,10 @@ public:
 
   // TODO: this should be loop specific in future,
   // maybe move to unwindable_local_ssa as it is not really unwinder related
-  void loop_continuation_conditions(exprt::operandst& loop_cont) const;
+  void compute_loop_continuation_conditions();
+  void loop_continuation_conditions(exprt::operandst &loop_cont) const;
+  void loop_continuation_conditions(const locationt& loop_id, 
+                                    exprt::operandst &loop_cont) const;
 
 #if 0
   // TODO: these two should be possible with unwindable_local_ssa facilities
@@ -79,6 +82,8 @@ public:
     // to have an enabling_expr and current_unwindings (odometert)
     exprt::operandst loop_enabling_exprs;
     exprt loop_enabling_expr_current;
+
+    exprt::operandst current_continuation_conditions;
 
     typedef std::map<exprt, exprt::operandst> exit_mapt;
     exit_mapt exit_map;

@@ -779,6 +779,12 @@ Function: ssa_local_unwindert::loop_continuation_conditions
 void ssa_local_unwindert::loop_continuation_conditions(
   exprt::operandst& loop_cont) const
 {
+  //clear old ones
+  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it)
+  {
+    it->second.current_continuation_conditions.clear();
+  }
+  //compute new
   SSA.current_unwindings.clear();
   for(loop_mapt::const_iterator it=loops.begin(); it!=loops.end(); ++it)
   {
@@ -788,6 +794,53 @@ void ssa_local_unwindert::loop_continuation_conditions(
     assert(SSA.current_unwindings.empty());
   }
 }
+
+/*****************************************************************************\
+ *
+ * Function : ssa_local_unwindert::loop_continuation_conditions
+ *
+ * Input :
+ *
+ * Output :
+ *
+ * Purpose : return loop continuation conditions for all loops in this function
+ *
+ *****************************************************************************/
+
+void ssa_local_unwindert::loop_continuation_conditions(
+  exprt::operandst &loop_cont) const
+{
+  for(loop_mapt::const_iterator it = loops.begin(); it != loops.end(); ++it)
+  {
+    loop_cont.insert(loop_cont.end(), 
+                     it->second.current_continuation_conditions.begin(),
+                     it->second.current_continuation_conditions.end());
+  }
+}
+
+/*****************************************************************************\
+ *
+ * Function : ssa_local_unwindert::loop_continuation_conditions
+ *
+ * Input :
+ *
+ * Output :
+ *
+ * Purpose : return loop continuation conditions for all instances 
+ *           of the given  loop in this function
+ *
+ *****************************************************************************/
+
+void ssa_local_unwindert::loop_continuation_conditions(
+  const locationt& loop_id, 
+  exprt::operandst &loop_cont) const
+{
+  const loopt &loop = loops.at(loop_id->location_number);
+  loop_cont.insert(loop_cont.end(), 
+                   loop.current_continuation_conditions.begin(),
+                   loop.current_continuation_conditions.end());
+}
+
 
 /*******************************************************************\
 

@@ -95,7 +95,8 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
   int counter)
 {
   local_SSAt &SSA = ssa_db.get(function_name);
-
+  ssa_local_unwindert &ssa_local_unwinder = ssa_unwinder.get(function_name);
+  ssa_local_unwinder.compute_loop_continuation_conditions();
   //add enabling expressions
   exprt enable_exprs = SSA.get_enabling_exprs();
   ssa_inliner.rename(enable_exprs, counter);
@@ -324,8 +325,8 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 
               //loop continuations
               exprt::operandst local_loop_continues;
-/*              ssa_local_unwinder.get_loop_continuations(depnode.location, 
-                local_loop_continues);*/
+              get_loop_continues(SSA, ssa_local_unwinder, depnode.location, 
+                local_loop_continues);
               for(size_t i=0; i<local_loop_continues.size(); ++i)
                 ssa_inliner.rename(local_loop_continues[i], counter);
               loop_continues.insert(loop_continues.end(),
