@@ -126,6 +126,9 @@ property_checkert::resultt summary_checker_kindt::operator()(
 		    for(local_SSAt::nodest::iterator fn_it = fSSA.nodes.begin();
 			fn_it != fSSA.nodes.end(); fn_it++){
 		      local_SSAt::nodet &fnode=*fn_it;
+
+		      bool ignore_equality = true;
+		      
 		      for(local_SSAt::nodet::equalitiest::iterator e_it=fnode.equalities.begin();
 			  e_it!=fnode.equalities.end(); e_it++){
 			// unless lhs starts with "ssa::guard" and rhs is true
@@ -133,8 +136,8 @@ property_checkert::resultt summary_checker_kindt::operator()(
 			equal_exprt e = to_equal_expr(*e_it);
 			exprt &lhs = e.lhs(); exprt &rhs = e.rhs();
 			std::string var_string = id2string(to_symbol_expr(lhs).get_identifier());
-			if(((var_string.substr(0,11)) == "ssa::$guard") && (rhs.is_true())){
-			  // ignore the equality in this case
+			if(((var_string.substr(0,11)) == "ssa::$guard") && (rhs.is_true()) && (ignore_equality == true)){
+			  ignore_equality = false;
 			}
 			else{
 			  first_node_equalities.push_back(*e_it);
