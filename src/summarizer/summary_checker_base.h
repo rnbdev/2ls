@@ -33,7 +33,7 @@ public:
     options(_options),
     ssa_db(_options),summary_db(),
     ssa_unwinder(ssa_db),
-    ssa_inliner(summary_db),
+    ssa_inliner(summary_db, ssa_db),
     solver_instances(0),
     solver_calls(0),
     summaries_used(0)

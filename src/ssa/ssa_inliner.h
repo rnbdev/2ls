@@ -152,6 +152,7 @@ public:
 protected:
   unsigned counter;
   summary_dbt &summary_db;
+  ssa_dbt &ssa_db;
 
   local_SSAt::nodest new_nodes;
   local_SSAt::nodet::equalitiest new_equs;
