@@ -152,21 +152,21 @@ void local_SSAt::get_nondet_vars()
       n_it!=nodes.end(); n_it++)
   {
     for(nodet::equalitiest::const_iterator
-	  e_it=n_it->equalities.begin();
-	e_it!=n_it->equalities.end();
-	e_it++)
+          e_it=n_it->equalities.begin();
+        e_it!=n_it->equalities.end();
+        e_it++)
       get_nondet_vars(*e_it);
 
     for(nodet::constraintst::const_iterator
-	  c_it=n_it->constraints.begin();
-	c_it!=n_it->constraints.end();
-	c_it++)
+          c_it=n_it->constraints.begin();
+        c_it!=n_it->constraints.end();
+        c_it++)
       get_nondet_vars(*c_it);
 
     for(nodet::assertionst::const_iterator
-	  a_it=n_it->assertions.begin();
-	a_it!=n_it->assertions.end();
-	a_it++)
+          a_it=n_it->assertions.begin();
+        a_it!=n_it->assertions.end();
+        a_it++)
       get_nondet_vars(*a_it);
   }
 }
@@ -204,7 +204,7 @@ void local_SSAt::get_globals(
       bool is_return=id2string(it->get_identifier()).find(
 	"#return_value")!=std::string::npos;
       if(!with_returns && is_return) 
-	continue;
+        continue;
 
       // filter out return values of other functions
       if(with_returns && returns_for_function!="" &&
@@ -641,7 +641,7 @@ void local_SSAt::build_function_call(locationt loc)
       }
       else
       {
-	n_it->equalities.push_back(equal_exprt(arg,*it));
+        n_it->equalities.push_back(equal_exprt(arg,*it));
       }
       *it=arg;
     }
@@ -1270,7 +1270,10 @@ symbol_exprt local_SSAt::name(
   unsigned cnt=loc->location_number;
 
   irep_idt new_id=id2string(id)+"#"+
-    (kind==PHI?"phi":kind==LOOP_BACK?"lb":kind==LOOP_SELECT?"ls":"")+
+    (kind==PHI?"phi":
+     kind==LOOP_BACK?"lb":
+     kind==LOOP_SELECT?"ls":
+     "")+
     i2string(cnt)+
     (kind==LOOP_SELECT?std::string(""):suffix);
 
@@ -1672,7 +1675,7 @@ std::list<exprt> &operator<<(
         e_it++)
     {
       if(!n_it->enabling_expr.is_true()) 
-	dest.push_back(implies_exprt(n_it->enabling_expr,*e_it));
+        dest.push_back(implies_exprt(n_it->enabling_expr,*e_it));
       else
         dest.push_back(*e_it);
     }
@@ -1683,7 +1686,7 @@ std::list<exprt> &operator<<(
         c_it++)
     {
       if(!n_it->enabling_expr.is_true()) 
-	dest.push_back(implies_exprt(n_it->enabling_expr,*c_it));
+        dest.push_back(implies_exprt(n_it->enabling_expr,*c_it));
       else
         dest.push_back(*c_it);
     }
@@ -1718,7 +1721,7 @@ decision_proceduret &operator<<(
         e_it++)
     {
       if(!n_it->enabling_expr.is_true()) 
-	dest.push_back(implies_exprt(n_it->enabling_expr,*e_it));
+        dest.push_back(implies_exprt(n_it->enabling_expr,*e_it));
       else
         dest.push_back(*e_it);
     }
@@ -1729,7 +1732,7 @@ decision_proceduret &operator<<(
         c_it++)
     {
       if(!n_it->enabling_expr.is_true()) 
-	dest.push_back(implies_exprt(n_it->enabling_expr,*c_it));
+        dest.push_back(implies_exprt(n_it->enabling_expr,*c_it));
       else
         dest.push_back(*c_it);
     }

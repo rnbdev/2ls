@@ -859,6 +859,9 @@ void ssa_local_unwindert::loop_continuation_conditions(
   const locationt& loop_id, 
   exprt::operandst &loop_cont) const
 {
+  if(loops.empty()) //ignore silently, TBD
+    return;
+
   const loopt &loop = loops.at(loop_id->location_number);
   loop_cont.insert(loop_cont.end(), 
                    loop.current_continuation_conditions.begin(),
