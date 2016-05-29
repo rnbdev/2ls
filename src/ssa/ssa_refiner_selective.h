@@ -56,11 +56,12 @@ class ssa_refiner_selectivet : public ssa_refinert
       ssa_unwinder(_ssa_unwinder),
       max_unwind(_max_unwind),
       ssa_inliner(_ssa_inliner),
+      unwind(0),
       reason(_reason)
     {}
 
     virtual bool operator()(); 
-    virtual unsigned get_unwind() { return unwind>0 ? unwind-1 : 0; }
+    virtual unsigned get_unwind() { return unwind; }
   
  protected:
   ssa_dbt &ssa_db;

@@ -49,6 +49,18 @@ class summarizer_bw_cex_completet : public summarizer_bw_cex_baset
   exprt::operandst loophead_selects;
   exprt::operandst loop_continues;
 
+  struct reason_to_checkt {
+    function_namet function_name;
+    bool is_function;
+    local_SSAt::locationt info;
+  };
+  std::vector<reason_to_checkt> reasons_to_check;
+  void add_reason_to_check(
+    const exprt &expr,
+    const function_namet &function_name, 
+    bool is_function, 
+    const local_SSAt::locationt & info);
+
   virtual find_symbols_sett inline_summaries(
 				     const function_namet &function_name,
 				     find_symbols_sett &dependency_set,

@@ -26,7 +26,7 @@ Author: Madhukar Kumar, Peter Schrammel
 
 #include "summarizer_bw_cex_complete.h"
 
-#define SHOW_UNSAT_CORE
+//#define SHOW_UNSAT_CORE
 
 /*******************************************************************\
 
@@ -107,12 +107,13 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
   solver << enable_exprs;
 #endif
 
+#if 0
   //TODO: let's just put all loops into the reason
   for(local_SSAt::nodest::iterator n_it = SSA.nodes.begin();
       n_it != SSA.nodes.end(); ++n_it)
     if (n_it->loophead != SSA.nodes.end())
       reason[function_name].loops.insert(n_it->loophead->location);
-
+#endif
 
   ssa_dependency_grapht &ssa_depgraph = ssa_db.get_depgraph(function_name);
   
@@ -253,8 +254,10 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
       */
       /////////////////////////////////////////////////////////////////////////////////////
 
+#if 0
       //TODO: just put all function calls into reason
       reason[function_name].functions.insert(depnode.location);
+#endif
 
       //recurse
       worknode.dependency_set = 
@@ -321,12 +324,13 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
               exprt lsguard = depnode.guard;
               ssa_inliner.rename(lsguard, counter);
               loophead_selects.push_back(lsguard);
-              solver.solver->set_frozen(solver.convert(lsguard));
+              //solver.solver->set_frozen(solver.convert(lsguard));
+              add_reason_to_check(lsguard,function_name,false,depnode.location);
 
               //loop continuations
               exprt::operandst local_loop_continues;
               get_loop_continues(SSA, ssa_local_unwinder, depnode.location, 
-                local_loop_continues);
+                                 local_loop_continues);
               for(size_t i=0; i<local_loop_continues.size(); ++i)
                 ssa_inliner.rename(local_loop_continues[i], counter);
               loop_continues.insert(loop_continues.end(),
@@ -349,10 +353,12 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
                     << worknode.node_index << "\t  renamed info ~ "
                     << from_expr(ssa_db.get(function_name).ns, "", guard_binding) << "\n";
 #endif
+
 #ifdef SHOW_UNSAT_CORE
           add_to_formula(guard_binding);
 #else
-          solver << guard_binding;
+          add_reason_to_check(guard_binding,function_name,true,depnode.location);
+          //solver << guard_binding;
 #endif
         }
       }
@@ -530,12 +536,10 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
 #ifdef SHOW_UNSAT_CORE
   add_to_formula(conjunction(loophead_selects));
 #else
-  solver << conjunction(loophead_selects);
+//  solver << conjunction(loophead_selects);
 #endif
 
-#ifdef SHOW_UNSAT_CORE
   solver.solver->set_assumptions(formula);
-#endif
 
   solver_calls++; // for statistics
   if(solver() == decision_proceduret::D_SATISFIABLE)
@@ -545,11 +549,36 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
 #ifdef SHOW_UNSAT_CORE
   else
   {
+    const namespacet &ns = ssa_db.get(entry_function).ns;
     for(unsigned i=0; i<formula.size(); i++) 
     {
-      const namespacet &ns = ssa_db.get(entry_function).ns;
       if(solver.solver->is_in_conflict(formula[i]))
         debug() << "is_in_conflict: " << from_expr(ns, "", formula_expr[i]) << eom;
+    }
+  }
+#else
+  else
+  {
+    const namespacet &ns = ssa_db.get(entry_function).ns;
+    //get reasons for spuriousness
+    for(unsigned i=0; i<formula.size(); i++) 
+    {
+      if(solver.solver->is_in_conflict(formula[i]))
+      {
+        debug() << "is_in_conflict: " << from_expr(ns, "", formula_expr[i]) << eom;
+        const reason_to_checkt &r = reasons_to_check[i];
+        if(r.is_function)
+          reason[r.function_name].functions.insert(r.info);
+        else
+          reason[r.function_name].loops.insert(r.info);
+      }
+    }
+    bvt assumptions;
+    solver.solver->set_assumptions(assumptions);
+    for(unsigned i=0; i<formula.size(); i++) 
+    {
+      if(reasons_to_check[i].is_function)
+        solver << literal_exprt(formula[i]);
     }
   }
 #endif    
@@ -579,16 +608,16 @@ Function: summarizer_bw_cex_completet::debug_print()
 \*******************************************************************/
 
 void summarizer_bw_cex_completet::debug_print
-  (
+(
   const function_namet &function_name,
-    find_symbols_sett &dependency_set)
+  find_symbols_sett &dependency_set)
 {
   std::cout << "DebugInfo: function -> " << function_name
             << " ; dependency_set -> ";
   for(find_symbols_sett::iterator d_it = dependency_set.begin();
-  d_it != dependency_set.end(); d_it++){
-  std::cout << *d_it << ", ";
-}
+      d_it != dependency_set.end(); d_it++){
+    std::cout << *d_it << ", ";
+  }
   std::cout << "\n";
 }
 
@@ -597,14 +626,52 @@ void summarizer_bw_cex_completet::add_to_formula(const exprt &expr)
   literalt l = solver.solver->convert(expr);
   if(l.is_false())
   {
-  literalt dummy = solver.solver->convert(symbol_exprt("goto_symex::\\dummy", 
-    bool_typet()));
-  formula.push_back(dummy);
-  formula.push_back(!dummy);
-}
+    literalt dummy = solver.solver->convert(symbol_exprt("goto_symex::\\dummy", 
+                                                         bool_typet()));
+    formula.push_back(dummy);
+    formula.push_back(!dummy);
+  }
   else if(!l.is_true()) 
   {
-  formula.push_back(l);
-  formula_expr.push_back(expr);
+    formula.push_back(l);
+    formula_expr.push_back(expr);
+  }
 }
+
+/*******************************************************************\
+
+Function: summarizer_bw_cex_completet::add_reason_to_check
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: 
+
+\*******************************************************************/
+
+void summarizer_bw_cex_completet::add_reason_to_check(
+  const exprt &expr,
+  const function_namet &function_name,
+  bool is_function, 
+  const local_SSAt::locationt & info) 
+{
+  literalt l = solver.solver->convert(expr);
+  if(l.is_false())
+  {
+    literalt dummy = solver.solver->convert(symbol_exprt("goto_symex::\\dummy", 
+                                                         bool_typet()));
+    formula.push_back(dummy);
+    formula.push_back(!dummy);
+  }
+  else if(!l.is_true()) 
+  {
+    formula.push_back(l);
+    formula_expr.push_back(expr);
+    reasons_to_check.push_back(reason_to_checkt());
+    reason_to_checkt &r = reasons_to_check.back();
+    r.function_name = function_name;
+    r.info = info;
+    r.is_function = is_function;
+  }
 }
