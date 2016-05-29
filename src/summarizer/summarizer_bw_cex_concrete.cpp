@@ -146,6 +146,12 @@ void summarizer_bw_cex_concretet::compute_summary_rec(
   bool context_sensitive)
 {
   local_SSAt &SSA = ssa_db.get(function_name); 
+
+  //TODO: let's just put all loops into the reason
+  for(local_SSAt::nodest::iterator n_it = SSA.nodes.begin();
+      n_it != SSA.nodes.end(); ++n_it)
+    if (n_it->loophead != SSA.nodes.end())
+      reason[function_name].loops.insert(n_it->loophead->location);
   
   summaryt summary;
   if(summary_db.exists(function_name))
@@ -482,7 +488,10 @@ void summarizer_bw_cex_concretet::inline_summaries(
       
       exprt postcondition_call =  true_exprt();
       postcondition_call = compute_calling_context2(
-  	function_name,SSA,old_summary,n_it,f_it,postcondition,sufficient);
+      	function_name,SSA,old_summary,n_it,f_it,postcondition,sufficient);
+
+      //TODO: just put all function calls into reason
+      reason[function_name].functions.insert(n_it->location);
 
       irep_idt fname = to_symbol_expr(f_it->function()).get_identifier();
       status() << "Recursively summarizing function " << fname << eom;

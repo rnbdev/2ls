@@ -57,11 +57,11 @@ public:
   public:
     inline nodet(
       locationt _location,
-      std::list<nodet>::iterator _loophead)
-      :
+      std::list<nodet>::iterator _loophead):
         enabling_expr(true_exprt()),
-  marked(false),
-        location(_location),
+        marked(false),
+        function_calls_inlined(false),
+        location(_location), 
         loophead(_loophead)
       {
       }
@@ -80,6 +80,7 @@ public:
 
     typedef std::vector<function_application_exprt> function_callst;
     function_callst function_calls;
+    bool function_calls_inlined;
 
     exprt enabling_expr; // for incremental unwinding
     bool marked; // for incremental unwinding
