@@ -771,7 +771,7 @@ void ssa_local_unwindert::add_hoisted_assertions(loopt &loop, bool is_last)
 
 void ssa_local_unwindert::compute_enable_expr()
 {
-  exprt::operandst ssa_current_enabling_expr;
+  SSA.enabling_exprs.clear();
   for(loop_mapt::const_iterator it = loops.begin(); it != loops.end(); ++it)
   {
     for(exprt::operandst::const_iterator 
@@ -780,13 +780,11 @@ void ssa_local_unwindert::compute_enable_expr()
     {
       exprt::operandst::const_iterator lh = e_it; lh++;
       if(lh != ((it->second).loop_enabling_exprs).end()) 
-        ssa_current_enabling_expr.push_back(not_exprt(*e_it));
+        SSA.enabling_exprs.push_back(not_exprt(*e_it));
       else 
-        ssa_current_enabling_expr.push_back(*e_it);
+        SSA.enabling_exprs.push_back(*e_it);
     }
   }
-
-  SSA.combined_enabling_expr = conjunction(ssa_current_enabling_expr);
 }
 
 

@@ -75,9 +75,29 @@ void ssa_dependency_grapht::create(const local_SSAt &SSA, ssa_inlinert &ssa_inli
   bool ignore_equality_done = false;
   
   for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
-      n_it != SSA.nodes.end(); n_it++){
-
+      n_it != SSA.nodes.end(); n_it++)
+  {
     const local_SSAt::nodet &node=*n_it;
+
+    // check whether this node is enabled
+    if(!node.enabling_expr.is_true())
+    {
+      bool enabled=true;
+      const irep_idt &enable=to_symbol_expr(node.enabling_expr).get_identifier();
+      for(size_t i=0; i<SSA.enabling_exprs.size(); ++i)
+      {
+        if(SSA.enabling_exprs[i].id()==ID_not)
+        {
+          if(to_symbol_expr(SSA.enabling_exprs[i].op0()).get_identifier()==enable)
+          {
+            enabled=false;
+            break;
+          }
+        }
+      }
+      if(!enabled)
+        continue;
+    }
 
     // collecting symbols from equalities and populating dependency graph nodes
     for(local_SSAt::nodet::equalitiest::const_iterator e_it=node.equalities.begin();

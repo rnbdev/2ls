@@ -1839,7 +1839,6 @@ Function: local_SSAt::has_function_calls
 
 bool local_SSAt::has_function_calls() const
 {
-  /*
   bool found=false;
   for(local_SSAt::nodest::const_iterator n_it=nodes.begin();
       n_it!=nodes.end(); n_it++)
@@ -1851,15 +1850,4 @@ bool local_SSAt::has_function_calls() const
     }
   }
   return found;
-  */
-  
-  
-  if(combined_enabling_expr.is_not_nil()){
-    std::cout << "combined enabling expr:" << from_expr(ns, "", combined_enabling_expr) << "\n";
-    return combined_enabling_expr;
-  }
-  else{
-    std::cout << "combined enabling expr is nil; returning true\n";
-    return true_exprt();
-  }
 }

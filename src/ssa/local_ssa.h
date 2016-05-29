@@ -120,9 +120,7 @@ public:
   }
 
   // for incremental unwinding
-  std::list<symbol_exprt> enabling_exprs;
-
-  exprt combined_enabling_expr = true_exprt(); // combined enabling expr for loop-specific unwindings
+  std::vector<exprt> enabling_exprs;
   exprt get_enabling_exprs() const;
 
   // function entry and exit variables
