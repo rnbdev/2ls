@@ -60,7 +60,7 @@ class ssa_refiner_selectivet : public ssa_refinert
     {}
 
     virtual bool operator()(); 
-    virtual unsigned get_unwind() { return unwind; }
+    virtual unsigned get_unwind() { return unwind>0 ? unwind-1 : 0; }
   
  protected:
   ssa_dbt &ssa_db;

@@ -32,7 +32,7 @@ class ssa_refiner_monolithict : public ssa_refinert
     {}
 
     virtual bool operator()(); 
-    virtual unsigned get_unwind() { return unwind; }
+    virtual unsigned get_unwind() { return unwind>0 ? unwind-1 : 0; }
   
  protected:
   summary_dbt &summary_db;
