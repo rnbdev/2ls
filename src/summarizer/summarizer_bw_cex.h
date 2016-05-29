@@ -14,6 +14,7 @@ Author: Kumar Madhukar, Peter Schrammel
 #include <util/options.h>
 #include "../ssa/ssa_inliner.h"
 #include "../ssa/ssa_unwinder.h"
+#include "../ssa/ssa_refiner_selective.h"
 #include "../ssa/local_ssa.h"
 #include "ssa_db.h"
 
@@ -22,29 +23,7 @@ Author: Kumar Madhukar, Peter Schrammel
 class summarizer_bw_cex_baset : public summarizer_bwt
 {
  public:
-  struct reason_infot
-  {
-    typedef local_SSAt::locationt function_infot; //call_site; restriction: we assume that there is a single function call in an SSA node
-    typedef local_SSAt::locationt loop_infot;
-    std::set<function_infot> functions;
-    std::set<loop_infot> loops; 
-  };
-
-  class reasont : public std::map<irep_idt, reason_infot>
-  {
-  public:
-    void merge(const reasont &other)
-    {
-      for(reasont::const_iterator it = other.begin();
-	  it != other.end(); ++it)
-      {
-	reason_infot &r = (*this)[it->first];
-        r.functions.insert(it->second.functions.begin(), 
-			   it->second.functions.end());
-        r.loops.insert(it->second.loops.begin(), it->second.loops.end());
-      }
-    }
-  };
+  typedef ssa_refiner_selectivet::reasont reasont;
 
   virtual void summarize();
   virtual void summarize(const function_namet &entry_function);

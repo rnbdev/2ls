@@ -33,6 +33,7 @@ public:
   void init();
 
   void unwind_loop_at_location(unsigned loc, unsigned k);
+  unsigned unwind_loop_at_location(unsigned loc);
   void unwind(unsigned k);
 
 #if 0
@@ -150,6 +151,7 @@ public:
   void init_localunwinders();
   
   void unwind_loop_alone(const irep_idt fname, unsigned loc, unsigned k);
+  unsigned unwind_loop_once_more(const irep_idt fname, unsigned loc);
   void unwind(const irep_idt fname, unsigned k);
   void unwind_all(unsigned k);
 

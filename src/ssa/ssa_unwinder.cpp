@@ -277,6 +277,13 @@ void ssa_local_unwindert::build_exit_conditions()
  *
  *****************************************************************************/
 
+unsigned ssa_local_unwindert::unwind_loop_at_location(unsigned loc)
+{
+  unsigned k = loops.at(loc).current_unwinding+1;
+  unwind_loop_at_location(loc,k);
+  return k;
+}
+
 void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
 {
   if(SSA.current_unwinding>=(long)k)
@@ -994,6 +1001,26 @@ void ssa_unwindert::unwind_loop_alone(const irep_idt fname, unsigned loc, unsign
   unwinder_mapt::iterator it = unwinder_map.find(fname);
   assert(it != unwinder_map.end());
   it->second.unwind_loop_at_location(loc, k);
+}
+
+/*****************************************************************************\
+ *
+ * Function : ssa_unwindert::unwind_loop_once_more()
+ *
+ * Input :
+ *
+ * Output :
+ *
+ * Purpose :
+ *
+ *****************************************************************************/
+
+unsigned ssa_unwindert::unwind_loop_once_more(const irep_idt fname, unsigned loc)
+{
+  assert(is_initialized);
+  unwinder_mapt::iterator it = unwinder_map.find(fname);
+  assert(it != unwinder_map.end());
+  return it->second.unwind_loop_at_location(loc);
 }
 
 
