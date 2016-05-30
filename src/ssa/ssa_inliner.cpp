@@ -112,6 +112,7 @@ bool ssa_inlinert::get_inlined(
   exprt::operandst &assert_summaries,
   exprt::operandst &noassert_summaries,
   exprt::operandst &bindings,
+  assertion_mapt &assertion_map,
   int counter,
   bool error_summ)
 {
@@ -120,7 +121,8 @@ bool ssa_inlinert::get_inlined(
 
   bool assertion_flag = get_summaries(fSSA,
     summaryt::call_sitet(fSSA.goto_function.body.instructions.end()),
-    forward,assert_summaries,noassert_summaries,bindings,error_summ);
+    forward,assert_summaries,noassert_summaries,
+    bindings,assertion_map,error_summ);
 
   //bindings
   exprt guard_binding;
@@ -288,15 +290,35 @@ exprt ssa_inlinert::get_summaries(const local_SSAt &SSA)
   return and_exprt(conjunction(bindings), conjunction(summaries));
 }
 
+exprt ssa_inlinert::get_summaries(const local_SSAt &SSA,
+  assertion_mapt &assertion_map)
+{
+  exprt::operandst summaries,bindings;
+  get_summaries(SSA,true,summaries,bindings,assertion_map);
+  return and_exprt(conjunction(bindings),conjunction(summaries));
+}
+
 void ssa_inlinert::get_summaries(
   const local_SSAt &SSA,
   bool forward,
   exprt::operandst &summaries,
   exprt::operandst &bindings)
 {
+  assertion_mapt assertion_map;
   get_summaries(SSA,
                 summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
-                forward,summaries,summaries,bindings);
+                forward,summaries,summaries,bindings,assertion_map);
+}
+
+void ssa_inlinert::get_summaries(const local_SSAt &SSA,
+                                 bool forward,
+                                 exprt::operandst &summaries,
+                                 exprt::operandst &bindings,
+                                 assertion_mapt &assertion_map)
+{
+  get_summaries(SSA,
+                summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
+                forward,summaries,summaries,bindings,assertion_map);
 }
 
 /*******************************************************************\
@@ -319,10 +341,32 @@ bool ssa_inlinert::get_summaries(
   exprt::operandst &noassert_summaries,
   exprt::operandst &bindings)
 {
+  assertion_mapt assertion_map;
+  return get_summaries(SSA,
+           summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
+         forward,assert_summaries,noassert_summaries,bindings,assertion_map);
+}
+
+bool ssa_inlinert::get_summaries(const local_SSAt &SSA,
+                                 const summaryt::call_sitet &current_call_site,
+                                 bool forward,
+                                 exprt::operandst &assert_summaries,
+                                 exprt::operandst &noassert_summaries,
+                                 exprt::operandst &bindings,
+                                 assertion_mapt &assertion_map,
+                                 bool error_summ)
+{
   bool assertion_flag = false;
   for(local_SSAt::nodest::const_iterator n_it=SSA.nodes.begin();
       n_it!=SSA.nodes.end(); n_it++)
   {
+    for(local_SSAt::nodet::assertionst::const_iterator a_it = 
+          n_it->assertions.begin();
+        a_it != n_it->assertions.end(); a_it++)
+    {
+      assertion_map[n_it->location].push_back(*a_it);
+      rename(assertion_map[n_it->location].back(), counter);
+    }
     for(local_SSAt::nodet::function_callst::const_iterator f_it = 
           n_it->function_calls.begin();
         f_it!=n_it->function_calls.end(); f_it++)
@@ -341,7 +385,7 @@ bool ssa_inlinert::get_summaries(
         bool new_assertion_flag = 
           get_inlined(SSA,n_it,f_it,
                     forward,assert_summaries,noassert_summaries,
-                    bindings,counter,error_summ);
+                      bindings,assertion_map,counter,error_summ);
         assertion_flag = assertion_flag || new_assertion_flag;
       }
       //get summary
@@ -859,6 +903,8 @@ Function: ssa_inlinert::rename
 
 irep_idt ssa_inlinert::rename(irep_idt &id, int counter)
 {
+  if(counter<0)
+    return id;
   return id2string(id)+"@"+i2string(counter);
 }
 
@@ -924,13 +970,10 @@ void ssa_inlinert::rename(exprt &expr, int counter)
 {
   if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol) 
   {
-    std::string id_str = id2string(expr.get(ID_identifier));
-    irep_idt id;
-
-    if(id_str.find('@') != std::string::npos)
-      id = id_str;
-    else
-      id = id_str+"@"+i2string(counter);
+    irep_idt id = expr.get(ID_identifier);
+    std::string id_str = id2string(id);
+    if(id_str.find('@') == std::string::npos)
+      rename(id, counter);
       
     expr.set(ID_identifier,id);
   }
