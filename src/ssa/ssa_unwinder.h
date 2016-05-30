@@ -119,8 +119,10 @@ protected:
   void build_pre_post_map();
   void build_exit_conditions();
 
-  void unwind(loopt &loop, unsigned k, bool is_new_parent, bool propagate = false, unsigned prop_unwind = 0, unsigned prop_loc = 0);
-
+  void unwind(loopt &loop, unsigned k, bool is_new_parent,
+	      bool propagate = false, unsigned prop_unwind = 0,
+	      unsigned prop_loc = 0, bool propagate_all = false);
+  
   exprt get_continuation_condition(const loopt& loop) const;
   void loop_continuation_conditions(
     const loopt& loop, exprt::operandst &loop_cont) const;

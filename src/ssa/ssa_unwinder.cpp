@@ -345,7 +345,7 @@ void ssa_local_unwindert::unwind(unsigned k)
 {
   if(SSA.current_unwinding>=(long)k)
     return;
-
+  
   current_enabling_expr=
     symbol_exprt("unwind$"+id2string(fname)+"$enable"+i2string(k),
                  bool_typet());
@@ -363,7 +363,8 @@ void ssa_local_unwindert::unwind(unsigned k)
   {
     if(!it->second.is_root)
       continue;
-(??)    unwind(it->second,k,false); //recursive
+    //unwind(it->second,k,false,false); //recursive
+    unwind(it->second, k, false, true, k, 0, true); //recursive
     assert(SSA.current_unwindings.empty());
   }
   // update current unwinding
@@ -389,7 +390,8 @@ Function: ssa_local_unwindert::unwind
 \*******************************************************************/
 
 void ssa_local_unwindert::unwind(loopt &loop, unsigned k, bool is_new_parent,
-				 bool propagate, unsigned prop_unwind, unsigned prop_loc)
+				 bool propagate, unsigned prop_unwind,
+				 unsigned prop_loc, bool propagate_all)
 {
   odometert context=SSA.current_unwindings;
 #ifdef DEBUG
@@ -452,26 +454,35 @@ void ssa_local_unwindert::unwind(loopt &loop, unsigned k, bool is_new_parent,
 #ifdef DEBUG
       std::cout << i << ">" << loop.current_unwinding << std::endl;
 #endif
-      if(propagate == true){
-        // if this child loop is the desired loop then unwind k and do not propagate
-        // else unwind loop.current_unwinding and propagate
-	if(*l_it == prop_loc){
-	  unwind(loops[*l_it],k,i>loop.current_unwinding ||
-		 is_new_parent,false);
-	}
-	else{
-	  unwind(loops[*l_it],loops[*l_it].current_unwinding,i>loop.current_unwinding ||
-		 is_new_parent,true,prop_unwind,prop_loc);
-	}
+      if(propagate_all == true){
+	unwind(loops[*l_it],k,i>loop.current_unwinding ||
+	       is_new_parent,false);
       }
       else{
-	unwind(loops[*l_it],loops[*l_it].current_unwinding,
-	       i>loop.current_unwinding || is_new_parent,false);
+	if(propagate == true){
+	  // if this child loop is the desired loop then unwind k and do not propagate
+	  // else unwind loop.current_unwinding and propagate
+	  if(*l_it == prop_loc){
+	    unwind(loops[*l_it],k,i>loop.current_unwinding ||
+		   is_new_parent,false);
+	  }
+	  else{
+	    unwind(loops[*l_it],loops[*l_it].current_unwinding,i>loop.current_unwinding ||
+		   is_new_parent,true,prop_unwind,prop_loc);
+	  }
+	}
+	else{
+	  unwind(loops[*l_it],loops[*l_it].current_unwinding,
+		 i>loop.current_unwinding || is_new_parent,false);
+	}
       }
     }
     SSA.increment_unwindings(0);
   }
   SSA.increment_unwindings(-1);
+#if 0
+  std::cout << "calling add_exit_merge with k = " << k << "\n";
+#endif
   add_exit_merges(loop, k);
 }
 
