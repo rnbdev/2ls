@@ -202,11 +202,14 @@ Function: summary_checker_baset::check_properties
 summary_checker_baset::resultt summary_checker_baset::check_properties()
 {
   std::set<irep_idt> seen_function_calls;
-  return check_properties("", "", seen_function_calls);
+  return check_properties("", "", seen_function_calls, false);
 }
 
 summary_checker_baset::resultt summary_checker_baset::check_properties(
-  irep_idt function_name, irep_idt entry_function, std::set<irep_idt> seen_function_calls)
+  irep_idt function_name, 
+  irep_idt entry_function, 
+  std::set<irep_idt> seen_function_calls,
+  bool is_inlined)
 {
   if(function_name!="")
   {
@@ -236,15 +239,19 @@ summary_checker_baset::resultt summary_checker_baset::check_properties(
 #endif
           if(seen_function_calls.find(fname) == seen_function_calls.end()){
             seen_function_calls.insert(fname);
-            check_properties(fname, entry_function, seen_function_calls);
+            check_properties(fname, entry_function, seen_function_calls,
+              n_it->function_calls_inlined);
           }
         }
       }
     }
 
-    //now check function itself
-    status() << "Checking properties of " << f_it->first << messaget::eom;
-    check_properties(f_it, entry_function);
+    if(!is_inlined)
+    {
+      //now check function itself
+      status() << "Checking properties of " << f_it->first << messaget::eom;
+      check_properties(f_it, entry_function);
+    }
   }
   else // check all the functions
   {
@@ -373,10 +380,12 @@ void summary_checker_baset::check_properties(
   //callee summaries
   solver << ssa_inliner.get_summaries(SSA);
 
+#if 0
   //freeze loop head selects
   exprt::operandst loophead_selects;
   summarizer_baset::get_loophead_selects(SSA,
     ssa_unwinder.get(f_it->first),*solver.solver, loophead_selects);
+#endif
 
   //spuriousness checkers
   summarizer_bw_cex_baset *summarizer_bw_cex = NULL;
@@ -449,6 +458,12 @@ void summary_checker_baset::check_properties(
     SSA.find_nodes(i_it,assertion_nodes);
 
     irep_idt property_id = location.get_property_id();
+    
+    if(i_it->guard.is_true())
+    {
+      property_map[property_id].result=PASS;
+      continue;
+    }
 
     //do not recheck properties that have already been decided
     if(property_map[property_id].result!=UNKNOWN) continue; 
@@ -594,81 +609,49 @@ void summary_checker_baset::do_show_vcc(
   std::cout << "{1} " << from_expr(SSA.ns, "", *a_it) << "\n";
   
   std::cout << "\n";
-}
-
-(??)/*******************************************************************\
-(??)
-(??)Function: summary_checker_baset::get_loop_continues
-(??)
-(??)  Inputs:
-(??)
-(??) Outputs:
-(??)
-(??) Purpose: returns the loop continuation guards at the end of the
-(??)          loops in order to check whether we can unroll further
-(??)
-(??)\*******************************************************************/
-(??)
-(??)exprt::operandst summary_checker_baset::get_loop_continues(
-(??)  const irep_idt &function_name, 
-(??)  const local_SSAt &SSA, prop_convt &solver)
-(??){
-(??)  exprt::operandst loop_continues;
-(??)
-(??)  ssa_unwinder.get(function_name).loop_continuation_conditions(loop_continues);
-(??)  if(loop_continues.size()==0) 
-(??)  {
-(??)    //TODO: this should actually be done transparently by the unwinder
-(??)    for(local_SSAt::nodest::const_iterator n_it = SSA.nodes.begin();
-(??)	n_it != SSA.nodes.end(); n_it++)
-(??)    {
-(??)      if(n_it->loophead==SSA.nodes.end()) continue;
-(??)      symbol_exprt guard = SSA.guard_symbol(n_it->location);
-(??)      symbol_exprt cond = SSA.cond_symbol(n_it->location);
-(??)      loop_continues.push_back(and_exprt(guard,cond));
-(??)    }
-(??)  }
-(??)
-(??)#if 0
-(??)  std::cout << "loophead_continues: " << from_expr(SSA.ns,"",disjunction(loop_continues)) << std::endl;
-(??)#endif
-(??)
-(??)  return loop_continues;
 (??)}
 (??)
+(??)
 (??)/*******************************************************************\
 (??)
-(??)Function: summary_checker_baset::is_fully_unwound
+(??)Function: summary_checker_baset::is_spurious
 (??)
 (??)  Inputs:
 (??)
 (??) Outputs:
 (??)
-(??) Purpose: checks whether the loops have been fully unwound
+(??) Purpose: checks whether a countermodel is spurious
 (??)
 (??)\*******************************************************************/
 (??)
-(??)bool summary_checker_baset::is_fully_unwound(
-(??)  const exprt::operandst &loop_continues, 
-(??)  const exprt::operandst &loophead_selects,
-(??)  incremental_solvert &solver)
+(??)bool summary_checker_baset::is_spurious(const exprt::operandst &loophead_selects, 
+(??)                                        incremental_solvert &solver)
 (??){
-(??)  solver.new_context();
-(??)  solver << and_exprt(conjunction(loophead_selects),
-(??)		      disjunction(loop_continues));
+(??)  //check loop head choices in model
+(??)  bool invariants_involved = false;
+(??)  for(exprt::operandst::const_iterator l_it = loophead_selects.begin();
+(??)      l_it != loophead_selects.end(); l_it++)
+(??)  {
+(??)    if(solver.get(l_it->op0()).is_true()) 
+(??)    {
+(??)      invariants_involved = true; 
+(??)      break;
+(??)    }
+(??)  }
+(??)  if(!invariants_involved) return false;
+(??)  
+(??)  // force avoiding paths going through invariants
+(??)  solver << conjunction(loophead_selects);
 (??)
 (??)  solver_calls++; //statistics
 (??)
 (??)  switch(solver())
 (??)  {
 (??)  case decision_proceduret::D_SATISFIABLE:
-(??)    solver.pop_context();
 (??)    return false;
 (??)    break;
 (??)      
 (??)  case decision_proceduret::D_UNSATISFIABLE:
-(??)    solver.pop_context();
-(??)    solver << conjunction(loophead_selects); 
 (??)    return true;
 (??)    break;
 (??)
@@ -676,55 +659,6 @@ void summary_checker_baset::do_show_vcc(
 (??)  default:
 (??)    throw "error from decision procedure";
 (??)  }
-(??)}
-
-/*******************************************************************\
-
-Function: summary_checker_baset::is_spurious
-
-  Inputs:
-
- Outputs:
-
- Purpose: checks whether a countermodel is spurious
-
-\*******************************************************************/
-
-bool summary_checker_baset::is_spurious(const exprt::operandst &loophead_selects, 
-                                        incremental_solvert &solver)
-{
-  //check loop head choices in model
-  bool invariants_involved = false;
-  for(exprt::operandst::const_iterator l_it = loophead_selects.begin();
-      l_it != loophead_selects.end(); l_it++)
-  {
-    if(solver.get(l_it->op0()).is_true()) 
-    {
-      invariants_involved = true; 
-      break;
-    }
-  }
-  if(!invariants_involved) return false;
-  
-  // force avoiding paths going through invariants
-  solver << conjunction(loophead_selects);
-
-  solver_calls++; //statistics
-
-  switch(solver())
-  {
-  case decision_proceduret::D_SATISFIABLE:
-    return false;
-    break;
-      
-  case decision_proceduret::D_UNSATISFIABLE:
-    return true;
-    break;
-
-  case decision_proceduret::D_ERROR:    
-  default:
-    throw "error from decision procedure";
-  }
 }
 
 /*******************************************************************\

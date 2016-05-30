@@ -143,7 +143,7 @@ property_checkert::resultt summary_checker_ait::operator()(
 */
 
   std::set<irep_idt> seen_function_calls;
-  property_checkert::resultt result =  check_properties(entry_function, entry_function, seen_function_calls); 
+  property_checkert::resultt result =  check_properties(entry_function, entry_function, seen_function_calls, false); 
   report_statistics();
   return result;
 }

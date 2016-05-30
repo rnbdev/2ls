@@ -84,23 +84,11 @@ protected:
   property_checkert::resultt check_properties(
      irep_idt function_name,
      irep_idt entry_function,
-     std::set<irep_idt> seen_function_calls);
+     std::set<irep_idt> seen_function_calls,
+     bool is_inlined);
   void check_properties(
     const ssa_dbt::functionst::const_iterator f_it,
     irep_idt entry_function="");
-	
-  void error_summary_using_vars(const ssa_dbt::functionst::const_iterator f_it);
-  
-  exprt::operandst get_loophead_selects(
-    const irep_idt &function_name, const local_SSAt &, prop_convt &);
-  bool is_spurious(const exprt::operandst& loophead_selects, 
-		   incremental_solvert&);
-  exprt::operandst get_loop_continues(
-    const irep_idt &function_name, const local_SSAt &, prop_convt &);
-  bool is_fully_unwound(
-    const exprt::operandst& loop_continues,
-    const exprt::operandst& loophead_selects, 
-    incremental_solvert&);
 };
 
 #endif

@@ -261,7 +261,7 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
       */
       /////////////////////////////////////////////////////////////////////////////////////
 
-#if 0
+#ifdef REFINE_ALL
       //TODO: just put all function calls into reason
       reason[function_name].functions.insert(depnode.location);
 #endif

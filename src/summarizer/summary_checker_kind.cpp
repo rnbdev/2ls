@@ -69,7 +69,7 @@ property_checkert::resultt summary_checker_kindt::operator()(
     //check
     std::set<irep_idt> seen_function_calls;
     result =  check_properties(entry_function, entry_function, 
-                               seen_function_calls); 
+                               seen_function_calls, false); 
 
     //do static analysis and check again
     if(result == property_checkert::UNKNOWN &&
@@ -80,7 +80,7 @@ property_checkert::resultt summary_checker_kindt::operator()(
       summarize(goto_model);
       std::set<irep_idt> seen_function_calls;
       result =  check_properties(entry_function, entry_function, 
-                                 seen_function_calls); 
+                                 seen_function_calls, false); 
     }
 
     //result

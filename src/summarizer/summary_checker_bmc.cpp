@@ -70,7 +70,8 @@ property_checkert::resultt summary_checker_bmct::operator()(
 
     //check
     std::set<irep_idt> seen_function_calls;
-    result =  check_properties(entry_function, entry_function, seen_function_calls); 
+    result =  check_properties(entry_function, entry_function, 
+                               seen_function_calls, false); 
 
     //result
     if(result == property_checkert::PASS) 
