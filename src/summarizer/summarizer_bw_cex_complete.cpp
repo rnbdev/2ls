@@ -289,13 +289,23 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
     // if the dependency set is non-empty
     if(!worknode.dependency_set.empty()){
       exprt worknode_info = depnode.node_info;
-      if(depnode.is_assertion == true)
-        worknode_info = not_exprt(worknode_info);
+
+      bool is_error_assertion = false;
+      assert(error_assertion.id()==ID_not);
+      if(error_assertion.op0().id()!=ID_and)
+        is_error_assertion = (worknode_info == error_assertion.op0());
+      else
+        forall_operands(a_it, error_assertion.op0())
+          if(worknode_info == *a_it)
+          {
+            is_error_assertion = true;
+            break;
+          }
       
       if(worknode.node_index != 0){
         if(!(depnode.is_function_call)){
-          if((depnode.is_assertion == false) ||
-             (worknode_info == error_assertion)){
+          if(!depnode.is_assertion || is_error_assertion) 
+          {
             /*
               std::cout << "Solver <-- " << function_name << ": (node) node#:"
               << worknode.node_index << "\t original info ~ "
@@ -310,7 +320,7 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 #endif
 
             if(depnode.is_assertion) //keep for later
-               error_assertion = worknode_info;
+              renamed_error_assertion.push_back(worknode_info);
             else
               solver << worknode_info;
 
@@ -527,13 +537,16 @@ Function: summarizer_bw_cex_completet::check()
 
 property_checkert::resultt summarizer_bw_cex_completet::check()
 {
+  assert(!renamed_error_assertion.empty()); //otherwise the error assertion was not renamed
+
 //add loophead selects
 #ifdef REFINE_ALL
   solver.new_context();
-  solver << error_assertion;
+  solver << not_exprt(conjunction(renamed_error_assertion));
   solver << conjunction(loophead_selects);
 #else
-  formula.push_back(solver.solver->convert(error_assertion));
+  formula.push_back(solver.solver->convert(
+                      not_exprt(conjunction(renamed_error_assertion))));
   solver.solver->set_assumptions(formula);
 #endif
 

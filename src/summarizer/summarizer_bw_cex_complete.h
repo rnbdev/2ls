@@ -48,6 +48,7 @@ class summarizer_bw_cex_completet : public summarizer_bw_cex_baset
   exprt::operandst formula_expr; //for debugging
   exprt::operandst loophead_selects;
   exprt::operandst loop_continues;
+  exprt::operandst renamed_error_assertion;
 
   struct reason_to_checkt {
     function_namet function_name;
