@@ -347,7 +347,7 @@ void ssa_local_unwindert::unwind(unsigned k)
                  bool_typet());
   for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it)
   {
-     it->second.loop_enabling_exprs.push_back(current_enabling_expr);
+     it->second.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(it->first)+"$enable"+i2string(k),bool_typet()));
   }
 
   // TODO: just for exploratory integration, must go away
@@ -689,7 +689,7 @@ void ssa_local_unwindert::add_exit_merges(loopt &loop, unsigned k)
   SSA.nodes.push_back(local_SSAt::nodet(loop.body_nodes.begin()->location,
                                         SSA.nodes.end())); // add new node
   local_SSAt::nodet &node=SSA.nodes.back();
-  node.enabling_expr=current_enabling_expr;
+(??)  node.enabling_expr = current_enabling_expr;
 
   for(loopt::exit_mapt::const_iterator x_it=loop.exit_map.begin();
        x_it!=loop.exit_map.end(); x_it++)

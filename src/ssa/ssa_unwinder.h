@@ -59,9 +59,13 @@ public:
     symbol_exprt &var, const local_SSAt::nodet &node, bool pre) const;
 #endif
 
-  // TODO: this must go away, should use SSA.rename instead
-  void unwinder_rename(
-    symbol_exprt &var, const local_SSAt::nodet &node, bool pre) const;
+  //TODO: this must go away, should use SSA.rename instead
+  void unwinder_rename(symbol_exprt &var,
+		       const local_SSAt::nodet &node, bool pre) const;
+protected:
+  const irep_idt fname;
+  unwindable_local_SSAt& SSA;
+  bool is_kinduction,is_bmc;
 
   class loopt // loop tree
   {
@@ -83,7 +87,6 @@ public:
 
     // to have an enabling_expr and current_unwindings (odometert)
     exprt::operandst loop_enabling_exprs;
-    //exprt loop_enabling_expr_current; //seems superfluous
 
     exprt::operandst current_continuation_conditions;
 
