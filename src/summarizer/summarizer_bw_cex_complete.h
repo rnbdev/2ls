@@ -74,8 +74,6 @@ class summarizer_bw_cex_completet : public summarizer_bw_cex_baset
 			const function_namet &function_name,
 			find_symbols_sett &dependency_set);
 
-  void add_to_formula(const exprt &expr);
-
 };
 
 

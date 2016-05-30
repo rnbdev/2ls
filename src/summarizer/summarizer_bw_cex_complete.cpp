@@ -26,7 +26,7 @@ Author: Madhukar Kumar, Peter Schrammel
 
 #include "summarizer_bw_cex_complete.h"
 
-//#define SHOW_UNSAT_CORE
+#define REFINE_ALL
 
 /*******************************************************************\
 
@@ -101,13 +101,9 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
   exprt enable_exprs = SSA.get_enabling_exprs();
   ssa_inliner.rename(enable_exprs, counter);
 
-#ifdef SHOW_UNSAT_CORE
-  add_to_formula(enable_exprs);
-#else
   solver << enable_exprs;
-#endif
 
-#if 0
+#ifdef REFINE_ALL
   //TODO: let's just put all loops into the reason
   for(local_SSAt::nodest::iterator n_it = SSA.nodes.begin();
       n_it != SSA.nodes.end(); ++n_it)
@@ -312,11 +308,11 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
                       << worknode.node_index << "\t  renamed info ~ "
                       << from_expr((ssa_db.get(function_name)).ns, "", worknode_info) << "\n";
 #endif
-#ifdef SHOW_UNSAT_CORE
-            add_to_formula(worknode_info);
-#else
-            solver << worknode_info;
-#endif
+
+            if(depnode.is_assertion) //keep for later
+               error_assertion = worknode_info;
+            else
+              solver << worknode_info;
 
             if(depnode.is_loop)
             {
@@ -354,11 +350,10 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
                     << from_expr(ssa_db.get(function_name).ns, "", guard_binding) << "\n";
 #endif
 
-#ifdef SHOW_UNSAT_CORE
-          add_to_formula(guard_binding);
+#ifdef REFINE_ALL
+          solver << guard_binding;
 #else
           add_reason_to_check(guard_binding,function_name,true,depnode.location);
-          //solver << guard_binding;
 #endif
         }
       }
@@ -533,35 +528,27 @@ Function: summarizer_bw_cex_completet::check()
 property_checkert::resultt summarizer_bw_cex_completet::check()
 {
 //add loophead selects
-#ifdef SHOW_UNSAT_CORE
-  add_to_formula(conjunction(loophead_selects));
+#ifdef REFINE_ALL
+  solver.new_context();
+  solver << error_assertion;
+  solver << conjunction(loophead_selects);
 #else
-//  solver << conjunction(loophead_selects);
-#endif
-
+  formula.push_back(solver.solver->convert(error_assertion));
   solver.solver->set_assumptions(formula);
+#endif
 
   solver_calls++; // for statistics
   if(solver() == decision_proceduret::D_SATISFIABLE)
   {
+    //pop_context() not necessary
     return property_checkert::FAIL;
   }
-#ifdef SHOW_UNSAT_CORE
-  else
-  {
-    const namespacet &ns = ssa_db.get(entry_function).ns;
-    for(unsigned i=0; i<formula.size(); i++) 
-    {
-      if(solver.solver->is_in_conflict(formula[i]))
-        debug() << "is_in_conflict: " << from_expr(ns, "", formula_expr[i]) << eom;
-    }
-  }
-#else
+#ifndef REFINE_ALL
   else
   {
     const namespacet &ns = ssa_db.get(entry_function).ns;
     //get reasons for spuriousness
-    for(unsigned i=0; i<formula.size(); i++) 
+    for(unsigned i=0; i<formula_expr.size(); i++) 
     {
       if(solver.solver->is_in_conflict(formula[i]))
       {
@@ -575,12 +562,14 @@ property_checkert::resultt summarizer_bw_cex_completet::check()
     }
     bvt assumptions;
     solver.solver->set_assumptions(assumptions);
-    for(unsigned i=0; i<formula.size(); i++) 
+    for(unsigned i=0; i<formula_expr.size(); i++) 
     {
       if(reasons_to_check[i].is_function)
         solver << literal_exprt(formula[i]);
     }
   }
+#else
+  solver.pop_context();
 #endif    
 
   //check whether loops have been fully unwound
@@ -619,23 +608,6 @@ void summarizer_bw_cex_completet::debug_print
     std::cout << *d_it << ", ";
   }
   std::cout << "\n";
-}
-
-void summarizer_bw_cex_completet::add_to_formula(const exprt &expr) 
-{
-  literalt l = solver.solver->convert(expr);
-  if(l.is_false())
-  {
-    literalt dummy = solver.solver->convert(symbol_exprt("goto_symex::\\dummy", 
-                                                         bool_typet()));
-    formula.push_back(dummy);
-    formula.push_back(!dummy);
-  }
-  else if(!l.is_true()) 
-  {
-    formula.push_back(l);
-    formula_expr.push_back(expr);
-  }
 }
 
 /*******************************************************************\

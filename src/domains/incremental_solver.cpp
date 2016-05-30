@@ -176,6 +176,7 @@ void incremental_solvert::debug_add_to_formula(const exprt &expr)
     debug() << "literal " << l << ": " << from_expr(ns, "", expr) << eom;
 #endif
     formula.push_back(l);
+    formula_expr.push_back(expr);
   }
 #endif
 }
