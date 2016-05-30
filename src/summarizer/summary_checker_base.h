@@ -89,6 +89,9 @@ protected:
   void check_properties(
     const ssa_dbt::functionst::const_iterator f_it,
     irep_idt entry_function="");
+
+  bool has_assertion(irep_idt function_name);
+
 };
 
 #endif

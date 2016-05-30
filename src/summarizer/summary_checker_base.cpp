@@ -312,24 +312,7 @@ void summary_checker_baset::check_properties(
   unwindable_local_SSAt &SSA = *f_it->second;
 
   //check whether function has assertions
-  //  SSA.goto_function.body.has_assertion() has become too semantic
-  bool has_assertion = false;
-  for(goto_programt::instructionst::const_iterator
-        i_it=SSA.goto_function.body.instructions.begin();
-      i_it!=SSA.goto_function.body.instructions.end();
-      i_it++)
-  {
-    if(!i_it->is_assert())
-      continue;
-  
-    irep_idt property_id = i_it->source_location.get_property_id();
-    
-    if(i_it->guard.is_true())
-      property_map[property_id].result=PASS;
-    else
-      has_assertion=true;
-  }
-  if(!has_assertion)
+  if(!has_assertion(f_it->first))
     return;
 
   bool all_properties = options.get_bool_option("all-properties");
@@ -683,4 +666,54 @@ void summary_checker_baset::instrument_and_output(goto_modelt &goto_model)
   write_goto_binary(filename, 
                     goto_model.symbol_table, 
                     goto_model.goto_functions, get_message_handler());
+}
+
+/*******************************************************************\
+
+Function: summary_checker_baset::has_assertion
+
+  Inputs:
+
+ Outputs: 
+
+ Purpose: searches recursively for assertions in inlined functions
+
+\*******************************************************************/
+
+bool summary_checker_baset::has_assertion(irep_idt function_name)
+{
+  //  SSA.goto_function.body.has_assertion() has become too semantic
+  bool _has_assertion = false;
+  const local_SSAt &SSA = ssa_db.get(function_name);
+
+  for(local_SSAt::nodest::const_iterator 
+	  n_it = SSA.nodes.begin(); n_it != SSA.nodes.end(); ++n_it)
+  {
+    for(local_SSAt::nodet::assertionst::const_iterator 
+	    a_it = n_it->assertions.begin(); a_it != n_it->assertions.end(); ++a_it)
+    {
+      irep_idt property_id = n_it->location->source_location.get_property_id();
+    
+      if(n_it->location->guard.is_true())
+        property_map[property_id].result=PASS;
+      else
+        _has_assertion=true;
+    }
+    if(!n_it->function_calls_inlined)
+      continue;
+
+    for(local_SSAt::nodet::function_callst::const_iterator 
+	    f_it = n_it->function_calls.begin(); 
+        f_it != n_it->function_calls.end(); ++f_it)
+    {
+      irep_idt fname = to_symbol_expr(f_it->function()).get_identifier();
+      if(ssa_db.functions().find(fname)==ssa_db.functions().end())
+        continue;
+
+      bool new_has_assertion = has_assertion(fname); //recurse
+      _has_assertion = _has_assertion || new_has_assertion;
+    }
+  }
+
+  return _has_assertion;
 }
