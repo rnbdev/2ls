@@ -181,6 +181,13 @@ void cover_goals_extt::assignment()
     if(property_map[it->first].result==property_checkert::UNKNOWN &&
        solver.l_get(g_it->condition).is_true())
     {
+#if 1
+      solver.pop_context(); //otherwise this would interfere with necessary preconditions
+      summarizer_bw_cex.summarize(g_it->cond_expression);
+      property_map[it->first].result = summarizer_bw_cex.check();
+      solver.new_context();
+#else // THE ASSERTIONS THAT FAIL COULD BE RATHER ARBITRARY SINCE THE FORMULA 
+      //    IS NOT "ROOTED" IN AN INITIAL STATE. 
       assert((g_it->cond_expression).id() == ID_not);
       exprt conjunct_expr = (g_it->cond_expression).op0();
 #if 0
@@ -218,6 +225,7 @@ void cover_goals_extt::assignment()
         property_map[it->first].result = summarizer_bw_cex.check();
         solver.new_context();
       }
+#endif
     }
     if(property_map[it->first].result == property_checkert::FAIL)
     {

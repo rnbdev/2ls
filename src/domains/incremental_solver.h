@@ -95,8 +95,10 @@ class incremental_solvert:public messaget
     solver->set_assumptions(whole_formula);
 #endif
 #endif
-#if defined(DEBUG_FORMULA) && defined(DEBUG_OUTPUT)
+#if defined(DEBUG_FORMULA) || defined(DISPLAY_FORMULA)
     decision_proceduret::resultt result = (*solver)();
+#endif
+#if defined(DEBUG_FORMULA) && defined(DEBUG_OUTPUT)
     if(result==decision_proceduret::D_UNSATISFIABLE)
     {
       for(unsigned i=0; i<formula_expr.size(); i++) 
@@ -106,6 +108,8 @@ class incremental_solvert:public messaget
               << from_expr(ns, "", formula_expr[i]) << std::endl;
       }
     }
+#endif
+#if (defined(DEBUG_FORMULA)  && defined(DEBUG_OUTPUT)) || defined(DISPLAY_FORMULA)
     if(result==decision_proceduret::D_SATISFIABLE)
     {
       std::set<symbol_exprt> vars;
@@ -119,7 +123,8 @@ class incremental_solvert:public messaget
       }
     }
     return result;
-#else
+#endif
+#if !defined(DEBUG_FORMULA)  && !defined(DISPLAY_FORMULA)
     return (*solver)();
 #endif
   }
@@ -217,6 +222,7 @@ static inline incremental_solvert &operator<<(
   else
     std::cerr << "add_to_solver: "
               << from_expr(dest.ns, "", src) << std::endl;
+  dest.formula_expr.push_back(src);
 #endif
 
 #ifdef NON_INCREMENTAL
