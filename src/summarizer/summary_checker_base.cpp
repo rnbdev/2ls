@@ -212,6 +212,7 @@ summary_checker_baset::resultt summary_checker_baset::check_properties(
   {
     ssa_dbt::functionst::const_iterator f_it = 
       ssa_db.functions().find(function_name);
+    assert(f_it != ssa_db.functions().end());
     local_SSAt &SSA = *f_it->second;
 
     // call recursively for all function calls first
@@ -224,10 +225,11 @@ summary_checker_baset::resultt summary_checker_baset::check_properties(
       {
         assert(ff_it->function().id()==ID_symbol); //no function pointers
         irep_idt fname = to_symbol_expr(ff_it->function()).get_identifier();
+        
         //ENHANCE?: can the return value be exploited?
-
-        if(!summary_db.exists(fname) ||	
-           summary_db.get(fname).bw_transformer.is_nil())
+        if(ssa_db.functions().find(fname)!=ssa_db.functions().end() &&
+           (!summary_db.exists(fname) ||	
+            summary_db.get(fname).bw_transformer.is_nil()))
         {
 #if 0
           debug() << "Checking call " << fname << messaget::eom;
