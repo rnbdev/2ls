@@ -103,6 +103,17 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 
   solver << enable_exprs;
 
+  // assumptions must hold
+  for(local_SSAt::nodest::const_iterator 
+	n_it = SSA.nodes.begin(); n_it != SSA.nodes.end(); ++n_it)
+    for(local_SSAt::nodet::assumptionst::const_iterator 
+	  a_it = n_it->assumptions.begin(); a_it != n_it->assumptions.end(); ++a_it)
+    {
+      exprt assumption = *a_it;
+      ssa_inliner.rename(assumption, counter);
+      solver << assumption;
+    }
+
 #ifdef REFINE_ALL
   //TODO: let's just put all loops into the reason
   for(local_SSAt::nodest::iterator n_it = SSA.nodes.begin();
