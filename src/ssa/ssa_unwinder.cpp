@@ -290,11 +290,7 @@ void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
     return;
 
   loopt &loop = loops[loc];
-  loop.loop_enabling_expr_current =
-	symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(loc)+"$enable"+i2string(k),
-                 bool_typet());
-  
-  loop.loop_enabling_exprs.push_back(loop.loop_enabling_expr_current);
+  loop.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(loc)+"$enable"+i2string(k),bool_typet()));
 
   //current_enabling_expr =
   //  symbol_exprt("unwind::"+id2string(fname)+"::enable"+i2string(k),

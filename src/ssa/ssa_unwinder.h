@@ -83,7 +83,7 @@ public:
 
     // to have an enabling_expr and current_unwindings (odometert)
     exprt::operandst loop_enabling_exprs;
-    exprt loop_enabling_expr_current;
+    //exprt loop_enabling_expr_current; //seems superfluous
 
     exprt::operandst current_continuation_conditions;
 
