@@ -26,5 +26,5 @@ bool ssa_refiner_monolithict::operator()()
   summary_db.mark_recompute_all(); //TODO: recompute only functions with loops
   ssa_unwinder.unwind_all(unwind);
 
-  return unwind++<max_unwind;
+  return unwind++<=max_unwind;
 }

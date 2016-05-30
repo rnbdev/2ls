@@ -56,5 +56,5 @@ bool ssa_refiner_selectivet::operator()()
     }
   }
 
-  return unwind<max_unwind;
+  return unwind<=max_unwind;
 }

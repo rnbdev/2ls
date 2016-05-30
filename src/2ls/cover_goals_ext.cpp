@@ -183,6 +183,10 @@ void cover_goals_extt::assignment()
     {
       assert((g_it->cond_expression).id() == ID_not);
       exprt conjunct_expr = (g_it->cond_expression).op0();
+#if 0
+      std::cout << "FAILED EXPR: " 
+                      << from_expr(SSA.ns, "", conjunct_expr) << std::endl;
+#endif
         
       if(conjunct_expr.id() != ID_and)
       {
@@ -200,8 +204,14 @@ void cover_goals_extt::assignment()
             c_it != conjunct_expr.operands().end(); c_it++)
         {
           literalt conjunct_literal = solver.convert(*c_it);
-          if(solver.l_get(conjunct_literal).is_true())
+          if(solver.l_get(conjunct_literal).is_false())
+          {
             failed_exprs.push_back(*c_it);
+#if 0
+            std::cout << "failed_expr: " 
+                      << from_expr(SSA.ns, "", *c_it) << std::endl;
+#endif
+          }
         }
         solver.pop_context(); //otherwise this would interfere with necessary preconditions
         summarizer_bw_cex.summarize(not_exprt(conjunction(failed_exprs)));

@@ -15,6 +15,7 @@ Author: Peter Schrammel
 #include <solvers/flattening/bv_pointers.h>
 #include <solvers/refinement/bv_refinement.h>
 #include <solvers/sat/satcheck.h>
+#include <util/find_symbols.h>
 
 #include "domain.h"
 #include "util.h"
@@ -103,6 +104,18 @@ class incremental_solvert:public messaget
         if(solver->is_in_conflict(formula[i]))
           std::cout << "is_in_conflict: " 
               << from_expr(ns, "", formula_expr[i]) << std::endl;
+      }
+    }
+    if(result==decision_proceduret::D_SATISFIABLE)
+    {
+      std::set<symbol_exprt> vars;
+      for(unsigned i=0; i<formula_expr.size(); i++) 
+        find_symbols(formula_expr[i], vars);
+      for(std::set<symbol_exprt>::const_iterator it = vars.begin();
+          it != vars.end(); ++it)
+      {
+        std::cout << "assignment: " << from_expr(ns, "", *it) << " = " 
+                  << from_expr(ns, "", solver->get(*it)) << std::endl;
       }
     }
     return result;

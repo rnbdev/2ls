@@ -14,7 +14,7 @@ Author: Kumar Madhukar, Peter Schrammel
 //TODO: a bug in the fresh solver case; does not compute
 //calling contexts (see struct tests in regression)
 
-#define DEBUG
+//#define DEBUG
 
 #include <iostream>
 
@@ -177,8 +177,7 @@ void summarizer_bw_cex_concretet::compute_summary_rec(
   summary.bw_postcondition = _postcondition;
 
 #if 0
-  debug() << "Postcondition: " << 
-    from_expr(SSA.ns, "", postcondition) << eom;
+  debug() << "Postcondition: " << from_expr(SSA.ns, "", postcondition) << eom;
 #endif
   
   // recursively compute summaries for function calls
@@ -366,7 +365,7 @@ void summarizer_bw_cex_concretet::do_summary(
 #endif
 
 #ifdef OPT_12
-#if 1
+#ifdef DEBUG
   std::cout << "\n\n\n pushing to the solver in do_summary:" << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
 #endif
   solver << simplify_expr(conjunction(store), SSA.ns);
@@ -604,7 +603,7 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
 #endif
     
 #ifdef OPT_12
-#if 1
+#ifdef DEBUG
   std::cout << "\n\n\n pushing to the solver in compute_calling_context2:" << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
 #endif
   solver << simplify_expr(conjunction(store), SSA.ns);
