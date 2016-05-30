@@ -14,6 +14,8 @@ Author: Kumar Madhukar, Peter Schrammel
 //TODO: a bug in the fresh solver case; does not compute
 //calling contexts (see struct tests in regression)
 
+#define DEBUG
+
 #include <iostream>
 
 #include <util/simplify_expr.h>
