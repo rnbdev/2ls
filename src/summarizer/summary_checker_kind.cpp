@@ -62,6 +62,7 @@ property_checkert::resultt summary_checker_kindt::operator()(
       if((options.get_option("spurious-check")!="concrete") &&
 	 (options.get_option("spurious-check")!="abstract"))
       {
+        //TODO: update only those that were refined by unwinding
         SSA_dependency_graphs(goto_model, ns);
       }
     }
