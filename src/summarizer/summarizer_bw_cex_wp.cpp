@@ -225,12 +225,11 @@ find_symbols_sett summarizer_bw_cex_wpt::inline_summaries
 
       for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
 	  d_it != worknode.dependency_set.end(); d_it++){
-	irep_idt id = *d_it;
-	// detach the '@' symbol if there
-	irep_idt renamed_id = ssa_inliner.rename 
-	  (id,
-	   ssa_depgraph.depnodes_map[worknode.node_index].rename_counter, false);
-	renamed_dependencies.insert(renamed_id);
+        irep_idt renamed_id = *d_it;
+        // detach the '@' symbol if there
+        ssa_inliner.rename(renamed_id,
+           ssa_depgraph.depnodes_map[worknode.node_index].rename_counter, false);
+        renamed_dependencies.insert(renamed_id);
       }
 
       worknode.dependency_set = renamed_dependencies;
@@ -267,12 +266,11 @@ find_symbols_sett summarizer_bw_cex_wpt::inline_summaries
 
       for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
 	  d_it != worknode.dependency_set.end(); d_it++){
-	irep_idt id = *d_it;
-	// attach the '@' symbol if not already there
-	irep_idt renamed_id = ssa_inliner.rename
-	  (id,
-	   ssa_depgraph.depnodes_map[worknode.node_index].rename_counter, true);
-	renamed_dependencies.insert(renamed_id);
+        irep_idt renamed_id = *d_it;
+        // detach the '@' symbol if there
+        ssa_inliner.rename(renamed_id,
+           ssa_depgraph.depnodes_map[worknode.node_index].rename_counter, false);
+        renamed_dependencies.insert(renamed_id);
       }
 
       worknode.dependency_set = renamed_dependencies;

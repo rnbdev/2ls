@@ -311,25 +311,25 @@ void ssa_dependency_grapht::create(const local_SSAt &SSA, ssa_inlinert &ssa_inli
 	    for(local_SSAt::var_listt::const_iterator p_it = fSSA.params.begin();
 		p_it != fSSA.params.end(); p_it++){
 	      irep_idt id = (*p_it).get(ID_identifier);
-	      irep_idt sym = ssa_inliner.rename(id, counter);
-	      all_ssa_symbols.insert(sym);
-	      temp_node.used_symbols.insert(sym);
+	      ssa_inliner.rename(id, counter);
+	      all_ssa_symbols.insert(id);
+	      temp_node.used_symbols.insert(id);
 	    }
 
 	    for(local_SSAt::var_sett::const_iterator g_it = fSSA.globals_in.begin();
 		g_it != fSSA.globals_in.end(); g_it++){
 	      irep_idt id = (*g_it).get(ID_identifier);
-	      irep_idt sym = ssa_inliner.rename(id, counter);
-	      all_ssa_symbols.insert(sym);
-	      temp_node.used_symbols.insert(sym);
+	      ssa_inliner.rename(id, counter);
+	      all_ssa_symbols.insert(id);
+	      temp_node.used_symbols.insert(id);
 	    }
 
 	    for(local_SSAt::var_sett::const_iterator g_it = fSSA.globals_out.begin();
 		g_it != fSSA.globals_out.end(); g_it++){
 	      irep_idt id = (*g_it).get(ID_identifier);
-	      irep_idt sym = ssa_inliner.rename(id, counter);
-	      all_ssa_symbols.insert(sym);
-	      temp_node.modified_symbols.insert(sym);
+	      ssa_inliner.rename(id, counter);
+	      all_ssa_symbols.insert(id);
+	      temp_node.modified_symbols.insert(id);
 	    }
 	    
 	    depnodes_map.push_back(temp_node);

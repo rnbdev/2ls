@@ -160,18 +160,12 @@ class ssa_inlinert:public messaget
 
   static irep_idt get_original_identifier(const symbol_exprt &s);
   
-  irep_idt rename(irep_idt &id, int counter);
+  void rename(irep_idt &id, int counter, bool attach=true);
 
-  irep_idt rename(irep_idt &id, int counter, bool attach);
-
-  int get_rename_counter()
-  {
-    counter++;
-    return counter;
-  }
+  int get_rename_counter() { return ++counter; }
 
   // moved from protected to public, for use in summarizer_bw_cex_complete
-  void rename(exprt &expr, int counter);
+  void rename(exprt &expr, int counter, bool attach=true);
   
 protected:
   int counter;

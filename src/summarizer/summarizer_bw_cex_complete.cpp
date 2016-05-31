@@ -67,6 +67,7 @@ void summarizer_bw_cex_completet::summarize(const exprt &_error_assertion)
 {
   status() << "\nBackward error analysis (complete)..." << eom;
   error_assertion = _error_assertion;
+  ssa_inliner.rename(error_assertion,-1,false);
   /*
     std::cout << "error assertion: "
     << from_expr(ssa_db.get(entry_function).ns, "", error_assertion)
@@ -228,10 +229,9 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 
       for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
           d_it != worknode.dependency_set.end(); d_it++){
-        irep_idt id = *d_it;
+        irep_idt renamed_id = *d_it;
         // detach the '@' symbol if there
-        irep_idt renamed_id = ssa_inliner.rename 
-          (id,
+        ssa_inliner.rename(renamed_id,
            depnode.rename_counter, false);
         renamed_dependencies.insert(renamed_id);
       }
@@ -276,10 +276,9 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
 
       for(find_symbols_sett::iterator d_it = worknode.dependency_set.begin();
           d_it != worknode.dependency_set.end(); d_it++){
-        irep_idt id = *d_it;
+        irep_idt renamed_id = *d_it;
         // attach the '@' symbol if not already there
-        irep_idt renamed_id = ssa_inliner.rename
-          (id,
+        ssa_inliner.rename(renamed_id,
            depnode.rename_counter, true);
         renamed_dependencies.insert(renamed_id);
       }
@@ -305,7 +304,7 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
       bool is_error_assertion = false;
       if(depnode.is_assertion)
       {
-#if 0
+#if 1
         std::cout << "assertion: " << from_expr(SSA.ns, "", error_assertion) << std::endl;
         std::cout << "to check: " << from_expr(SSA.ns, "", worknode_info) << std::endl;
 #endif

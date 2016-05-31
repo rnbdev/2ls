@@ -901,30 +901,12 @@ Function: ssa_inlinert::rename
 
 \*******************************************************************/
 
-irep_idt ssa_inlinert::rename(irep_idt &id, int counter)
-{
-  if(counter<0)
-    return id;
-  return id2string(id)+"@"+i2string(counter);
-}
-
-/*******************************************************************\
-
-Function: ssa_inlinert::rename
-
-  Inputs:
-
- Outputs:
-
- Purpose:
-
-\*******************************************************************/
-
-irep_idt ssa_inlinert::rename(irep_idt &id, int counter, bool attach){
+void ssa_inlinert::rename(irep_idt &id, int counter, bool attach){
 
   std::string id_str = id2string(id);
 
-  if(attach == false){
+  if(!attach)
+  {
     //find first @ where afterwards there are no letters
     size_t pos = std::string::npos;
     for(size_t i=0;i<id_str.size();i++)
@@ -942,15 +924,12 @@ irep_idt ssa_inlinert::rename(irep_idt &id, int counter, bool attach){
       }
     }
     if(pos!=std::string::npos)
-      return id_str.substr(0,pos);
-    else
-      return id_str;
+      id = id_str.substr(0,pos);
   }
-  else{
-    if(id_str.find('@') != std::string::npos)
-      return id;
-    else
-      return rename(id, counter);
+  else
+  {
+    if(id_str.find('@') == std::string::npos && counter>=0)
+      id = id_str+"@"+i2string(counter);
   }
 }
 
@@ -966,21 +945,19 @@ Function: ssa_inlinert::rename
 
 \*******************************************************************/
 
-void ssa_inlinert::rename(exprt &expr, int counter) 
+void ssa_inlinert::rename(exprt &expr, int counter, bool attach) 
 {
   if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol) 
   {
     irep_idt id = expr.get(ID_identifier);
-    std::string id_str = id2string(id);
-    if(id_str.find('@') == std::string::npos)
-      rename(id, counter);
+    rename(id, counter, attach);
       
     expr.set(ID_identifier,id);
   }
   for(exprt::operandst::iterator it = expr.operands().begin();
       it != expr.operands().end(); it++)
   {
-    rename(*it,counter);
+    rename(*it, counter, attach);
   }
 }
 
