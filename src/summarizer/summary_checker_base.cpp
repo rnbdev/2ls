@@ -79,7 +79,7 @@ void summary_checker_baset::SSA_dependency_graphs(
     else
       ssa_db.depgraph_create(f_it->first, ns, ssa_inliner, false); // change to true if all functions are to be treated equal
 
-#if 1
+#if 0
     ssa_dependency_grapht &ssa_depgraph = ssa_db.get_depgraph(f_it->first);
     ssa_depgraph.output(debug()); debug() << eom;
     std::cout << "output SSA for function: " << f_it->first << "\n";
@@ -443,7 +443,7 @@ void summary_checker_baset::check_properties(
         property=::simplify_expr(property, SSA.ns);
 
 #if 1
-      std::cout << "property: " << from_expr(SSA.ns, "", property) << std::endl;
+      debug() << "property: " << from_expr(SSA.ns, "", property) << eom;
 #endif
  
       property_map[property_id].location = aa_it->first;

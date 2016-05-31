@@ -304,7 +304,7 @@ find_symbols_sett summarizer_bw_cex_completet::inline_summaries
       bool is_error_assertion = false;
       if(depnode.is_assertion)
       {
-#if 1
+#if 0
         std::cout << "assertion: " << from_expr(SSA.ns, "", error_assertion) << std::endl;
         std::cout << "to check: " << from_expr(SSA.ns, "", worknode_info) << std::endl;
 #endif

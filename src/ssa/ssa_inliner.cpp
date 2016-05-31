@@ -164,8 +164,10 @@ bool ssa_inlinert::get_inlined(
     for(local_SSAt::nodet::assertionst::const_iterator a_it =
           fnode.assertions.begin(); a_it!=fnode.assertions.end(); a_it++)
     {
+#if 0
       assert_summaries.push_back(*a_it);
       rename(assert_summaries.back(), counter);
+#endif
       assertion_flag = true;
     }
   }

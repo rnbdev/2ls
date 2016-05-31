@@ -20,7 +20,6 @@ Author: Peter Schrammel
 #include "domain.h"
 #include "util.h"
 
-// #define DISPLAY_FORMULA
 // #define NO_ARITH_REFINEMENT
 // #define NON_INCREMENTAL // (experimental)
 
@@ -157,7 +156,7 @@ class incremental_solvert:public messaget
   // for debugging
   bvt formula;
   exprt::operandst formula_expr;
-  void debug_add_to_formula(const exprt &expr);
+  void debug_add_to_formula(const exprt &expr, exprt activation=nil_exprt());
 
   // context assumption literals
   bvt activation_literals;
