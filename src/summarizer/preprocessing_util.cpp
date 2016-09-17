@@ -96,13 +96,13 @@ void summarizer_parse_optionst::nondet_locals(goto_modelt &goto_model)
     {
       if(i_it->is_decl())
       {
-	const code_declt& decl = to_code_decl(i_it->code);
+        const code_declt& decl = to_code_decl(i_it->code);
         side_effect_expr_nondett nondet(decl.symbol().type());
-	goto_programt::targett t = f_it->second.body.insert_after(i_it);
-	t->make_assignment();
-	code_assignt c(decl.symbol(),nondet);
-	t->code.swap(c);
-	t->source_location = i_it->source_location;
+        goto_programt::targett t = f_it->second.body.insert_after(i_it);
+        t->make_assignment();
+        code_assignt c(decl.symbol(),nondet);
+        t->code.swap(c);
+        t->source_location = i_it->source_location;
       }
     }
   }

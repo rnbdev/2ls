@@ -408,8 +408,11 @@ int summarizer_parse_optionst::doit()
   //
   // Print a banner
   //
-  status() << "SUMMARIZER version " SUMMARIZER_VERSION " (based on CBMC " CBMC_VERSION ")" << eom;
-
+(??)  status() << "2LS version " SUMMARIZER_VERSION " (based on CBMC " CBMC_VERSION ")" << eom;
+(??)
+(??)  register_language(new_ansi_c_language);
+(??)  register_language(new_cpp_language);
+(??)
   goto_modelt goto_model;
 
   register_languages();
@@ -1069,30 +1072,14 @@ bool summarizer_parse_optionst::process_goto_program(
 
     // remove returns (must be done after function pointer removal)
     remove_returns(goto_model);
-    
-    split_loopheads(goto_model);
-
-    // recalculate numbers, etc.
-    goto_model.goto_functions.update();
-
-    // add loop ids
-    goto_model.goto_functions.compute_loop_numbers();
-    
-    // if we aim to cover, replace
-    // all assertions by false to prevent simplification
-    if(cmdline.isset("cover-assertions"))
-      make_assertions_false(goto_model);
-
-    // show it?
-    if(cmdline.isset("show-loops"))
-    {
-      show_loop_ids(get_ui(), goto_model);
-      return true;
-    }
-
+   
+ 
 #if UNWIND_GOTO_INTO_LOOP
-    unwind(goto_model,2);
+    unwind_goto_into_loop(goto_model,2);
 #endif
+
+    remove_skip(goto_model.goto_functions);
+    goto_model.goto_functions.update();
 
     // now do full inlining, if requested
     if(options.get_bool_option("inline"))
@@ -1138,14 +1125,17 @@ bool summarizer_parse_optionst::process_goto_program(
       propagate_constants(goto_model);
     }
 
-#if 1
-  //TODO: find a better place for that
-  replace_malloc(goto_model,"");
-#endif
+    // if we aim to cover, replace
+    // all assertions by false to prevent simplification
+    if(cmdline.isset("cover-assertions"))
+      make_assertions_false(goto_model);
 
-#if REMOVE_MULTIPLE_DEREFERENCES
-    remove_multiple_dereferences(goto_model);
-#endif
+    // show it?
+    if(cmdline.isset("show-loops"))
+    {
+      show_loop_ids(get_ui(), goto_model);
+      return true;
+    }
 
     // do array abstraction
     if(cmdline.isset("array-abstraction"))
@@ -1214,6 +1204,7 @@ Function: summarizer_parse_optionst::report_properties
 \*******************************************************************/
 
 void summarizer_parse_optionst::report_properties(
+  const optionst &options,
   const goto_modelt &goto_model,
   const property_checkert::property_mapt &property_map)
 {
