@@ -18,6 +18,8 @@ Author: Peter Schrammel
 #include "tpolyhedra_domain.h"
 #include "util.h"
 
+#include "simplify_bounds.h"
+
 #define SYMB_BOUND_VAR "symb_bound#"
 
 #define ENABLE_HEURISTICS
@@ -696,6 +698,7 @@ void tpolyhedra_domaint::project_on_vars(
     }
   }
   result=conjunction(c);
+  simplify_bounds(result, ns);
 }
 
 /*******************************************************************\
