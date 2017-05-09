@@ -279,10 +279,10 @@ Function: unwindable_local_SSAt::rename
 
 void unwindable_local_SSAt::rename(exprt &expr, locationt current_loc)
 {
-  if (expr.id()==ID_function_application)
+  if(expr.id()==ID_function_application)
   {
-    std::string unwind_suffix=odometer_to_string(current_unwindings,
-               current_unwindings.size());
+    std::string unwind_suffix=
+      odometer_to_string(current_unwindings, current_unwindings.size());
     expr.set(ID_suffix, unwind_suffix);
   }
   if(expr.id()==ID_symbol)

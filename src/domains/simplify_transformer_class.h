@@ -6,8 +6,8 @@ Author: Peter Schrammel
 
 \*******************************************************************/
 
-#ifndef CPROVER_SIMPLIFY_TRANSFORMER_CLASS_H
-#define CPROVER_SIMPLIFY_TRANSFORMER_CLASS_H
+#ifndef CPROVER_2LS_DOMAINS_SIMPLIFY_TRANSFORMER_CLASS_H
+#define CPROVER_2LS_DOMAINS_SIMPLIFY_TRANSFORMER_CLASS_H
 
 #include <util/type.h>
 #include <util/replace_expr.h>
@@ -18,8 +18,9 @@ class namespacet;
 class simplify_transformert
 {
 public:
-  explicit simplify_transformert(const namespacet &_ns,
-        const std::set<irep_idt> &_frozen_symbols):
+  simplify_transformert(
+    const namespacet &_ns,
+    const std::set<irep_idt> &_frozen_symbols):
     ns(_ns),
     frozen_symbols(_frozen_symbols)
   {
@@ -49,11 +50,12 @@ protected:
   const std::set<irep_idt> &frozen_symbols;
 
   void collect_node(
-    const exprt &expr, replace_mapt &substitutions,
+    const exprt &expr,
+    replace_mapt &substitutions,
     bool frozen_only,
     bool make_copy);
-  bool simplify_node(exprt &expr, const replace_mapt &substitutions);
 
+  bool simplify_node(exprt &expr, const replace_mapt &substitutions);
 };
 
-#endif
+#endif // CPROVER_2LS_DOMAINS_SIMPLIFY_TRANSFORMER_CLASS_H

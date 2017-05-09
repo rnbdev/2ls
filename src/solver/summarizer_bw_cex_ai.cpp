@@ -44,8 +44,8 @@ void summarizer_bw_cex_ait::summarize(const function_namet &function_name)
   exprt postcondition=true_exprt(); // initial calling context
 
   status() << "\nSummarizing function " << function_name << eom;
-  compute_summary_rec(function_name, summaryt::entry_call_site,
-          postcondition, true);
+  compute_summary_rec(
+    function_name, summaryt::entry_call_site, postcondition, true);
 }
 
 /*******************************************************************\
@@ -166,25 +166,34 @@ void summarizer_bw_cex_ait::compute_summary_rec(
     from_expr(SSA.ns, "", postcondition) << eom;
 #endif
 
-  if(_postcondition.is_false()){
-
+  if(_postcondition.is_false())
+  {
     summary.error_summaries[call_site]=false_exprt();
-
   }
-  else{
-
+  else
+  {
     // recursively compute summaries for function calls
-    inline_summaries(function_name, SSA, summary,
-         postcondition, context_sensitive,
-         true);
+    inline_summaries(
+      function_name,
+      SSA,
+      summary,
+      postcondition,
+      context_sensitive,
+      true);
 
     status() << "Analyzing function "  << function_name << eom;
 
-    do_summary(function_name, call_site, SSA, summary, summary, postcondition, context_sensitive);
+    do_summary(
+      function_name,
+      call_site,
+      SSA,
+      summary,
+      summary,
+      postcondition,
+      context_sensitive);
 
     if(function_name==error_function)
       summary.has_assertion=true;
-
   }
 
   summary_db.set(function_name, summary);
@@ -195,7 +204,6 @@ void summarizer_bw_cex_ait::compute_summary_rec(
     summary_db.get(function_name).output(out, SSA.ns);
     debug() << out.str() << eom;
   }
-
 }
 
 /*******************************************************************\
@@ -210,13 +218,14 @@ Function: summarizer_bw_cex_ait::do_summary()
 
 \*******************************************************************/
 
-void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
-               const summaryt::call_sitet &call_site,
-               local_SSAt &SSA,
-               const summaryt &old_summary,
-               summaryt &summary,
-               const exprt &postcondition,
-               bool context_sensitive)
+void summarizer_bw_cex_ait::do_summary(
+  const function_namet &function_name,
+  const summaryt::call_sitet &call_site,
+  local_SSAt &SSA,
+  const summaryt &old_summary,
+  summaryt &summary,
+  const exprt &postcondition,
+  bool context_sensitive)
 {
   status() << "Computing error summary" << eom;
 
@@ -245,32 +254,26 @@ void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
   exprt::operandst assert_postcond, noassert_postcond;
   // add error summaries for function calls
   bool assertion_flag;
-  assertion_flag=ssa_inliner.get_summaries(SSA, call_site, false,
-        assert_postcond, noassert_postcond, c); // backward summaries
+  // backward summaries
+  assertion_flag=
+    ssa_inliner.get_summaries(
+      SSA, call_site, false, assert_postcond, noassert_postcond, c);
 
   assert_postcond.push_back(postcondition);  // context
 
   // add nondet variables from callees to summary.nondets
   std::set<exprt> summary_vars;
   find_symbols(conjunction(assert_postcond), summary_vars);
-  for(std::set<exprt>::const_iterator it=summary_vars.begin();
-      it!=summary_vars.end(); ++it)
-    if(it->id()==ID_nondet_symbol)
-      summary.nondets.insert(*it);
+  for(const auto &var : summary_vars)
+  {
+    if(var.id()==ID_nondet_symbol)
+      summary.nondets.insert(var);
+  }
 
   // assumptions must hold
-  for(local_SSAt::nodest::const_iterator
-  n_it=SSA.nodes.begin();
-      n_it!=SSA.nodes.end();
-      ++n_it)
-    for(local_SSAt::nodet::assumptionst::const_iterator
-    a_it=n_it->assumptions.begin();
-  a_it!=n_it->assumptions.end();
-  ++a_it)
-      c.push_back(*a_it);
-
-
-
+  for(const auto &node : SSA.nodes)
+    for(const auto &assumption : node.assumptions)
+      c.push_back(assumption);
 
 #if 0
   std::cout << from_expr(SSA.ns, "", cc) << std::endl;
@@ -281,76 +284,71 @@ void summarizer_bw_cex_ait::do_summary(const function_namet &function_name,
   summary.error_summaries[call_site];
   if(!template_generator.empty())
   {
-    c.push_back(conjunction(assert_postcond)); // with negative information would need: not_exprt
-    c.push_back(conjunction(noassert_postcond)); // with negative information would need: not_exprt dis
+    // with negative information would need: not_exprt
+    c.push_back(conjunction(assert_postcond));
+    // with negative information would need: not_exprt dis
+    c.push_back(conjunction(noassert_postcond));
 
-    // std::cout << "unsimplified constraints (if): " << from_expr(SSA.ns, "", conjunction(c)) << "\n\n\n";
     exprt cc=simplify_expr(conjunction(c), SSA.ns);
-    // exprt cc=conjunction(c);
-    // std::cout << "simplified constraints passed (if): " << from_expr(SSA.ns, "", cc) << "\n\n\n";
 
-    /*
-    ssa_analyzert analyzer;
-    analyzer.set_message_handler(get_message_handler());
-    analyzer(solver, SSA, cc, template_generator);
-    analyzer.get_result(summary.error_summaries[call_site],
-      template_generator.inout_vars());
-    */
-    /**/
     disjunctive_analyzert disjunctive_analyzer;
     disjunctive_analyzer.set_message_handler(get_message_handler());
-    disjunctive_analyzer(solver, SSA, cc, template_generator,
-       cc, summary.error_summaries[call_site],
-       template_generator.inout_vars());
-    /**/
+    disjunctive_analyzer(
+      solver,
+      SSA,
+      cc,
+      template_generator,
+      cc,
+      summary.error_summaries[call_site],
+      template_generator.inout_vars());
 
 #if 0
-    std::cout << "SUM: " << from_expr(SSA.ns, "", summary.error_summaries[call_site]) << std::endl;
+    std::cout << "SUM: "
+              << from_expr(SSA.ns, "", summary.error_summaries[call_site])
+              << std::endl;
 #endif
-
 
     summary.error_summaries[call_site]=
       simplify_expr(summary.error_summaries[call_site], SSA.ns);
 
-
 #if 0
-    std::cout << "SUM (post simplification): " << from_expr(SSA.ns, "", summary.error_summaries[call_site]) << std::endl;
+    std::cout << "SUM (post simplification): "
+              << from_expr(SSA.ns, "", summary.error_summaries[call_site])
+              << std::endl;
 #endif
 
     // statistics
-    /*
-    solver_instances+=analyzer.get_number_of_solver_instances();
-    solver_calls+=analyzer.get_number_of_solver_calls();
-    */
     solver_instances+=disjunctive_analyzer.get_number_of_solver_instances();
     solver_calls+=disjunctive_analyzer.get_number_of_solver_calls();
-
   }
-  else // TODO: yet another workaround for ssa_analyzer not being able to handle empty templates properly
+  else
   {
-    c.push_back(conjunction(assert_postcond)); // with negative information would need: not_exprt
-    c.push_back(conjunction(noassert_postcond)); // with negative information would need: not_exprt dis
+    // TODO: yet another workaround for ssa_analyzer
+    //   not being able to handle empty templates properly
+
+    // with negative information would need: not_exprt
+    c.push_back(conjunction(assert_postcond));
+    // with negative information would need: not_exprt dis
+    c.push_back(conjunction(noassert_postcond));
     // c.push_back(not_exprt(conjunction(assert_postcond)));
     // c.push_back(not_exprt(disjunction(noassert_postcond)));
 
-    // std::cout << "unsimplified constraints (else): " << from_expr(SSA.ns, "", conjunction(c)) << "\n\n\n";
     exprt cc=simplify_expr(conjunction(c), SSA.ns);
-    // exprt cc=conjunction(c);
-    // std::cout << "simplified constraints passed (else): " << from_expr(SSA.ns, "", cc) << "\n\n\n";
-
-    // std::cout << "enabling expressions (else): " << from_expr(SSA.ns, "", SSA.get_enabling_exprs()) << "\n\n\n";
 
     solver << SSA;
     solver.new_context();
     solver << SSA.get_enabling_exprs();
     solver << cc;
     exprt result=true_exprt();
-    if(solver()!=decision_proceduret::D_SATISFIABLE) result=false_exprt();
+    if(solver()!=decision_proceduret::D_SATISFIABLE)
+      result=false_exprt();
     solver.pop_context();
     summary.error_summaries[call_site]=result;
 
 #if 0
-    std::cout << "SUM: " << from_expr(SSA.ns, "", summary.error_summaries[call_site]) << std::endl;
+    std::cout << "SUM: "
+              << from_expr(SSA.ns, "", summary.error_summaries[call_site])
+              << std::endl;
 #endif
   }
 
@@ -372,12 +370,13 @@ Function: summarizer_bw_cex_ait::inline_summaries()
 
 \*******************************************************************/
 
-void summarizer_bw_cex_ait::inline_summaries(const function_namet &function_name,
-           local_SSAt &SSA,
-                 const summaryt &old_summary,
-           const exprt &postcondition,
-           bool context_sensitive,
-                                   bool sufficient)
+void summarizer_bw_cex_ait::inline_summaries(
+  const function_namet &function_name,
+  local_SSAt &SSA,
+  const summaryt &old_summary,
+  const exprt &postcondition,
+  bool context_sensitive,
+  bool sufficient)
 {
   for(local_SSAt::nodest::const_iterator n_it=SSA.nodes.end();
       n_it!=SSA.nodes.begin(); )
@@ -385,19 +384,22 @@ void summarizer_bw_cex_ait::inline_summaries(const function_namet &function_name
     n_it--;
 
     for(local_SSAt::nodet::function_callst::const_iterator f_it=
-    n_it->function_calls.begin();
+          n_it->function_calls.begin();
         f_it!=n_it->function_calls.end(); f_it++)
     {
       assert(f_it->function().id()==ID_symbol); // no function pointers
 
-      exprt postcondition_call= true_exprt();
+      exprt postcondition_call=true_exprt();
       postcondition_call=compute_calling_context2(
-    function_name, SSA, old_summary, n_it, f_it, postcondition, sufficient);
+        function_name, SSA, old_summary, n_it, f_it, postcondition, sufficient);
 
       irep_idt fname=to_symbol_expr(f_it->function()).get_identifier();
       status() << "Recursively summarizing function " << fname << eom;
-      compute_summary_rec(fname, summaryt::call_sitet(n_it->location),
-        postcondition_call, context_sensitive);
+      compute_summary_rec(
+        fname,
+        summaryt::call_sitet(n_it->location),
+        postcondition_call,
+        context_sensitive);
     }
   }
 }
@@ -433,11 +435,6 @@ exprt summarizer_bw_cex_ait::compute_calling_context2(
   solver.set_message_handler(get_message_handler());
 
   // analyze
-  /*
-  ssa_analyzert analyzer;
-  analyzer.set_message_handler(get_message_handler());
-  */
-
   disjunctive_analyzert disjunctive_analyzer;
   disjunctive_analyzer.set_message_handler(get_message_handler());
 
@@ -453,7 +450,9 @@ exprt summarizer_bw_cex_ait::compute_calling_context2(
   template_generator(solver.next_domain_number(), SSA, n_it, f_it, false);
 
   // collect globals at call site
-  std::map<local_SSAt::nodet::function_callst::const_iterator, local_SSAt::var_sett>
+  std::map<
+    local_SSAt::nodet::function_callst::const_iterator,
+    local_SSAt::var_sett>
     cs_globals_out;
   SSA.get_globals(n_it->location, cs_globals_out[f_it], false);
 
@@ -480,27 +479,28 @@ exprt summarizer_bw_cex_ait::compute_calling_context2(
 
   exprt postcondition_call;
 
-  if(!template_generator.empty()){
-
-    c.push_back(conjunction(assert_postcond)); // with negative information would need: not_exprt
-    c.push_back(conjunction(noassert_postcond)); // with negative information would need: not_exprt dis
-
-    /*
-    analyzer(solver, SSA, conjunction(c), template_generator);
-    analyzer.get_result(postcondition_call,
-      template_generator.callingcontext_vars());
-    */
+  if(!template_generator.empty())
+  {
+    // with negative information would need: not_exprt
+    c.push_back(conjunction(assert_postcond));
+    // with negative information would need: not_exprt dis
+    c.push_back(conjunction(noassert_postcond));
 
     disjunctive_analyzer(solver, SSA, conjunction(c), template_generator,
        conjunction(c), postcondition_call,
        template_generator.callingcontext_vars());
 
-    ssa_inliner.rename_to_callee(f_it, fSSA.params,
-         cs_globals_out[f_it], fSSA.globals_out,
-         postcondition_call);
-
+    ssa_inliner.rename_to_callee(
+      f_it,
+      fSSA.params,
+      cs_globals_out[f_it],
+      fSSA.globals_out,
+      postcondition_call);
   }
-  else{ // TODO: yet another workaround for ssa_analyzer not being able to handle empty templates properly
+  else
+  {
+    // TODO: yet another workaround for ssa_analyzer
+    //    not being able to handle empty templates properly
 
     c.push_back(not_exprt(conjunction(assert_postcond)));
     c.push_back(not_exprt(disjunction(noassert_postcond)));
@@ -510,26 +510,20 @@ exprt summarizer_bw_cex_ait::compute_calling_context2(
     solver << SSA.get_enabling_exprs();
     solver << conjunction(c);
 
-    // std::cout << "passed to solver, else branch, calling context: " << from_expr(SSA.ns, "", conjunction(c)) << "\n\n";
-
     postcondition_call=false_exprt();
-    if(solver()!=decision_proceduret::D_SATISFIABLE) postcondition_call=true_exprt();
+    if(solver()!=decision_proceduret::D_SATISFIABLE)
+      postcondition_call=true_exprt();
     solver.pop_context();
   }
 
-  debug() << "Backward calling context for " <<
-    from_expr(SSA.ns, "", *f_it) << ": "
-    << from_expr(SSA.ns, "", postcondition_call) << eom;
+  debug() << "Backward calling context for "
+          << from_expr(SSA.ns, "", *f_it) << ": "
+          << from_expr(SSA.ns, "", postcondition_call) << eom;
 
   // statistics
-  /*
-  solver_instances+=analyzer.get_number_of_solver_instances();
-  solver_calls+=analyzer.get_number_of_solver_calls();
-  */
   solver_instances+=disjunctive_analyzer.get_number_of_solver_instances();
   solver_calls+=disjunctive_analyzer.get_number_of_solver_calls();
 
   return postcondition_call;
 }
-
 

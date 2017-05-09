@@ -27,8 +27,10 @@ public:
   void operator()(const summary_checker_baset &summary_checker);
 
 protected:
+  typedef std::map<unsigned, unsigned> loc_to_node_mapt;
+
   graphmlt::node_indext add_node(
-    std::map<unsigned, unsigned> &loc_to_node,
+    loc_to_node_mapt &loc_to_node,
     goto_programt::const_targett it);
 
   void add_edge(

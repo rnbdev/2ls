@@ -16,7 +16,9 @@ Author: Kumar Madhukar, Peter Schrammel
 
 // #define DEBUG
 
+#ifdef DEBUG
 #include <iostream>
+#endif
 
 #include <util/simplify_expr.h>
 #include <solvers/sat/satcheck.h>
@@ -27,12 +29,12 @@ Author: Kumar Madhukar, Peter Schrammel
 #include "summarizer_bw_cex_concrete.h"
 #include "summary_db.h"
 
-#include "../domains/ssa_analyzer.h"
-#include "../domains/template_generator_summary.h"
-#include "../domains/template_generator_callingcontext.h"
+#include <domains/ssa_analyzer.h>
+#include <domains/template_generator_summary.h>
+#include <domains/template_generator_callingcontext.h>
 
-#include "../ssa/local_ssa.h"
-#include "../ssa/simplify_ssa.h"
+#include <ssa/local_ssa.h>
+#include <ssa/simplify_ssa.h>
 
 /*******************************************************************\
 
@@ -51,8 +53,8 @@ void summarizer_bw_cex_concretet::summarize(const function_namet &function_name)
   exprt postcondition=true_exprt(); // initial calling context
 
   status() << "\nSummarizing function " << function_name << eom;
-  compute_summary_rec(function_name, summaryt::entry_call_site,
-          postcondition, true);
+  compute_summary_rec(
+    function_name, summaryt::entry_call_site, postcondition, true);
 }
 
 /*******************************************************************\
@@ -111,8 +113,8 @@ property_checkert::resultt summarizer_bw_cex_concretet::check()
     const local_SSAt &ssa=ssa_db.get(entry_function);
     exprt::operandst loophead_selects;
     exprt::operandst loop_continues;
-    get_loophead_selects(entry_function, ssa,
-                         *solver.solver, loophead_selects);
+    get_loophead_selects(
+      entry_function, ssa, *solver.solver, loophead_selects);
     get_loop_continues(entry_function, ssa, *solver.solver, loop_continues);
     // check whether loops have been fully unwound
     bool fully_unwound=
@@ -148,10 +150,9 @@ void summarizer_bw_cex_concretet::compute_summary_rec(
   local_SSAt &SSA=ssa_db.get(function_name);
 
   // TODO: let's just put all loops into the reason
-  for(local_SSAt::nodest::iterator n_it=SSA.nodes.begin();
-      n_it!=SSA.nodes.end(); ++n_it)
-    if (n_it->loophead!=SSA.nodes.end())
-      reason[function_name].loops.insert(n_it->loophead->location);
+  for(const auto &node : SSA.nodes)
+    if(node.loophead!=SSA.nodes.end())
+      reason[function_name].loops.insert(node.loophead->location);
 
   summaryt summary;
   if(summary_db.exists(function_name))
@@ -179,13 +180,24 @@ void summarizer_bw_cex_concretet::compute_summary_rec(
 #endif
 
   // recursively compute summaries for function calls
-  inline_summaries(function_name, SSA, summary,
-       postcondition, context_sensitive,
-       true);
+  inline_summaries(
+    function_name,
+    SSA,
+    summary,
+    postcondition,
+    context_sensitive,
+    true);
 
   status() << "Analyzing function "  << function_name << eom;
 
-  do_summary(function_name, call_site, SSA, summary, summary, postcondition, context_sensitive);
+  do_summary(
+    function_name,
+    call_site,
+    SSA,
+    summary,
+    summary,
+    postcondition,
+    context_sensitive);
 
   if(function_name==error_function)
     summary.has_assertion=true;
@@ -198,7 +210,6 @@ void summarizer_bw_cex_concretet::compute_summary_rec(
     summary_db.get(function_name).output(out, SSA.ns);
     debug() << out.str() << eom;
   }
-
 }
 
 /*******************************************************************\
@@ -227,7 +238,7 @@ void summarizer_bw_cex_concretet::do_summary(
   // solver
 
 #ifdef OPT_2
-  incremental_solvert* fresh_solver=
+  incremental_solvert *fresh_solver=
     incremental_solvert::allocate(SSA.ns, options.get_bool_option("refine"));
   incremental_solvert &solver=(*fresh_solver);
   SSA.unmark_nodes();
@@ -256,7 +267,9 @@ void summarizer_bw_cex_concretet::do_summary(
   exprt::operandst assert_postcond, noassert_postcond;
   // add error summaries for function calls
   bool assertion_flag;
-  assertion_flag=ssa_inliner.get_summaries(SSA, call_site, false, assert_postcond, noassert_postcond, c); // backward summaries
+  // backward summaries
+  assertion_flag=ssa_inliner.get_summaries(
+    SSA, call_site, false, assert_postcond, noassert_postcond, c);
   assert_postcond.push_back(postcondition);  // context
 
   // add nondet variables from callees to summary.nondets
@@ -268,8 +281,10 @@ void summarizer_bw_cex_concretet::do_summary(
       summary.nondets.insert(*it);
 
 #ifdef DEBUG
-  std::cout << "Assert Summary: " << from_expr(SSA.ns, "", conjunction(assert_postcond)) << "\n\n";
-  std::cout << "Noassert Summary: " << from_expr(SSA.ns, "", conjunction(noassert_postcond)) << "\n\n";
+  std::cout << "Assert Summary: "
+            << from_expr(SSA.ns, "", conjunction(assert_postcond)) << "\n\n";
+  std::cout << "Noassert Summary: "
+            << from_expr(SSA.ns, "", conjunction(noassert_postcond)) << "\n\n";
 #endif
 
   c.push_back(not_exprt(conjunction(assert_postcond)));
@@ -295,31 +310,25 @@ void summarizer_bw_cex_concretet::do_summary(
 #endif
 
   // assumptions must hold
-  for(local_SSAt::nodest::const_iterator
-  n_it=SSA.nodes.begin();
-      n_it!=SSA.nodes.end();
-      ++n_it)
-    for(local_SSAt::nodet::assumptionst::const_iterator
-    a_it=n_it->assumptions.begin();
-  a_it!=n_it->assumptions.end();
-  ++a_it)
+  for(const auto &node : SSA.nodes)
+  {
+    for(const auto &a : node.assumptions)
     {
-
 #ifdef OPT_11
-      solver << simplify_expr(*a_it, SSA.ns);
+      solver << simplify_expr(a, SSA.ns);
 #else
 #ifdef OPT_12
-      store.push_back(*a_it);
+      store.push_back(a);
 #else
 #ifdef OPT_2
-      store.push_back(*a_it);
+      store.push_back(a);
 #else
-      solver << *a_it;
+      solver << a;
 #endif
 #endif
 #endif
-
     }
+  }
 
 #ifdef OPT_12
   store.push_back(SSA.get_enabling_exprs());
@@ -364,13 +373,16 @@ void summarizer_bw_cex_concretet::do_summary(
 
 #ifdef OPT_12
 #ifdef DEBUG
-  std::cout << "\n\n\n pushing to the solver in do_summary:" << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
+  std::cout << "\n\n\n pushing to the solver in do_summary:"
+            << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
 #endif
   solver << simplify_expr(conjunction(store), SSA.ns);
 #endif
 #ifdef OPT_2
 #ifdef DEBUG
-  std::cout << "\n\n\n pushing to the solver in do_summary:" << from_expr(SSA.ns, "", simplify_expr(conjunction(store), SSA.ns)) << "\n\n\n";
+  std::cout << "\n\n\n pushing to the solver in do_summary:"
+            << from_expr(SSA.ns, "", simplify_expr(conjunction(store), SSA.ns))
+            << "\n\n\n";
 #endif
   solver << simplify_expr(conjunction(store), SSA.ns);
 #endif
@@ -381,7 +393,8 @@ void summarizer_bw_cex_concretet::do_summary(
   // solve
   if(solver()==decision_proceduret::D_UNSATISFIABLE)
   {
-    summary.error_summaries[call_site]=true_exprt(); // TODO: this is likely to be incomplete
+    // TODO: this is likely to be incomplete
+    summary.error_summaries[call_site]=true_exprt();
     summary.has_assertion=assertion_flag;
 #ifndef OPT_2
     solver.pop_context();
@@ -393,32 +406,32 @@ void summarizer_bw_cex_concretet::do_summary(
   // build error summary and add to summary
   exprt::operandst var_values;
 
-  for(local_SSAt::var_listt::const_iterator it=SSA.params.begin();
-      it!=SSA.params.end(); it++){
-    exprt summ_value=solver.get(*it);
+  for(const auto &var : SSA.params)
+  {
+    exprt summ_value=solver.get(var);
     if(!summ_value.is_nil())
-      var_values.push_back(equal_exprt(*it, summ_value));
+      var_values.push_back(equal_exprt(var, summ_value));
   }
 
-  for(local_SSAt::var_sett::const_iterator it=SSA.globals_in.begin();
-      it!=SSA.globals_in.end(); it++){
-    exprt summ_value=solver.get(*it);
+  for(const auto &var : SSA.globals_in)
+  {
+    exprt summ_value=solver.get(var);
     if(!summ_value.is_nil())
-      var_values.push_back(equal_exprt(*it, summ_value));
+      var_values.push_back(equal_exprt(var, summ_value));
   }
 
-  for(local_SSAt::var_sett::const_iterator it=SSA.globals_out.begin();
-      it!=SSA.globals_out.end(); it++){
-    exprt summ_value=solver.get(*it);
+  for(const auto &var : SSA.globals_out)
+  {
+    exprt summ_value=solver.get(var);
     if(!summ_value.is_nil())
-      var_values.push_back(equal_exprt(*it, summ_value));
+      var_values.push_back(equal_exprt(var, summ_value));
   }
 
-  for(std::set<exprt>::const_iterator it=summary.nondets.begin();
-      it!=summary.nondets.end(); it++){
-    exprt summ_value=solver.get(*it);
+  for(const auto &var : SSA.nondets)
+  {
+    exprt summ_value=solver.get(var);
     if(!summ_value.is_nil())
-      var_values.push_back(equal_exprt(*it, summ_value));
+      var_values.push_back(equal_exprt(var, summ_value));
   }
 
   summary.error_summaries[call_site]=not_exprt(conjunction(var_values));
@@ -431,7 +444,6 @@ void summarizer_bw_cex_concretet::do_summary(
 #ifdef OPT_2
   delete fresh_solver;
 #endif
-
 }
 
 /*******************************************************************\
@@ -465,7 +477,7 @@ void summarizer_bw_cex_concretet::inline_summaries(
     {
       assert(f_it->function().id()==ID_symbol); // no function pointers
 
-      exprt postcondition_call= true_exprt();
+      exprt postcondition_call=true_exprt();
       postcondition_call=compute_calling_context2(
         function_name, SSA, old_summary, n_it, f_it, postcondition, sufficient);
 
@@ -509,7 +521,7 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
   // solver
 
 #ifdef OPT_2
-  incremental_solvert* fresh_solver=
+  incremental_solvert *fresh_solver=
     incremental_solvert::allocate(SSA.ns, options.get_bool_option("refine"));
   incremental_solvert &solver=(*fresh_solver);
 #else
@@ -519,7 +531,9 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
   solver.set_message_handler(get_message_handler());
 
   // collect globals at call site
-  std::map<local_SSAt::nodet::function_callst::const_iterator, local_SSAt::var_sett>
+  std::map<
+    local_SSAt::nodet::function_callst::const_iterator,
+    local_SSAt::var_sett>
     cs_globals_out;
   SSA.get_globals(n_it->location, cs_globals_out[f_it], false);
 
@@ -538,7 +552,13 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
 
   exprt::operandst assert_postcond, noassert_postcond;
   // add error summaries for function calls
-  ssa_inliner.get_summaries(SSA, summaryt::call_sitet(n_it->location), false, assert_postcond, noassert_postcond, c); // backward summaries
+  ssa_inliner.get_summaries(
+    SSA,
+    summaryt::call_sitet(n_it->location),
+    false,
+    assert_postcond,
+    noassert_postcond,
+    c);
   assert_postcond.push_back(postcondition);  // context
   c.push_back(not_exprt(conjunction(assert_postcond)));
   c.push_back(not_exprt(disjunction(noassert_postcond)));
@@ -582,7 +602,8 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
 
 #ifdef OPT_12
 #ifdef DEBUG
-  std::cout << "\n\n\n pushing to the solver in compute_calling_context2:" << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
+  std::cout << "\n\n\n pushing to the solver in compute_calling_context2:"
+            << from_expr(SSA.ns, "", conjunction(store)) << "\n\n\n";
 #endif
   solver << simplify_expr(conjunction(store), SSA.ns);
 #endif
@@ -614,13 +635,16 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
 
   // get callee SSA and rename
   local_SSAt &fSSA=ssa_db.get(fname);
-  ssa_inliner.rename_to_callee(f_it, fSSA.params,
-           cs_globals_out[f_it], fSSA.globals_out,
-           postcondition_call);
+  ssa_inliner.rename_to_callee(
+    f_it,
+    fSSA.params,
+    cs_globals_out[f_it],
+    fSSA.globals_out,
+    postcondition_call);
 
-  debug() << "Backward calling context for " <<
-    from_expr(SSA.ns, "", *f_it) << ": "
-    << from_expr(SSA.ns, "", postcondition_call) << eom;
+  debug() << "Backward calling context for "
+          << from_expr(SSA.ns, "", *f_it) << ": "
+          << from_expr(SSA.ns, "", postcondition_call) << eom;
 
   // statistics
   solver_calls++;
@@ -631,5 +655,3 @@ exprt summarizer_bw_cex_concretet::compute_calling_context2(
 
   return not_exprt(postcondition_call);
 }
-
-

@@ -17,13 +17,14 @@ Author: Madhukar Kumar
 class ssa_inlinert;
 class ssa_dbt;
 
-class ssa_dependency_grapht{
+class ssa_dependency_grapht
+{
 public:
-ssa_dependency_grapht(ssa_dbt &_db, const namespacet &_ns):
-  ssa_db(_db),
+  ssa_dependency_grapht(ssa_dbt &_db, const namespacet &_ns):
+    ssa_db(_db),
     ns(_ns)
-    {
-    }
+  {
+  }
 
   struct annotated_predecessort
   {
@@ -33,7 +34,8 @@ ssa_dependency_grapht(ssa_dbt &_db, const namespacet &_ns):
 
   typedef std::list<annotated_predecessort> annotated_predecessorst;
 
-  struct depnodet{
+  struct depnodet
+  {
     exprt node_info;
     exprt guard; // guard binding or loop-head select
     bool is_assertion;
@@ -66,4 +68,4 @@ protected:
   const namespacet &ns;
 };
 
-#endif
+#endif // CPROVER_2LS_SSA_SSA_DEPENDENCY_GRAPH_H

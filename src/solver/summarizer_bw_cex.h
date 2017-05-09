@@ -21,7 +21,7 @@ Author: Kumar Madhukar, Peter Schrammel
 
 #include "summarizer_bw.h"
 
-class summarizer_bw_cex_baset : public summarizer_bwt
+class summarizer_bw_cex_baset:public summarizer_bwt
 {
 public:
   typedef ssa_refiner_selectivet::reasont reasont;
@@ -77,4 +77,4 @@ protected:
     incremental_solvert&);
 };
 
-#endif
+#endif // CPROVER_2LS_SOLVER_SUMMARIZER_BW_CEX_H

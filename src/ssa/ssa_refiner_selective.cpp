@@ -29,8 +29,8 @@ bool ssa_refiner_selectivet::operator()()
           it->second.loops.begin();
         l_it!=it->second.loops.end(); l_it++)
     {
-      unsigned new_unwind=ssa_unwinder.unwind_loop_once_more(it->first,
-                                             (*l_it)->location_number);
+      unsigned new_unwind=
+        ssa_unwinder.unwind_loop_once_more(it->first, (*l_it)->location_number);
       debug() << "Refining function " << it->first << ": unwinding loop at "
               << (*l_it)->location_number << " (k=" << new_unwind << ")" << eom;
       unwind=std::max(unwind, new_unwind);

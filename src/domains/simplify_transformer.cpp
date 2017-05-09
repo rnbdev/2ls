@@ -31,10 +31,11 @@ Function: simplify_transformert::collect_node
 
 \*******************************************************************/
 
-void simplify_transformert::collect_node(const exprt &expr,
-                                        replace_mapt &substitutions,
-                                        bool frozen_only,
-                                        bool make_copy)
+void simplify_transformert::collect_node(
+  const exprt &expr,
+  replace_mapt &substitutions,
+  bool frozen_only,
+  bool make_copy)
 {
   if(expr.id()==ID_equal)
   {
@@ -99,8 +100,9 @@ Function: simplify_transformert::simplify_node
 
 \*******************************************************************/
 
-bool simplify_transformert::simplify_node(exprt &expr,
-                                         const replace_mapt &substitutions)
+bool simplify_transformert::simplify_node(
+  exprt &expr,
+  const replace_mapt &substitutions)
 {
   return replace_expr(substitutions, expr);
 }
@@ -118,8 +120,9 @@ Function: simplify_transformert::simplify_rec
 
 \*******************************************************************/
 
-bool simplify_transformert::simplify_rec(exprt &expr,
-                                        replace_mapt &substitutions)
+bool simplify_transformert::simplify_rec(
+  exprt &expr,
+  replace_mapt &substitutions)
 {
 #ifdef DEBUGX
   exprt old(expr);
@@ -217,9 +220,10 @@ Function: simplify
 
 \*******************************************************************/
 
-bool simplify(exprt &expr,
-              const std::set<irep_idt> &frozen_vars,
-              const namespacet &ns)
+bool simplify(
+  exprt &expr,
+  const std::set<irep_idt> &frozen_vars,
+  const namespacet &ns)
 {
   return simplify_transformert(ns, frozen_vars)(expr);
 }
@@ -236,9 +240,10 @@ Function: simplify_transformer
 
 \*******************************************************************/
 
-exprt simplify_transformer(const exprt &src,
-                          const std::set<irep_idt> &frozen_vars,
-                          const namespacet &ns)
+exprt simplify_transformer(
+  const exprt &src,
+  const std::set<irep_idt> &frozen_vars,
+  const namespacet &ns)
 {
 #ifdef DEBUGX
   std::cout << "FROZEN:";

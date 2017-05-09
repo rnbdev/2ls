@@ -6,8 +6,8 @@ Author: Peter Schrammel
 
 \*******************************************************************/
 
-#ifndef CPROVER_SIMPLIFY_BOUNDS_CLASS_H
-#define CPROVER_SIMPLIFY_BOUNDS_CLASS_H
+#ifndef CPROVER_2LS_DOMAINS_SIMPLIFY_BOUNDS_CLASS_H
+#define CPROVER_2LS_DOMAINS_SIMPLIFY_BOUNDS_CLASS_H
 
 #include <util/std_types.h>
 #include <util/arith_tools.h>
@@ -39,14 +39,18 @@ public:
   }
   inline static mp_integer get_largest(const typet &type)
   {
-    if(type.id()==ID_signedbv) return to_signedbv_type(type).largest();
-    else if(type.id()==ID_unsignedbv) return to_unsignedbv_type(type).largest();
+    if(type.id()==ID_signedbv)
+      return to_signedbv_type(type).largest();
+    else if(type.id()==ID_unsignedbv)
+      return to_unsignedbv_type(type).largest();
     assert(false);
   }
   inline static mp_integer get_smallest(const typet &type)
   {
-    if(type.id()==ID_signedbv) return to_signedbv_type(type).smallest();
-    else if(type.id()==ID_unsignedbv) return to_unsignedbv_type(type).smallest();
+    if(type.id()==ID_signedbv)
+      return to_signedbv_type(type).smallest();
+    else if(type.id()==ID_unsignedbv)
+      return to_unsignedbv_type(type).smallest();
     assert(false);
   }
 
@@ -60,7 +64,6 @@ protected:
   bool clean_up_implications(exprt &expr);
   bool regroup_implications(exprt &expr);
   bool clean_up_typecast(exprt &expr, const mp_integer &value);
-
 };
 
-#endif
+#endif // CPROVER_2LS_DOMAINS_SIMPLIFY_BOUNDS_CLASS_H

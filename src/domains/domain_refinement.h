@@ -6,12 +6,12 @@ Author: Peter Schrammel
 
 \*******************************************************************/
 
-#ifndef CPROVER_DOMAIN_REFINEMENT_H
-#define CPROVER_DOMAIN_REFINEMENT_H
+#ifndef CPROVER_2LS_DOMAINS_DOMAIN_REFINEMENT_H
+#define CPROVER_2LS_DOMAINS_DOMAIN_REFINEMENT_H
 
 #include "incremental_solver.h"
 #include "template_generator_base.h"
-#include "../ssa/local_SSA.h"
+#include <ssa/local_SSA.h>
 
 class domain_refinementt
 {
@@ -36,4 +36,4 @@ protected:
   incremental_solvert &solver;
 };
 
-#endif
+#endif // CPROVER_2LS_DOMAINS_DOMAIN_REFINEMENT_H

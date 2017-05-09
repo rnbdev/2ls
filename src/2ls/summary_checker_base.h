@@ -82,10 +82,10 @@ protected:
 
   property_checkert::resultt check_properties();
   property_checkert::resultt check_properties(
-     irep_idt function_name,
-     irep_idt entry_function,
-     std::set<irep_idt> seen_function_calls,
-     bool is_inlined);
+    irep_idt function_name,
+    irep_idt entry_function,
+    std::set<irep_idt> seen_function_calls,
+    bool is_inlined);
   void check_properties(
     const ssa_dbt::functionst::const_iterator f_it,
     irep_idt entry_function="");

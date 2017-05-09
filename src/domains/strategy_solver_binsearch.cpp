@@ -25,7 +25,8 @@ Function: strategy_solver_binsearcht::iterate
 
 \*******************************************************************/
 
-strategy_solver_baset::progresst strategy_solver_binsearcht::iterate(invariantt &_inv)
+strategy_solver_baset::progresst strategy_solver_binsearcht::iterate(
+  invariantt &_inv)
 {
   tpolyhedra_domaint::templ_valuet &inv=
     static_cast<tpolyhedra_domaint::templ_valuet &>(_inv);

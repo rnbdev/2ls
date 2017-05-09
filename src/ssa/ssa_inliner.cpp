@@ -84,11 +84,17 @@ void ssa_inlinert::get_bindings(
   get_replace_params(SSA, fSSA.params, n_it, *f_it, bindings_in, counter);
 
   // equalities for globals_in
-  get_replace_globals_in(fSSA.globals_in, *f_it, cs_globals_in, bindings_in, counter);
+  get_replace_globals_in(
+    fSSA.globals_in, *f_it, cs_globals_in, bindings_in, counter);
 
   // equalities for globals out (including unmodified globals)
-  get_replace_globals_out(fSSA.globals_out, *f_it, cs_globals_in, cs_globals_out, bindings_out, counter);
-
+  get_replace_globals_out(
+    fSSA.globals_out,
+    *f_it,
+    cs_globals_in,
+    cs_globals_out,
+    bindings_out,
+    counter);
 }
 
 /*******************************************************************\
@@ -119,10 +125,15 @@ bool ssa_inlinert::get_inlined(
   irep_idt fname=to_symbol_expr(f_it->function()).get_identifier();
   const local_SSAt &fSSA=ssa_db.get(fname);
 
-  bool assertion_flag=get_summaries(fSSA,
+  bool assertion_flag=get_summaries(
+    fSSA,
     summaryt::call_sitet(fSSA.goto_function.body.instructions.end()),
-    forward, assert_summaries, noassert_summaries,
-    bindings, assertion_map, error_summ);
+    forward,
+    assert_summaries,
+    noassert_summaries,
+    bindings,
+    assertion_map,
+    error_summ);
 
   // bindings
   exprt guard_binding;
@@ -226,24 +237,25 @@ bool ssa_inlinert::get_summary(
   get_replace_params(SSA, summary.params, n_it, *f_it, bindings, counter);
 
   // equalities for globals_in
-  get_replace_globals_in(summary.globals_in, *f_it, cs_globals_in, bindings, counter);
+  get_replace_globals_in(
+    summary.globals_in, *f_it, cs_globals_in, bindings, counter);
 
   // constraints for transformer
 
   exprt transformer;
 
   if(error_summ)
-    {
-      // update transformer using the error_summaries map
-      summaryt::call_sitet call_site(loc);
-      summaryt::error_summariest::const_iterator e_it=
-  summary.error_summaries.find(call_site);
-      if(e_it!=summary.error_summaries.end() &&
-   !e_it->second.is_nil())
-  transformer=e_it->second;
-      else
-  transformer=true_exprt();
-    }
+  {
+    // update transformer using the error_summaries map
+    summaryt::call_sitet call_site(loc);
+    summaryt::error_summariest::const_iterator e_it=
+      summary.error_summaries.find(call_site);
+    if(e_it!=summary.error_summaries.end() &&
+       !e_it->second.is_nil())
+      transformer=e_it->second;
+    else
+      transformer=true_exprt();
+  }
   else
   {
     if(forward)
@@ -257,17 +269,23 @@ bool ssa_inlinert::get_summary(
   rename(transformer, counter);
   if(summary.has_assertion)
   {
-    assert_summaries.push_back(implies_exprt(SSA.guard_symbol(n_it->location),
-                                    transformer));
+    assert_summaries.push_back(
+      implies_exprt(SSA.guard_symbol(n_it->location), transformer));
   }
   else
   {
-    noassert_summaries.push_back(implies_exprt(SSA.guard_symbol(n_it->location),
-                                    transformer));
+    noassert_summaries.push_back(
+      implies_exprt(SSA.guard_symbol(n_it->location), transformer));
   }
 
   // equalities for globals out (including unmodified globals)
-  get_replace_globals_out(summary.globals_out, *f_it, cs_globals_in, cs_globals_out, bindings, counter);
+  get_replace_globals_out(
+    summary.globals_out,
+    *f_it,
+    cs_globals_in,
+    cs_globals_out,
+    bindings,
+    counter);
 
   return summary.has_assertion;
 }
@@ -291,7 +309,8 @@ exprt ssa_inlinert::get_summaries(const local_SSAt &SSA)
   return and_exprt(conjunction(bindings), conjunction(summaries));
 }
 
-exprt ssa_inlinert::get_summaries(const local_SSAt &SSA,
+exprt ssa_inlinert::get_summaries(
+  const local_SSAt &SSA,
   assertion_mapt &assertion_map)
 {
   exprt::operandst summaries, bindings;
@@ -306,20 +325,23 @@ void ssa_inlinert::get_summaries(
   exprt::operandst &bindings)
 {
   assertion_mapt assertion_map;
-  get_summaries(SSA,
-                summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
-                forward, summaries, summaries, bindings, assertion_map);
+  get_summaries(
+    SSA,
+    summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
+    forward, summaries, summaries, bindings, assertion_map);
 }
 
-void ssa_inlinert::get_summaries(const local_SSAt &SSA,
-                                 bool forward,
-                                 exprt::operandst &summaries,
-                                 exprt::operandst &bindings,
-                                 assertion_mapt &assertion_map)
+void ssa_inlinert::get_summaries(
+  const local_SSAt &SSA,
+  bool forward,
+  exprt::operandst &summaries,
+  exprt::operandst &bindings,
+  assertion_mapt &assertion_map)
 {
-  get_summaries(SSA,
-                summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
-                forward, summaries, summaries, bindings, assertion_map);
+  get_summaries(
+    SSA,
+    summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
+    forward, summaries, summaries, bindings, assertion_map);
 }
 
 /*******************************************************************\
@@ -344,19 +366,21 @@ bool ssa_inlinert::get_summaries(
   bool error_summ)
 {
   assertion_mapt assertion_map;
-  return get_summaries(SSA,
-           summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
-         forward, assert_summaries, noassert_summaries, bindings, assertion_map);
+  return get_summaries(
+    SSA,
+    summaryt::call_sitet(SSA.goto_function.body.instructions.end()),
+    forward, assert_summaries, noassert_summaries, bindings, assertion_map);
 }
 
-bool ssa_inlinert::get_summaries(const local_SSAt &SSA,
-                                 const summaryt::call_sitet &current_call_site,
-                                 bool forward,
-                                 exprt::operandst &assert_summaries,
-                                 exprt::operandst &noassert_summaries,
-                                 exprt::operandst &bindings,
-                                 assertion_mapt &assertion_map,
-                                 bool error_summ)
+bool ssa_inlinert::get_summaries(
+  const local_SSAt &SSA,
+  const summaryt::call_sitet &current_call_site,
+  bool forward,
+  exprt::operandst &assert_summaries,
+  exprt::operandst &noassert_summaries,
+  exprt::operandst &bindings,
+  assertion_mapt &assertion_map,
+  bool error_summ)
 {
   bool assertion_flag=false;
   for(local_SSAt::nodest::const_iterator n_it=SSA.nodes.begin();
@@ -385,9 +409,10 @@ bool ssa_inlinert::get_summaries(const local_SSAt &SSA,
       {
         counter++;
         bool new_assertion_flag=
-          get_inlined(SSA, n_it, f_it,
-                    forward, assert_summaries, noassert_summaries,
-                      bindings, assertion_map, counter, error_summ);
+          get_inlined(
+            SSA, n_it, f_it,
+            forward, assert_summaries, noassert_summaries,
+            bindings, assertion_map, counter, error_summ);
         assertion_flag=assertion_flag || new_assertion_flag;
       }
       // get summary
@@ -395,9 +420,10 @@ bool ssa_inlinert::get_summaries(const local_SSAt &SSA,
       {
         counter++;
         bool new_assertion_flag=
-          get_summary(SSA, n_it, f_it,
-                    forward, assert_summaries, noassert_summaries,
-                    bindings, counter, error_summ);
+          get_summary(
+            SSA, n_it, f_it,
+            forward, assert_summaries, noassert_summaries,
+            bindings, counter, error_summ);
         assertion_flag=assertion_flag || new_assertion_flag;
       }
     }
@@ -514,7 +540,10 @@ void ssa_inlinert::replace(
           }
 
           // replace
-          replace(SSA.nodes, n_it, f_it, cs_globals_in, cs_globals_out, fSSA, counter);
+          replace(
+            SSA.nodes, n_it, f_it,
+            cs_globals_in, cs_globals_out,
+            fSSA, counter);
         }
         else // just add to nodes
         {
@@ -528,7 +557,8 @@ void ssa_inlinert::replace(
           }
         }
       }
-      else debug() << "No body available for function " << fname << eom;
+      else
+        debug() << "No body available for function " << fname << eom;
       commit_node(n_it);
     }
     commit_nodes(SSA.nodes, n_it);
@@ -574,15 +604,17 @@ void ssa_inlinert::replace(
   {
     rename(precondition, counter);
     node->constraints.push_back(
-      implies_exprt(SSA.guard_symbol(node->location),
-                    precondition));
+      implies_exprt(
+        SSA.guard_symbol(node->location),
+        precondition));
   }
   else
   {
     rename(precondition, counter);
     node->assertions.push_back(
-      implies_exprt(SSA.guard_symbol(node->location),
-                    precondition));
+      implies_exprt(
+        SSA.guard_symbol(node->location),
+        precondition));
   }
   exprt transformer;
   if(forward)
@@ -626,7 +658,6 @@ void ssa_inlinert::replace(
   const local_SSAt &function,
   int counter)
 {
-
   // equalities for arguments
   replace_params(function.params, *f_it, counter);
 
@@ -695,9 +726,10 @@ void ssa_inlinert::get_replace_globals_in(
   // return conjunction(c);
 }
 
-void ssa_inlinert::replace_globals_in(const local_SSAt::var_sett &globals_in,
-                                      const local_SSAt::var_sett &globals,
-                                      int counter)
+void ssa_inlinert::replace_globals_in(
+  const local_SSAt::var_sett &globals_in,
+  const local_SSAt::var_sett &globals,
+  int counter)
 {
   // equalities for globals_in
   for(summaryt::var_sett::const_iterator it=globals_in.begin();
@@ -789,9 +821,10 @@ void ssa_inlinert::get_replace_params(
   }
 }
 
-void ssa_inlinert::replace_params(const local_SSAt::var_listt &params,
-                                  const function_application_exprt &funapp_expr,
-                                  int counter)
+void ssa_inlinert::replace_params(
+  const local_SSAt::var_listt &params,
+  const function_application_exprt &funapp_expr,
+  int counter)
 {
   // equalities for arguments
   local_SSAt::var_listt::const_iterator p_it=params.begin();
@@ -855,10 +888,11 @@ void ssa_inlinert::get_replace_globals_out(
   }
 }
 
-void ssa_inlinert::replace_globals_out(const local_SSAt::var_sett &globals_out,
-                                       const local_SSAt::var_sett &cs_globals_in,
-                                       const local_SSAt::var_sett &cs_globals_out,
-                                       int counter)
+void ssa_inlinert::replace_globals_out(
+  const local_SSAt::var_sett &globals_out,
+  const local_SSAt::var_sett &cs_globals_in,
+  const local_SSAt::var_sett &cs_globals_out,
+  int counter)
 {
   // equalities for globals_out
   for(summaryt::var_sett::const_iterator it=cs_globals_out.begin();
@@ -906,15 +940,15 @@ Function: ssa_inlinert::rename
 
 \*******************************************************************/
 
-void ssa_inlinert::rename(irep_idt &id, int counter, bool attach){
-
+void ssa_inlinert::rename(irep_idt &id, int counter, bool attach)
+{
   std::string id_str=id2string(id);
 
   if(!attach)
   {
     // find first @ where afterwards there are no letters
     size_t pos=std::string::npos;
-    for(size_t i=0;i<id_str.size();i++)
+    for(size_t i=0; i<id_str.size(); i++)
     {
       char c=id_str.at(i);
       if(pos==std::string::npos)
@@ -1248,6 +1282,3 @@ irep_idt ssa_inlinert::get_original_identifier(const symbol_exprt &s)
     id=id.substr(0, pos);
   return id;
 }
-
-
-

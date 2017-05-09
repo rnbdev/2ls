@@ -9,10 +9,10 @@ Author: Peter Schrammel, Kumar Madhukar
 #ifndef CPROVER_2LS_DOMAINS_DISJUNCTIVE_ANALYZER_H
 #define CPROVER_2LS_DOMAINS_DISJUNCTIVE_ANALYZER_H
 
-class disjunctive_analyzert : public messaget
+class disjunctive_analyzert:public messaget
 {
  public:
-  explicit disjunctive_analyzert():
+  disjunctive_analyzert():
     solver_instances(0),
     solver_calls(0)
   {

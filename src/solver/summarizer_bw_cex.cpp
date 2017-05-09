@@ -214,8 +214,10 @@ void summarizer_bw_cex_baset::get_loop_continues(
     for(local_SSAt::nodest::const_iterator n_it=SSA.nodes.begin();
   n_it!=SSA.nodes.end(); n_it++)
     {
-      if(n_it->loophead==SSA.nodes.end()) continue;
-      if(n_it->loophead->location!=loop_id) continue;
+      if(n_it->loophead==SSA.nodes.end())
+        continue;
+      if(n_it->loophead->location!=loop_id)
+        continue;
       symbol_exprt guard=SSA.guard_symbol(n_it->location);
       symbol_exprt cond=SSA.cond_symbol(n_it->location);
       loop_continues.push_back(and_exprt(guard, cond));
@@ -224,7 +226,8 @@ void summarizer_bw_cex_baset::get_loop_continues(
   }
 
 #if 0
-  std::cout << "loophead_continues: " << from_expr(SSA.ns, "", disjunction(loop_continues)) << std::endl;
+  std::cout << "loophead_continues: "
+            << from_expr(SSA.ns, "", disjunction(loop_continues)) << std::endl;
 #endif
 }
 

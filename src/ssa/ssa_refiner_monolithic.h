@@ -6,8 +6,8 @@ Author: Peter Schrammel
 
 \*******************************************************************/
 
-#ifndef CPROVER_SSA_REFINER_MONOLITHIC_H
-#define CPROVER_SSA_REFINER_MONOLITHIC_H
+#ifndef CPROVER_2LS_SSA_SSA_REFINER_MONOLITHIC_H
+#define CPROVER_2LS_SSA_SSA_REFINER_MONOLITHIC_H
 
 #include "ssa_refiner.h"
 
@@ -17,28 +17,28 @@ Author: Peter Schrammel
 class summary_dbt;
 class ssa_unwindert;
 
-class ssa_refiner_monolithict : public ssa_refinert
+class ssa_refiner_monolithict:public ssa_refinert
 {
- public:
-  explicit ssa_refiner_monolithict(
+public:
+  ssa_refiner_monolithict(
     summary_dbt &_summary_db,
     ssa_unwindert &_ssa_unwinder,
-    unsigned _max_unwind
-    ) :
-      summary_db(_summary_db),
-      ssa_unwinder(_ssa_unwinder),
-      max_unwind(_max_unwind),
-      unwind(0)
-    {}
+    unsigned _max_unwind):
+    summary_db(_summary_db),
+    ssa_unwinder(_ssa_unwinder),
+    max_unwind(_max_unwind),
+    unwind(0)
+  {
+  }
 
-    virtual bool operator()();
-    virtual unsigned get_unwind() { return unwind>0 ? unwind-1 : 0; }
+  virtual bool operator()();
+  virtual unsigned get_unwind() { return unwind>0 ? unwind-1 : 0; }
 
- protected:
+protected:
   summary_dbt &summary_db;
   ssa_unwindert &ssa_unwinder;
   const unsigned max_unwind;
   unsigned unwind;
 };
 
-#endif
+#endif // CPROVER_2LS_SSA_SSA_REFINER_MONOLITHIC_H

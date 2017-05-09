@@ -175,14 +175,16 @@ bool ssa_analyzert::operator()(
      status==strategy_solver_baset::FAILED)
   {
     nonpassed_assertionst::iterator it=nonpassed_assertions.begin();
-    for(unsigned i=0;i<assertion_literals.size(); ++i)
+    for(unsigned i=0; i<assertion_literals.size(); ++i)
     {
       if(!solver.solver->l_get(assertion_literals[i]).is_true())
         nonpassed_assertions.erase(it++);
-      else ++it;
+      else
+        ++it;
     }
   }
-  else nonpassed_assertions.clear();
+  else
+    nonpassed_assertions.clear();
 
   solver.pop_context();
 

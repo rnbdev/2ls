@@ -104,7 +104,7 @@ void summary_checker_baset::summarize(
   bool forward,
   bool termination)
 {
-  summarizer_baset *summarizer=NULL;
+  summarizer_baset *summarizer=nullptr;
 
 #ifdef SHOW_CALLING_CONTEXTS
   if(options.get_bool_option("show-calling-contexts"))
@@ -126,7 +126,7 @@ void summary_checker_baset::summarize(
       summarizer=new summarizer_bw_termt(
         options, summary_db, ssa_db, ssa_unwinder, ssa_inliner);
   }
-  assert(summarizer!=NULL);
+  assert(summarizer!=nullptr);
 
   summarizer->set_message_handler(get_message_handler());
 
@@ -198,9 +198,13 @@ summary_checker_baset::resultt summary_checker_baset::check_properties(
 #if 0
           debug() << "Checking call " << fname << messaget::eom;
 #endif
-          if(seen_function_calls.find(fname)==seen_function_calls.end()){
+          if(seen_function_calls.find(fname)==seen_function_calls.end())
+          {
             seen_function_calls.insert(fname);
-            check_properties(fname, entry_function, seen_function_calls,
+            check_properties(
+              fname,
+              entry_function,
+              seen_function_calls,
               n_it->function_calls_inlined);
           }
         }
@@ -230,7 +234,8 @@ summary_checker_baset::resultt summary_checker_baset::check_properties(
 
       if(options.get_bool_option("show-invariants"))
       {
-        if(!summary_db.exists(f_it->first)) continue;
+        if(!summary_db.exists(f_it->first))
+          continue;
         show_invariants(*(f_it->second), summary_db.get(f_it->first), result());
         result() << eom;
       }
@@ -310,53 +315,77 @@ void summary_checker_baset::check_properties(
   solver << ssa_inliner.get_summaries(SSA);
 
   // spuriousness checkers
-  summarizer_bw_cex_baset *summarizer_bw_cex=NULL;
-  incremental_solvert* cex_complete_solver=
-    incremental_solvert::allocate(SSA.ns,
-                                  options.get_bool_option("refine"));
+  summarizer_bw_cex_baset *summarizer_bw_cex=nullptr;
+  incremental_solvert *cex_complete_solver=
+    incremental_solvert::allocate(
+      SSA.ns,
+      options.get_bool_option("refine"));
 #if 1
   cex_complete_solver->set_message_handler(get_message_handler());
 #endif
   if(options.get_option("spurious-check")=="abstract")
   {
     summarizer_bw_cex=new summarizer_bw_cex_ait(
-      options, summary_db, ssa_db,
-      ssa_unwinder, ssa_inliner,
-      entry_function, f_it->first);
+      options,
+      summary_db,
+      ssa_db,
+      ssa_unwinder,
+      ssa_inliner,
+      entry_function,
+      f_it->first);
   }
   else if(options.get_option("spurious-check")=="complete")
   {
     summarizer_bw_cex=new summarizer_bw_cex_completet(
-      options, summary_db, ssa_db,
-      ssa_unwinder, ssa_inliner, *cex_complete_solver,
-      entry_function, f_it->first);
+      options,
+      summary_db,
+      ssa_db,
+      ssa_unwinder,
+      ssa_inliner,
+      *cex_complete_solver,
+      entry_function,
+      f_it->first);
   }
   else if(options.get_option("spurious-check")=="wp")
   {
     summarizer_bw_cex=new summarizer_bw_cex_wpt(
-      options, summary_db, ssa_db,
-      ssa_unwinder, ssa_inliner, *cex_complete_solver,
-      entry_function, f_it->first);
+      options,
+      summary_db,
+      ssa_db,
+      ssa_unwinder,
+      ssa_inliner,
+      *cex_complete_solver,
+      entry_function,
+      f_it->first);
   }
   else if(options.get_option("spurious-check")=="all")
   {
     summarizer_bw_cex=new summarizer_bw_cex_allt(
-      options, summary_db, ssa_db,
-      ssa_unwinder, ssa_inliner, *cex_complete_solver,
-      entry_function, f_it->first);
+      options,
+      summary_db,
+      ssa_db,
+      ssa_unwinder,
+      ssa_inliner,
+      *cex_complete_solver,
+      entry_function,
+      f_it->first);
   }
-  else
+  else //NOLINT(*)
 #if 0
-  if(options.get_bool_option("inline") ||
-     options.get_option("spurious-check")=="concrete")
+    if(options.get_bool_option("inline") ||
+       options.get_option("spurious-check")=="concrete")
 #endif
-  {
-    summarizer_bw_cex=new summarizer_bw_cex_concretet(
-      options, summary_db, ssa_db,
-      ssa_unwinder, ssa_inliner,
-      entry_function, f_it->first);
-  }
-  assert(summarizer_bw_cex!=NULL);
+    {
+      summarizer_bw_cex=new summarizer_bw_cex_concretet(
+        options,
+        summary_db,
+        ssa_db,
+        ssa_unwinder,
+        ssa_inliner,
+        entry_function,
+        f_it->first);
+    }
+  assert(summarizer_bw_cex!=nullptr);
   summarizer_bw_cex->set_message_handler(get_message_handler());
 
   cover_goals_extt cover_goals(

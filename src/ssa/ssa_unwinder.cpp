@@ -290,26 +290,27 @@ void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
     return;
 
   loopt &loop=loops[loc];
-  loop.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(loc)+"$enable"+i2string(k), bool_typet()));
+  loop.loop_enabling_exprs.push_back(
+    symbol_exprt(
+      "unwind$"+id2string(fname)+"$loc"+i2string(loc)+"$enable"+i2string(k),
+      bool_typet()));
 
-  // current_enabling_expr=
-  //  symbol_exprt("unwind::"+id2string(fname)+"::enable"+i2string(k),
-  //               bool_typet());
-  // SSA.enabling_exprs.push_back(current_enabling_expr);
+  // TODO: just for exploratory integration, must go away
+  SSA.current_unwinding=k;
 
-
-  SSA.current_unwinding=k; // TODO: just for exploratory integration, must go away
   // recursively unwind everything
   SSA.current_unwindings.clear();
 
-  for(loop_mapt::iterator it=loops.begin(); it!=loops.end(); ++it){
+  for(loop_mapt::iterator it=loops.begin(); it!=loops.end(); ++it)
+  {
     if(!it->second.is_root)
       continue;
 
     if(it->first==loc)
       unwind(it->second, k, false, false); // recursive
     else
-      unwind(it->second, it->second.current_unwinding, false, true, k, loc); // recursive
+      unwind(it->second, it->second.current_unwinding, false, true, k, loc);
+      // recursive
 
     assert(SSA.current_unwindings.empty());
   }
@@ -347,7 +348,11 @@ void ssa_local_unwindert::unwind(unsigned k)
                  bool_typet());
   for(loop_mapt::iterator it=loops.begin(); it!=loops.end(); ++it)
   {
-    it->second.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(it->first)+"$enable"+i2string(k), bool_typet()));
+    it->second.loop_enabling_exprs.push_back(
+      symbol_exprt(
+        "unwind$"+id2string(fname)+"$loc"+i2string(it->first)+
+        "$enable"+i2string(k),
+        bool_typet()));
   }
 
   // TODO: just for exploratory integration, must go away
@@ -385,9 +390,14 @@ Function: ssa_local_unwindert::unwind
 
 \*******************************************************************/
 
-void ssa_local_unwindert::unwind(loopt &loop, unsigned k, bool is_new_parent,
-                                 bool propagate, unsigned prop_unwind,
-                                 unsigned prop_loc, bool propagate_all)
+void ssa_local_unwindert::unwind(
+  loopt &loop,
+  unsigned k,
+  bool is_new_parent,
+  bool propagate,
+  unsigned prop_unwind,
+  unsigned prop_loc,
+  bool propagate_all)
 {
   odometert context=SSA.current_unwindings;
 #ifdef DEBUG
@@ -455,17 +465,20 @@ void ssa_local_unwindert::unwind(loopt &loop, unsigned k, bool is_new_parent,
         unwind(
           loops[l], k, i>loop.current_unwinding || is_new_parent, false);
       }
-      else{
+      else
+      {
         if(propagate==true)
         {
-          // if this child loop is the desired loop then unwind k and do not propagate
+          // if this child loop is the desired loop then unwind k
+          //   and do not propagate
           // else unwind loop.current_unwinding and propagate
           if(l==prop_loc)
           {
             unwind(
               loops[l], k, i>loop.current_unwinding || is_new_parent, false);
           }
-          else{
+          else
+          {
             unwind(
               loops[l],
               loops[l].current_unwinding,
@@ -971,19 +984,22 @@ void ssa_local_unwindert::unwinder_rename(
 #endif
 }
 
-/*****************************************************************************\
- *
- * Function : ssa_unwindert::unwind_loop_alone()
- *
- * Input :
- *
- * Output :
- *
- * Purpose :
- *
- *****************************************************************************/
+/*******************************************************************\
 
-void ssa_unwindert::unwind_loop_alone(const irep_idt fname, unsigned loc, unsigned int k)
+Function: ssa_local_unwindert::unwind_loop_alone
+
+  Inputs:
+
+ Outputs:
+
+ Purpose:
+
+\*******************************************************************/
+
+void ssa_unwindert::unwind_loop_alone(
+  const irep_idt fname,
+  unsigned loc,
+  unsigned int k)
 {
   assert(is_initialized);
   unwinder_mapt::iterator it=unwinder_map.find(fname);
@@ -991,19 +1007,21 @@ void ssa_unwindert::unwind_loop_alone(const irep_idt fname, unsigned loc, unsign
   it->second.unwind_loop_at_location(loc, k);
 }
 
-/*****************************************************************************\
- *
- * Function : ssa_unwindert::unwind_loop_once_more()
- *
- * Input :
- *
- * Output :
- *
- * Purpose :
- *
- *****************************************************************************/
+/*******************************************************************\
 
-unsigned ssa_unwindert::unwind_loop_once_more(const irep_idt fname, unsigned loc)
+Function: ssa_local_unwindert::unwind_loop_once_more
+
+  Inputs:
+
+ Outputs:
+
+ Purpose:
+
+\*******************************************************************/
+
+unsigned ssa_unwindert::unwind_loop_once_more(
+  const irep_idt fname,
+  unsigned loc)
 {
   assert(is_initialized);
   unwinder_mapt::iterator it=unwinder_map.find(fname);

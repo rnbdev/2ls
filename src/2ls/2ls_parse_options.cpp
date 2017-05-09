@@ -840,7 +840,7 @@ void twols_parse_optionst::require_entry(
 
   if(goto_model.symbol_table.symbols.find(entry_point)==
      symbol_table.symbols.end())
-    throw "The program has no entry point; please complete linking";
+    throw "the program has no entry point; please complete linking";
 }
 
 /*******************************************************************\

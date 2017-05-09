@@ -28,7 +28,8 @@ Function: ranking_solver_enumerationt::iterate
 
 \*******************************************************************/
 
-ranking_solver_enumerationt::progresst ranking_solver_enumerationt::iterate(invariantt &_rank)
+ranking_solver_enumerationt::progresst
+ranking_solver_enumerationt::iterate(invariantt &_rank)
 {
   linrank_domaint::templ_valuet &rank=
     static_cast<linrank_domaint::templ_valuet &>(_rank);

@@ -17,9 +17,6 @@ Author: Peter Schrammel
 
 #include "tpolyhedra_domain.h"
 #include "util.h"
-
-#include "simplify_bounds.h"
-
 #include "simplify_bounds.h"
 
 #define SYMB_BOUND_VAR "symb_bound#"

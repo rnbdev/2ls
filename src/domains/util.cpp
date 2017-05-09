@@ -123,7 +123,6 @@ void extend_expr_types(exprt &expr)
     extend_expr_types(expr.op0());
     extend_expr_types(expr.op1());
     unsigned size0=get_bitvector_width(expr.op0());
-//    std::cerr << "expr1: " << expr.op1() << std::endl;
     unsigned size1=get_bitvector_width(expr.op1());
 
     assert(size0>0); assert(size1>0);
@@ -133,8 +132,9 @@ void extend_expr_types(exprt &expr)
         expr.op1().type().id()==ID_signedbv))
     {
       typet new_type=signedbv_typet(size0+size1+1);
-      expr=mult_exprt(typecast_exprt(expr.op0(), new_type),
-                      typecast_exprt(expr.op1(), new_type));
+      expr=mult_exprt(
+        typecast_exprt(expr.op0(), new_type),
+        typecast_exprt(expr.op1(), new_type));
       return;
     }
     else if(expr.op0().type().id()==ID_floatbv &&
@@ -333,7 +333,8 @@ ieee_floatt simplify_const_float(const exprt &expr)
     v1/=v2;
     return v1;
   }
-  if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol)  // default value if not substituted in expr
+  // default value if not substituted in expr
+  if(expr.id()==ID_symbol || expr.id()==ID_nondet_symbol)
   {
     ieee_floatt v;
     v.make_zero();

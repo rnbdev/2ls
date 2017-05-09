@@ -182,7 +182,9 @@ void cover_goals_extt::assignment()
        solver.l_get(g_it->condition).is_true())
     {
 #if 1
-      solver.pop_context(); // otherwise this would interfere with necessary preconditions
+      // otherwise this would interfere with necessary preconditions
+      solver.pop_context();
+
       summarizer_bw_cex.summarize(g_it->cond_expression);
       property_map[it->first].result=summarizer_bw_cex.check();
       solver.new_context();
@@ -192,12 +194,13 @@ void cover_goals_extt::assignment()
       exprt conjunct_expr=(g_it->cond_expression).op0();
 #if 0
       std::cout << "FAILED EXPR: "
-                      << from_expr(SSA.ns, "", conjunct_expr) << std::endl;
+                << from_expr(SSA.ns, "", conjunct_expr) << std::endl;
 #endif
 
       if(conjunct_expr.id()!=ID_and)
       {
-        solver.pop_context(); // otherwise this would interfere with necessary preconditions
+        // otherwise this would interfere with necessary preconditions
+        solver.pop_context();
         summarizer_bw_cex.summarize(g_it->cond_expression);
         property_map[it->first].result=summarizer_bw_cex.check();
         solver.new_context();
@@ -220,7 +223,9 @@ void cover_goals_extt::assignment()
 #endif
           }
         }
-        solver.pop_context(); // otherwise this would interfere with necessary preconditions
+        // otherwise this would interfere with necessary preconditions
+        solver.pop_context();
+
         summarizer_bw_cex.summarize(not_exprt(conjunction(failed_exprs)));
         property_map[it->first].result=summarizer_bw_cex.check();
         solver.new_context();
@@ -242,4 +247,3 @@ void cover_goals_extt::assignment()
 
   _iterations++; // statistics
 }
-

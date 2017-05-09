@@ -21,20 +21,25 @@ Author: Kumar Madhukar, Peter Schrammel
 
 #include "summarizer_bw_cex.h"
 
-class summarizer_bw_cex_concretet : public summarizer_bw_cex_baset
+class summarizer_bw_cex_concretet:public summarizer_bw_cex_baset
 {
 public:
-summarizer_bw_cex_concretet(
-  optionst &_options,
-  summary_dbt &_summary_db,
-  ssa_dbt &_ssa_db,
-  ssa_unwindert &_ssa_unwinder,
-  ssa_inlinert &_ssa_inliner,
-  function_namet _entry_function,
-  function_namet _error_function):
-  summarizer_bw_cex_baset(_options, _summary_db, _ssa_db,
-                          _ssa_unwinder, _ssa_inliner,
-                          _entry_function, _error_function)
+  summarizer_bw_cex_concretet(
+    optionst &_options,
+    summary_dbt &_summary_db,
+    ssa_dbt &_ssa_db,
+    ssa_unwindert &_ssa_unwinder,
+    ssa_inlinert &_ssa_inliner,
+    function_namet _entry_function,
+    function_namet _error_function):
+    summarizer_bw_cex_baset(
+      _options,
+      _summary_db,
+      _ssa_db,
+      _ssa_unwinder,
+      _ssa_inliner,
+      _entry_function,
+      _error_function)
   {}
 
   virtual void summarize(const function_namet &entry_function);
@@ -74,7 +79,6 @@ protected:
     local_SSAt::nodet::function_callst::const_iterator f_it,
     const exprt &postcondition,
     bool sufficient);
-
 };
 
-#endif
+#endif // CPROVER_2LS_SOLVER_SUMMARIZER_BW_CEX_CONCRETE_H

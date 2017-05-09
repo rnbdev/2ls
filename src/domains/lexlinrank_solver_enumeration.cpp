@@ -32,7 +32,8 @@ Function: lexlinrank_solver_enumerationt::iterate
 
 \*******************************************************************/
 
-lexlinrank_solver_enumerationt::progresst lexlinrank_solver_enumerationt::iterate(invariantt &_rank)
+lexlinrank_solver_enumerationt::progresst
+lexlinrank_solver_enumerationt::iterate(invariantt &_rank)
 {
   lexlinrank_domaint::templ_valuet &rank=
     static_cast<lexlinrank_domaint::templ_valuet &>(_rank);

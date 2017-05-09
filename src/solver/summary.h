@@ -62,20 +62,26 @@ class summaryt
 
   std::list<local_SSAt::nodest::const_iterator> nonpassed_assertions;
 
-  struct call_sitet { // TODO: we also need unwinding information here
-    call_sitet()
-      : location_number(UINT_MAX) {}
-    explicit call_sitet(local_SSAt::locationt loc)
-      : location_number(loc->location_number) {}
+  struct call_sitet
+  { // TODO: we also need unwinding information here
+    call_sitet():location_number(UINT_MAX) {}
+    explicit call_sitet(local_SSAt::locationt loc):
+      location_number(loc->location_number)
+    {
+    }
     unsigned location_number;
 
     bool operator<(const call_sitet &other) const
-      { return (location_number<other.location_number); }
+    {
+      return (location_number<other.location_number);
+    }
     bool operator==(const call_sitet &other) const
-      { return (location_number==other.location_number); }
+    {
+      return (location_number==other.location_number);
+    }
   };
 
-  const static call_sitet entry_call_site;
+  static const call_sitet entry_call_site;
   typedef std::map<call_sitet, predicatet> error_summariest;
   error_summariest error_summaries;
   // --------------

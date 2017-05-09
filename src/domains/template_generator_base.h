@@ -50,7 +50,11 @@ public:
   }
 
   virtual domaint::var_sett all_vars();
-  bool empty() { assert(domain_ptr!=nullptr); return domain_ptr->is_spec_empty(); }
+  bool empty()
+  {
+    assert(domain_ptr!=nullptr);
+    return domain_ptr->is_spec_empty();
+  }
   domaint *domain() { assert(domain_ptr!=nullptr); return domain_ptr; }
 
   domaint::var_specst var_specs;
@@ -108,7 +112,8 @@ protected:
   void get_pre_post_guards(
     const local_SSAt &SSA,
     local_SSAt::nodest::const_iterator n_it,
-    exprt &pre_guard, exprt &post_guard);
+    exprt &pre_guard,
+    exprt &post_guard);
   void get_pre_var(
     const local_SSAt &SSA,
     local_SSAt::objectst::const_iterator o_it,

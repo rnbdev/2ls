@@ -108,7 +108,7 @@ class incremental_solvert:public messaget
       }
     }
 #endif
-#if (defined(DEBUG_FORMULA)  && defined(DEBUG_OUTPUT)) || defined(DISPLAY_FORMULA)
+#if (defined(DEBUG_FORMULA) && defined(DEBUG_OUTPUT)) || defined(DISPLAY_FORMULA) // NOLINT(whitespace/line_length)
     if(result==decision_proceduret::D_SATISFIABLE)
     {
       std::set<symbol_exprt> vars;
@@ -236,7 +236,9 @@ static inline incremental_solvert &operator<<(
 #else
   if(!dest.activation_literals.empty())
     dest.debug_add_to_formula(
-      or_exprt(src, literal_exprt(!dest.activation_literals.back())));
+      or_exprt(
+        src,
+        literal_exprt(!dest.activation_literals.back())));
   else
     dest.debug_add_to_formula(src);
 #endif

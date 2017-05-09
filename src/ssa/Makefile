@@ -1,11 +1,23 @@
 SRC = local_ssa.cpp \
-      ssa_domain.cpp translate_union_member.cpp malloc_ssa.cpp \
-      guard_map.cpp ssa_object.cpp assignments.cpp ssa_dereference.cpp \
-      ssa_value_set.cpp address_canonizer.cpp simplify_ssa.cpp \
-      ssa_build_goto_trace.cpp ssa_inliner.cpp ssa_unwinder.cpp \
-      unwindable_local_ssa.cpp ssa_const_propagator.cpp \
-      replace_symbol_ext.cpp ssa_dependency_graph.cpp \
-      ssa_refiner_monolithic.cpp ssa_refiner_selective.cpp
+      ssa_domain.cpp \
+      translate_union_member.cpp \
+      malloc_ssa.cpp \
+      guard_map.cpp \
+      ssa_object.cpp \
+      assignments.cpp \
+      ssa_dereference.cpp \
+      ssa_value_set.cpp \
+      address_canonizer.cpp \
+      simplify_ssa.cpp \
+      ssa_build_goto_trace.cpp \
+      ssa_inliner.cpp \
+      ssa_unwinder.cpp \
+      unwindable_local_ssa.cpp \
+      ssa_const_propagator.cpp \
+      ssa_dependency_graph.cpp \
+      ssa_refiner_monolithic.cpp \
+      ssa_refiner_selective.cpp \
+      # empty last line
 
 include ../config.inc
 include $(CBMC)/src/config.inc
