@@ -50,8 +50,8 @@ public:
   // initialize value
   virtual void initialize(valuet &value);
 
-  virtual void reset_refinements() { current_refinement = 0; }
-  virtual bool refine(); //non-monotone condition refinement
+  virtual void reset_refinements() { current_refinement=0; }
+  virtual bool refine(); // non-monotone condition refinement
   std::vector<exprt> &refinement_expressions() { return refinement_exprs; }
 
   virtual void join(valuet &value1, const valuet &value2);
@@ -141,7 +141,7 @@ protected:
 
   templatet templ;
 
-  //non-monotone condition refinement
+  // non-monotone condition refinement
   std::vector<exprt> refinement_exprs;
   unsigned current_refinement, max_refinements;
   exprt current_refinement_expr;

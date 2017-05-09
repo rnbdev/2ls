@@ -34,7 +34,7 @@ void update_function_signature(
   j_signature.kind=jsont::J_OBJECT;
   j_reads=jsont::json_array();
   j_modifies=jsont::json_array();
-  
+
   std::set<irep_idt> modifies;
   std::set<irep_idt> reads;
 

@@ -138,8 +138,8 @@ void ssa_local_unwindert::build_pre_post_map()
     const ssa_domaint::phi_nodest &phi_nodes=
       SSA.ssa_analysis[pre_loc].phi_nodes;
     for(local_SSAt::objectst::const_iterator o_it=
-           SSA.ssa_objects.objects.begin();
-         o_it!=SSA.ssa_objects.objects.end(); o_it++)
+          SSA.ssa_objects.objects.begin();
+        o_it!=SSA.ssa_objects.objects.end(); o_it++)
     {
       ssa_domaint::phi_nodest::const_iterator p_it=phi_nodes.find(
         o_it->get_identifier());
@@ -189,8 +189,8 @@ void ssa_local_unwindert::build_exit_conditions()
         // need disjunction of all exit conditions
         //   for each symbol name at exit location
         for(exprt::operandst::const_iterator
-               s_it=it->second.modified_vars.begin();
-             s_it!=it->second.modified_vars.end(); s_it++)
+              s_it=it->second.modified_vars.begin();
+            s_it!=it->second.modified_vars.end(); s_it++)
         {
           exprt e=SSA.read_rhs(*s_it, n_it->location);
           it->second.exit_map[e].push_back(and_exprt(g, c));
@@ -211,8 +211,8 @@ void ssa_local_unwindert::build_exit_conditions()
         exprt g=SSA.guard_symbol(n_it->location);
         exprt c=SSA.cond_symbol(n_it->location);
         for(exprt::operandst::const_iterator
-               s_it=it->second.modified_vars.begin();
-             s_it!=it->second.modified_vars.end(); s_it++)
+              s_it=it->second.modified_vars.begin();
+            s_it!=it->second.modified_vars.end(); s_it++)
         {
           exprt e=SSA.read_rhs(*s_it, n_it->location);
           it->second.exit_map[e].push_back(
@@ -254,7 +254,7 @@ void ssa_local_unwindert::build_exit_conditions()
         if(n_it==prev)
           --prev;
         for(local_SSAt::nodet::assertionst::const_iterator a_it=
-               n_it->assertions.begin(); a_it!=n_it->assertions.end(); a_it++)
+              n_it->assertions.begin(); a_it!=n_it->assertions.end(); a_it++)
         {
           h_it->second.assertions.push_back(*a_it);
         }
@@ -267,9 +267,9 @@ void ssa_local_unwindert::build_exit_conditions()
  *
  *  Function : ssa_local_unwindert::unwind_loop_at_location()
  *
- *  Input : 
+ *  Input :
  *
- *  Output : 
+ *  Output :
  *
  *  Purpose : unwind the loop at the given location, up to k starting from
  *            previous unwindings
@@ -279,8 +279,8 @@ void ssa_local_unwindert::build_exit_conditions()
 
 unsigned ssa_local_unwindert::unwind_loop_at_location(unsigned loc)
 {
-  unsigned k = loops.at(loc).current_unwinding+1;
-  unwind_loop_at_location(loc,k);
+  unsigned k=loops.at(loc).current_unwinding+1;
+  unwind_loop_at_location(loc, k);
   return k;
 }
 
@@ -289,35 +289,35 @@ void ssa_local_unwindert::unwind_loop_at_location(unsigned loc, unsigned k)
   if(SSA.current_unwinding>=(long)k)
     return;
 
-  loopt &loop = loops[loc];
-  loop.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(loc)+"$enable"+i2string(k),bool_typet()));
+  loopt &loop=loops[loc];
+  loop.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(loc)+"$enable"+i2string(k), bool_typet()));
 
-  //current_enabling_expr =
+  // current_enabling_expr=
   //  symbol_exprt("unwind::"+id2string(fname)+"::enable"+i2string(k),
   //               bool_typet());
-  //SSA.enabling_exprs.push_back(current_enabling_expr);
+  // SSA.enabling_exprs.push_back(current_enabling_expr);
 
-  
-  SSA.current_unwinding=k; //TODO: just for exploratory integration, must go away
-  //recursively unwind everything
+
+  SSA.current_unwinding=k; // TODO: just for exploratory integration, must go away
+  // recursively unwind everything
   SSA.current_unwindings.clear();
 
-  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it){
+  for(loop_mapt::iterator it=loops.begin(); it!=loops.end(); ++it){
     if(!it->second.is_root)
       continue;
 
-    if(it->first == loc)
-      unwind(it->second,k,false,false); //recursive
+    if(it->first==loc)
+      unwind(it->second, k, false, false); // recursive
     else
-      unwind(it->second,it->second.current_unwinding,false,true,k,loc); //recursive
-    
+      unwind(it->second, it->second.current_unwinding, false, true, k, loc); // recursive
+
     assert(SSA.current_unwindings.empty());
   }
-  
-  //update current unwinding
-  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it)
+
+  // update current unwinding
+  for(loop_mapt::iterator it=loops.begin(); it!=loops.end(); ++it)
   {
-    if(it->first == loc)
+    if(it->first==loc)
       it->second.current_unwinding=k;
   }
 
@@ -341,13 +341,13 @@ void ssa_local_unwindert::unwind(unsigned k)
 {
   if(SSA.current_unwinding>=(long)k)
     return;
-  
+
   current_enabling_expr=
     symbol_exprt("unwind$"+id2string(fname)+"$enable"+i2string(k),
                  bool_typet());
-  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it)
+  for(loop_mapt::iterator it=loops.begin(); it!=loops.end(); ++it)
   {
-     it->second.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(it->first)+"$enable"+i2string(k),bool_typet()));
+    it->second.loop_enabling_exprs.push_back(symbol_exprt("unwind$"+id2string(fname)+"$loc"+i2string(it->first)+"$enable"+i2string(k), bool_typet()));
   }
 
   // TODO: just for exploratory integration, must go away
@@ -359,8 +359,8 @@ void ssa_local_unwindert::unwind(unsigned k)
   {
     if(!it->second.is_root)
       continue;
-    //unwind(it->second,k,false,false); //recursive
-    unwind(it->second, k, false, true, k, 0, true); //recursive
+    // unwind(it->second, k, false, false); // recursive
+    unwind(it->second, k, false, true, k, 0, true); // recursive
     assert(SSA.current_unwindings.empty());
   }
   // update current unwinding
@@ -386,8 +386,8 @@ Function: ssa_local_unwindert::unwind
 \*******************************************************************/
 
 void ssa_local_unwindert::unwind(loopt &loop, unsigned k, bool is_new_parent,
-				 bool propagate, unsigned prop_unwind,
-				 unsigned prop_loc, bool propagate_all)
+                                 bool propagate, unsigned prop_unwind,
+                                 unsigned prop_loc, bool propagate_all)
 {
   odometert context=SSA.current_unwindings;
 #ifdef DEBUG
@@ -450,34 +450,46 @@ void ssa_local_unwindert::unwind(loopt &loop, unsigned k, bool is_new_parent,
 #ifdef DEBUG
       std::cout << i << ">" << loop.current_unwinding << std::endl;
 #endif
-      if(propagate_all == true){
-	unwind(loops[*l_it],k,i>loop.current_unwinding ||
-	       is_new_parent,false);
+      if(propagate_all==true)
+      {
+        unwind(
+          loops[l], k, i>loop.current_unwinding || is_new_parent, false);
       }
       else{
-	if(propagate == true){
-	  // if this child loop is the desired loop then unwind k and do not propagate
-	  // else unwind loop.current_unwinding and propagate
-	  if(*l_it == prop_loc){
-	    unwind(loops[*l_it],k,i>loop.current_unwinding ||
-		   is_new_parent,false);
-	  }
-	  else{
-	    unwind(loops[*l_it],loops[*l_it].current_unwinding,i>loop.current_unwinding ||
-		   is_new_parent,true,prop_unwind,prop_loc);
-	  }
-	}
-	else{
-	  unwind(loops[*l_it],loops[*l_it].current_unwinding,
-		 i>loop.current_unwinding || is_new_parent,false);
-	}
+        if(propagate==true)
+        {
+          // if this child loop is the desired loop then unwind k and do not propagate
+          // else unwind loop.current_unwinding and propagate
+          if(l==prop_loc)
+          {
+            unwind(
+              loops[l], k, i>loop.current_unwinding || is_new_parent, false);
+          }
+          else{
+            unwind(
+              loops[l],
+              loops[l].current_unwinding,
+              i>loop.current_unwinding || is_new_parent,
+              true,
+              prop_unwind,
+              prop_loc);
+          }
+        }
+        else
+        {
+          unwind(
+            loops[l],
+            loops[l].current_unwinding,
+            i>loop.current_unwinding || is_new_parent,
+            false);
+        }
       }
     }
     SSA.increment_unwindings(0);
   }
   SSA.increment_unwindings(-1);
 #if 0
-  std::cout << "calling add_exit_merge with k = " << k << "\n";
+  std::cout << "calling add_exit_merge with k=" << k << "\n";
 #endif
   add_exit_merges(loop, k);
 }
@@ -514,18 +526,18 @@ void ssa_local_unwindert::add_loop_body(loopt &loop)
     node.loophead=SSA.nodes.end();
     node.marked=false;
     for(local_SSAt::nodet::equalitiest::iterator e_it=
-           node.equalities.begin(); e_it!=node.equalities.end(); e_it++)
+          node.equalities.begin(); e_it!=node.equalities.end(); e_it++)
     {
       SSA.rename(*e_it, node.location);
     }
     for(local_SSAt::nodet::constraintst::iterator c_it=
-           node.constraints.begin(); c_it!=node.constraints.end(); c_it++)
+          node.constraints.begin(); c_it!=node.constraints.end(); c_it++)
     {
       SSA.rename(*c_it, node.location);
     }
     for(local_SSAt::nodet::function_callst::iterator f_it=
-           node.function_calls.begin();
-         f_it!=node.function_calls.end(); f_it++)
+          node.function_calls.begin();
+        f_it!=node.function_calls.end(); f_it++)
     {
       SSA.rename(*f_it, node.location);
     }
@@ -560,7 +572,7 @@ void ssa_local_unwindert::add_assertions(loopt &loop, bool is_last)
     node.assertions=it->assertions;
     SSA.current_location=node.location; // TODO: must go away
     for(local_SSAt::nodet::assertionst::iterator a_it=
-           node.assertions.begin(); a_it!=node.assertions.end(); a_it++)
+          node.assertions.begin(); a_it!=node.assertions.end(); a_it++)
     {
       SSA.rename(*a_it, node.location);
       if(!is_last) // only add assumptions if we are not in %0 iteration
@@ -607,7 +619,7 @@ void ssa_local_unwindert::add_loop_head(loopt &loop)
   node.marked=false;
   node.enabling_expr=current_enabling_expr;
   for(local_SSAt::nodet::equalitiest::iterator e_it=
-         node.equalities.begin(); e_it!=node.equalities.end(); e_it++)
+        node.equalities.begin(); e_it!=node.equalities.end(); e_it++)
   {
     SSA.rename(*e_it, node.location);
   }
@@ -640,8 +652,8 @@ void ssa_local_unwindert::add_loop_connector(loopt &loop)
   local_SSAt::nodet &node=SSA.nodes.back();
   SSA.current_location=node.location; // TODO: must go away
   for(local_SSAt::nodet::equalitiest::const_iterator e_it=
-         orig_node.equalities.begin();
-       e_it!=orig_node.equalities.end(); e_it++)
+        orig_node.equalities.begin();
+      e_it!=orig_node.equalities.end(); e_it++)
   {
     if(e_it->rhs().id()==ID_if)
     {
@@ -689,10 +701,10 @@ void ssa_local_unwindert::add_exit_merges(loopt &loop, unsigned k)
   SSA.nodes.push_back(local_SSAt::nodet(loop.body_nodes.begin()->location,
                                         SSA.nodes.end())); // add new node
   local_SSAt::nodet &node=SSA.nodes.back();
-(??)  node.enabling_expr = current_enabling_expr;
+  node.enabling_expr=current_enabling_expr;
 
   for(loopt::exit_mapt::const_iterator x_it=loop.exit_map.begin();
-       x_it!=loop.exit_map.end(); x_it++)
+      x_it!=loop.exit_map.end(); x_it++)
   {
     node.equalities.push_back(
       build_exit_merge(
@@ -786,16 +798,16 @@ void ssa_local_unwindert::add_hoisted_assertions(loopt &loop, bool is_last)
 void ssa_local_unwindert::compute_enable_expr()
 {
   SSA.enabling_exprs.clear();
-  for(loop_mapt::const_iterator it = loops.begin(); it != loops.end(); ++it)
+  for(loop_mapt::const_iterator it=loops.begin(); it!=loops.end(); ++it)
   {
-    for(exprt::operandst::const_iterator 
-          e_it = ((it->second).loop_enabling_exprs).begin(); 
-        e_it != ((it->second).loop_enabling_exprs).end(); e_it++)
+    for(exprt::operandst::const_iterator
+          e_it=((it->second).loop_enabling_exprs).begin();
+        e_it!=((it->second).loop_enabling_exprs).end(); e_it++)
     {
-      exprt::operandst::const_iterator lh = e_it; lh++;
-      if(lh != ((it->second).loop_enabling_exprs).end()) 
+      exprt::operandst::const_iterator lh=e_it; lh++;
+      if(lh!=((it->second).loop_enabling_exprs).end())
         SSA.enabling_exprs.push_back(not_exprt(*e_it));
-      else 
+      else
         SSA.enabling_exprs.push_back(*e_it);
     }
   }
@@ -817,72 +829,41 @@ Function: ssa_local_unwindert::loop_continuation_conditions
 void ssa_local_unwindert::loop_continuation_conditions(
   exprt::operandst& loop_cont) const
 {
-  //clear old ones
-  for(loop_mapt::iterator it = loops.begin(); it != loops.end(); ++it)
-  {
-    it->second.current_continuation_conditions.clear();
-  }
-  //compute new
   SSA.current_unwindings.clear();
-  for(loop_mapt::const_iterator it=loops.begin(); it!=loops.end(); ++it)
+  for(const auto &l : loops)
   {
-    if(!it->second.is_root)
+    if(l.second.is_root)
       continue;
-    loop_continuation_conditions(it->second, loop_cont); // recursive
+    loop_continuation_conditions(l.second, loop_cont); // recursive
     assert(SSA.current_unwindings.empty());
   }
 }
 
-/*****************************************************************************\
- *
- * Function : ssa_local_unwindert::loop_continuation_conditions
- *
- * Input :
- *
- * Output :
- *
- * Purpose : return loop continuation conditions for all loops in this function
- *
- *****************************************************************************/
+/*******************************************************************\
+
+Function: ssa_local_unwindert::loop_continuation_conditions
+
+  Inputs:
+
+ Outputs:
+
+ Purpose: return loop continuation conditions for all instances
+          of the given loop in this function
+
+\*******************************************************************/
 
 void ssa_local_unwindert::loop_continuation_conditions(
+  const locationt& loop_id,
   exprt::operandst &loop_cont) const
 {
-  for(loop_mapt::const_iterator it = loops.begin(); it != loops.end(); ++it)
-  {
-    loop_cont.insert(loop_cont.end(), 
-                     it->second.current_continuation_conditions.begin(),
-                     it->second.current_continuation_conditions.end());
-  }
-}
-
-/*****************************************************************************\
- *
- * Function : ssa_local_unwindert::loop_continuation_conditions
- *
- * Input :
- *
- * Output :
- *
- * Purpose : return loop continuation conditions for all instances 
- *           of the given  loop in this function
- *
- *****************************************************************************/
-
-void ssa_local_unwindert::loop_continuation_conditions(
-  const locationt& loop_id, 
-  exprt::operandst &loop_cont) const
-{
-  if(loops.empty()) //ignore silently, TBD
+  if(loops.empty()) // ignore silently, TBD
     return;
 
-  const loopt &loop = loops.at(loop_id->location_number);
-  loop_cont.insert(loop_cont.end(), 
+  const loopt &loop=loops.at(loop_id->location_number);
+  loop_cont.insert(loop_cont.end(),
                    loop.current_continuation_conditions.begin(),
                    loop.current_continuation_conditions.end());
 }
-
-
 /*******************************************************************\
 
 Function: ssa_local_unwindert::get_continuation_condition
@@ -921,7 +902,7 @@ void ssa_local_unwindert::loop_continuation_conditions(
   loop_cont.push_back(get_continuation_condition(loop)); // %0
   for(long i=0; i<=loop.current_unwinding; ++i)
   {
-    // recurse into child loops
+    // recur into child loops
     for(const auto &l : loop.loop_nodes)
     {
       loop_continuation_conditions(loops.at(l), loop_cont);
@@ -1005,8 +986,8 @@ void ssa_local_unwindert::unwinder_rename(
 void ssa_unwindert::unwind_loop_alone(const irep_idt fname, unsigned loc, unsigned int k)
 {
   assert(is_initialized);
-  unwinder_mapt::iterator it = unwinder_map.find(fname);
-  assert(it != unwinder_map.end());
+  unwinder_mapt::iterator it=unwinder_map.find(fname);
+  assert(it!=unwinder_map.end());
   it->second.unwind_loop_at_location(loc, k);
 }
 
@@ -1025,8 +1006,8 @@ void ssa_unwindert::unwind_loop_alone(const irep_idt fname, unsigned loc, unsign
 unsigned ssa_unwindert::unwind_loop_once_more(const irep_idt fname, unsigned loc)
 {
   assert(is_initialized);
-  unwinder_mapt::iterator it = unwinder_map.find(fname);
-  assert(it != unwinder_map.end());
+  unwinder_mapt::iterator it=unwinder_map.find(fname);
+  assert(it!=unwinder_map.end());
   return it->second.unwind_loop_at_location(loc);
 }
 
@@ -1117,9 +1098,10 @@ void ssa_unwindert::init(bool is_kinduction, bool is_bmc)
   ssa_dbt::functionst& funcs=ssa_db.functions();
   for(auto &f : funcs)
   {
-    unwinder_map.insert(unwinder_pairt(
-      f.first,
-      ssa_local_unwindert(f.first, (*(f.second)), is_kinduction, is_bmc)));
+    unwinder_map.insert(
+      unwinder_pairt(
+        f.first,
+        ssa_local_unwindert(f.first, (*(f.second)), is_kinduction, is_bmc)));
   }
 }
 

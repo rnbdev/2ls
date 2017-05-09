@@ -182,64 +182,64 @@ void cover_goals_extt::assignment()
        solver.l_get(g_it->condition).is_true())
     {
 #if 1
-      solver.pop_context(); //otherwise this would interfere with necessary preconditions
+      solver.pop_context(); // otherwise this would interfere with necessary preconditions
       summarizer_bw_cex.summarize(g_it->cond_expression);
-      property_map[it->first].result = summarizer_bw_cex.check();
+      property_map[it->first].result=summarizer_bw_cex.check();
       solver.new_context();
-#else // THE ASSERTIONS THAT FAIL COULD BE RATHER ARBITRARY SINCE THE FORMULA 
-      //    IS NOT "ROOTED" IN AN INITIAL STATE. 
-      assert((g_it->cond_expression).id() == ID_not);
-      exprt conjunct_expr = (g_it->cond_expression).op0();
+#else // THE ASSERTIONS THAT FAIL COULD BE RATHER ARBITRARY SINCE THE FORMULA
+      //    IS NOT "ROOTED" IN AN INITIAL STATE.
+      assert((g_it->cond_expression).id()==ID_not);
+      exprt conjunct_expr=(g_it->cond_expression).op0();
 #if 0
-      std::cout << "FAILED EXPR: " 
+      std::cout << "FAILED EXPR: "
                       << from_expr(SSA.ns, "", conjunct_expr) << std::endl;
 #endif
-        
-      if(conjunct_expr.id() != ID_and)
+
+      if(conjunct_expr.id()!=ID_and)
       {
-        solver.pop_context(); //otherwise this would interfere with necessary preconditions
+        solver.pop_context(); // otherwise this would interfere with necessary preconditions
         summarizer_bw_cex.summarize(g_it->cond_expression);
-        property_map[it->first].result = summarizer_bw_cex.check();
+        property_map[it->first].result=summarizer_bw_cex.check();
         solver.new_context();
       }
       else
       {
-        //filter out assertion instances that are not violated
+        // filter out assertion instances that are not violated
         exprt::operandst failed_exprs;
-        for(exprt::operandst::const_iterator c_it = 
+        for(exprt::operandst::const_iterator c_it=
               conjunct_expr.operands().begin();
-            c_it != conjunct_expr.operands().end(); c_it++)
+            c_it!=conjunct_expr.operands().end(); c_it++)
         {
-          literalt conjunct_literal = solver.convert(*c_it);
+          literalt conjunct_literal=solver.convert(*c_it);
           if(solver.l_get(conjunct_literal).is_false())
           {
             failed_exprs.push_back(*c_it);
 #if 0
-            std::cout << "failed_expr: " 
+            std::cout << "failed_expr: "
                       << from_expr(SSA.ns, "", *c_it) << std::endl;
 #endif
           }
         }
-        solver.pop_context(); //otherwise this would interfere with necessary preconditions
+        solver.pop_context(); // otherwise this would interfere with necessary preconditions
         summarizer_bw_cex.summarize(not_exprt(conjunction(failed_exprs)));
-        property_map[it->first].result = summarizer_bw_cex.check();
+        property_map[it->first].result=summarizer_bw_cex.check();
         solver.new_context();
       }
 #endif
     }
-    if(property_map[it->first].result == property_checkert::FAIL)
+    if(property_map[it->first].result==property_checkert::FAIL)
     {
       if(build_error_trace)
       {
-        ssa_build_goto_tracet build_goto_trace(SSA,solver.get_solver());
-        build_goto_trace(property_map[it->first].error_trace);    
+        ssa_build_goto_tracet build_goto_trace(SSA, solver.get_solver());
+        build_goto_trace(property_map[it->first].error_trace);
       }
     }
     if(!all_properties &&
-       property_map[it->first].result == property_checkert::FAIL) 
+       property_map[it->first].result==property_checkert::FAIL)
       break;
     }
-  
-  _iterations++; //statistics
+
+  _iterations++; // statistics
 }
-  
+

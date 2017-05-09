@@ -17,17 +17,17 @@ class domain_refinementt
 {
 public:
   explicit domain_refinementt(
-    const local_SSAt &_SSA, 
-    incremental_solvert &_solver) 
+    const local_SSAt &_SSA,
+    incremental_solvert &_solver)
     :
     SSA(_SSA),
     solver(_solver)
     {}
 
-  //refine, returns true if there are no more refinements 
+  // refine, returns true if there are no more refinements
   virtual bool operator()() { return true; }
 
-  //template generators associated with this SSA and solver
+  // template generators associated with this SSA and solver
   typedef std::map<irep_idt, template_generator_baset> template_generatorst;
   template_generatorst template_generators;
 

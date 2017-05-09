@@ -66,7 +66,7 @@ strategy_solver_baset::progresst strategy_solver_binsearcht::iterate(invariantt 
 #endif
 
   solver << or_exprt(disjunction(strategy_cond_exprs),
-		     literal_exprt(assertion_check));
+         literal_exprt(assertion_check));
 
 #if 0
   debug() << "solve(): ";

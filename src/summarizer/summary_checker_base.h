@@ -31,7 +31,7 @@ public:
     simplify(false),
     fixed_point(false),
     options(_options),
-    ssa_db(_options),summary_db(),
+    ssa_db(_options), summary_db(),
     ssa_unwinder(ssa_db),
     ssa_inliner(summary_db, ssa_db),
     solver_instances(0),
@@ -40,7 +40,7 @@ public:
   {
     ssa_inliner.set_message_handler(get_message_handler());
   }
-  
+
   bool show_vcc, simplify, fixed_point;
   irep_idt function_to_check;
 
@@ -77,8 +77,8 @@ protected:
   void SSA_functions(const goto_modelt &, const namespacet &ns);
   void SSA_dependency_graphs(const goto_modelt &, const namespacet &ns);
 
-  void summarize(const goto_modelt &, 
-		 bool forward=true, bool termination=false);
+  void summarize(const goto_modelt &,
+     bool forward=true, bool termination=false);
 
   property_checkert::resultt check_properties();
   property_checkert::resultt check_properties(

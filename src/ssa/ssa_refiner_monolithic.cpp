@@ -23,7 +23,7 @@ Function: ssa_refiner_monolithict::operator()
 bool ssa_refiner_monolithict::operator()()
 {
   status() << "Unwinding (k=" << unwind << ")" << eom;
-  summary_db.mark_recompute_all(); //TODO: recompute only functions with loops
+  summary_db.mark_recompute_all(); // TODO: recompute only functions with loops
   ssa_unwinder.unwind_all(unwind);
 
   return unwind++<=max_unwind;

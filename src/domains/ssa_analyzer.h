@@ -35,20 +35,20 @@ public:
       delete result;
   }
 
-  void operator()(
+  bool operator()(
     incremental_solvert &solver,
     local_SSAt &SSA,
     const exprt &precondition,
     template_generator_baset &template_generator,
     bool check_assertions=false);
 
-  //retrieve the result if operator() returned true
+  // retrieve the result if operator() returned true
   void get_result(exprt &result, const domaint::var_sett &vars);
 
-  //retrieve the non-passed assertions if operator() returned false
-  typedef std::list<local_SSAt::nodest::const_iterator> 
+  // retrieve the non-passed assertions if operator() returned false
+  typedef std::list<local_SSAt::nodest::const_iterator>
     nonpassed_assertionst;
-  nonpassed_assertionst get_nonpassed_assertions() 
+  nonpassed_assertionst get_nonpassed_assertions()
     { return nonpassed_assertions; }
 
   inline unsigned get_number_of_solver_instances() { return solver_instances; }

@@ -95,15 +95,15 @@ class incremental_solvert:public messaget
 #endif
 #endif
 #if defined(DEBUG_FORMULA) || defined(DISPLAY_FORMULA)
-    decision_proceduret::resultt result = (*solver)();
+    decision_proceduret::resultt result=(*solver)();
 #endif
 #if defined(DEBUG_FORMULA) && defined(DEBUG_OUTPUT)
     if(result==decision_proceduret::D_UNSATISFIABLE)
     {
-      for(unsigned i=0; i<formula_expr.size(); i++) 
+      for(unsigned i=0; i<formula_expr.size(); i++)
       {
         if(solver->is_in_conflict(formula[i]))
-          std::cout << "is_in_conflict: " 
+          std::cout << "is_in_conflict: "
               << from_expr(ns, "", formula_expr[i]) << std::endl;
       }
     }
@@ -112,12 +112,12 @@ class incremental_solvert:public messaget
     if(result==decision_proceduret::D_SATISFIABLE)
     {
       std::set<symbol_exprt> vars;
-      for(unsigned i=0; i<formula_expr.size(); i++) 
+      for(unsigned i=0; i<formula_expr.size(); i++)
         find_symbols(formula_expr[i], vars);
-      for(std::set<symbol_exprt>::const_iterator it = vars.begin();
-          it != vars.end(); ++it)
+      for(std::set<symbol_exprt>::const_iterator it=vars.begin();
+          it!=vars.end(); ++it)
       {
-        std::cout << "assignment: " << from_expr(ns, "", *it) << " = " 
+        std::cout << "assignment: " << from_expr(ns, "", *it) << "="
                   << from_expr(ns, "", solver->get(*it)) << std::endl;
       }
     }

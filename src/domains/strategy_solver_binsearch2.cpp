@@ -32,7 +32,8 @@ Function: strategy_solver_binsearch2t::iterate
 
 \*******************************************************************/
 
-bool strategy_solver_binsearch2t::iterate(invariantt &_inv)
+strategy_solver_binsearch2t::progresst
+strategy_solver_binsearch2t::iterate(invariantt &_inv)
 {
   tpolyhedra_domaint::templ_valuet &inv=
     static_cast<tpolyhedra_domaint::templ_valuet &>(_inv);

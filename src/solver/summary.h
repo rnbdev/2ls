@@ -15,6 +15,8 @@ Author: Daniel Kroening, kroening@kroening.com
 
 #include <util/std_expr.h>
 
+#include <ssa/local_ssa.h>
+
 typedef enum {YES, NO, UNKNOWN} threevalt;
 
 class summaryt
@@ -53,17 +55,17 @@ class summaryt
   predicatet termination_argument;
   threevalt terminates;
 
-  //--------------
+  // --------------
   // the following is for generating interprocedural counterexample
 
-  bool has_assertion; 
+  bool has_assertion;
 
   std::list<local_SSAt::nodest::const_iterator> nonpassed_assertions;
 
-  struct call_sitet { //TODO: we also need unwinding information here 
-    call_sitet() 
+  struct call_sitet { // TODO: we also need unwinding information here
+    call_sitet()
       : location_number(UINT_MAX) {}
-    explicit call_sitet(local_SSAt::locationt loc) 
+    explicit call_sitet(local_SSAt::locationt loc)
       : location_number(loc->location_number) {}
     unsigned location_number;
 
@@ -76,7 +78,7 @@ class summaryt
   const static call_sitet entry_call_site;
   typedef std::map<call_sitet, predicatet> error_summariest;
   error_summariest error_summaries;
-  //--------------
+  // --------------
 
   bool mark_recompute; // to force recomputation of the summary
                        // (used for invariant reuse in k-induction)

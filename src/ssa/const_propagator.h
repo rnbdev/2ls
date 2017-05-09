@@ -27,28 +27,28 @@ public:
     // maps variables to constants
     replace_symbol_extt replace_const;
     std::set<irep_idt> top_ids;
-    
+
     void output(std::ostream &, const namespacet &) const;
-    
+
     bool merge(const valuest &src);
-    
+
     inline void clear()
     {
       replace_const.expr_map.clear();
       replace_const.type_map.clear();
       top_ids.clear();
     }
-    
+
     bool empty() const
     {
-      return replace_const.expr_map.empty() && 
-	replace_const.type_map.empty() &&
-	top_ids.empty();
+      return replace_const.expr_map.empty() &&
+  replace_const.type_map.empty() &&
+  top_ids.empty();
     }
 
     void set_to(const exprt &lhs, const exprt &rhs_val);
     void set_to(const irep_idt &lhs_id, const exprt &rhs_val);
-    
+
     bool maps_to_top(const exprt &expr) const;
     bool set_to_top(const exprt &expr);
     bool set_to_top(const irep_idt &id);
@@ -56,7 +56,7 @@ public:
   };
 
   valuest values;
-  
+
 protected:
   void assign(
     valuest &dest,
@@ -68,8 +68,8 @@ protected:
     const namespacet &ns);
 
   exprt evaluate_casts_in_constants(
-    exprt expr, 
-    const typet& parent_type, 
+    exprt expr,
+    const typet& parent_type,
     bool &valid) const;
 
 };
@@ -82,7 +82,7 @@ public:
     const namespacet &ns)
   {
     operator()(goto_function, ns);
-//    output(ns,goto_function.body,"",std::cout);
+//    output(ns, goto_function.body, "", std::cout);
     replace(goto_function, ns);
   }
 
@@ -94,7 +94,7 @@ void replace(
   const namespacet &ns);
 
 void replace_types_rec(
-  const replace_symbolt &replace_const, 
+  const replace_symbolt &replace_const,
   exprt &expr);
 };
 

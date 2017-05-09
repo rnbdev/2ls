@@ -32,13 +32,16 @@ Author: Peter Schrammel
 #include "strategy_solver_predabs.h"
 #include "ssa_analyzer.h"
 
-#define BINSEARCH_SOLVER strategy_solver_binsearcht(\
-  *static_cast<tpolyhedra_domaint *>(domain), solver, SSA.ns)
+#define BINSEARCH_SOLVER strategy_solver_binsearcht( \
+    *static_cast<tpolyhedra_domaint *>(domain), \
+    solver, assertions_check, SSA.ns)
 #if 0
-#define BINSEARCH_SOLVER strategy_solver_binsearch2t(\
-  *static_cast<tpolyhedra_domaint *>(domain), solver, SSA.ns)
-#define BINSEARCH_SOLVER strategy_solver_binsearch3t(\
-  *static_cast<tpolyhedra_domaint *>(domain), solver, SSA, SSA.ns)
+#define BINSEARCH_SOLVER strategy_solver_binsearch2t( \
+    *static_cast<tpolyhedra_domaint *>(domain), solver, \
+    assertions_check, SSA.ns)
+#define BINSEARCH_SOLVER strategy_solver_binsearch3t( \
+    *static_cast<tpolyhedra_domaint *>(domain), solver, \
+    assertions_check, SSA, SSA.ns)
 #endif
 
 /*******************************************************************\
@@ -47,7 +50,7 @@ Function: ssa_analyzert::operator()
 
   Inputs:
 
- Outputs: true if the computation was not aborted due to 
+ Outputs: true if the computation was not aborted due to
             assertion_checks that did not pass
  Purpose:
 
@@ -78,24 +81,24 @@ bool ssa_analyzert::operator()(
   literalt assertions_check=const_literal(false);
   bvt assertion_literals;
   if(check_assertions)
-  {  
+  {
     exprt::operandst ll;
     for(local_SSAt::nodest::iterator n_it=SSA.nodes.begin();
-	n_it!=SSA.nodes.end(); n_it++) 
+        n_it!=SSA.nodes.end(); n_it++)
     {
       assert(n_it->assertions.size()<=1);
       for(local_SSAt::nodet::assertionst::const_iterator
-	    a_it=n_it->assertions.begin();
-	  a_it!=n_it->assertions.end();
-	  a_it++)
+            a_it=n_it->assertions.begin();
+          a_it!=n_it->assertions.end();
+          a_it++)
       {
-	literalt l=solver.solver->convert(*a_it);
-	assertion_literals.push_back(!l);
-	ll.push_back(literal_exprt(!l));
-	nonpassed_assertions.push_back(n_it);
+        literalt l=solver.solver->convert(*a_it);
+        assertion_literals.push_back(!l);
+        ll.push_back(literal_exprt(!l));
+        nonpassed_assertions.push_back(n_it);
       }
     }
-    assertions_check = solver.solver->convert(disjunction(ll));
+    assertions_check=solver.solver->convert(disjunction(ll));
   }
 
   // get strategy solver from options
@@ -125,7 +128,8 @@ bool ssa_analyzert::operator()(
   else if(template_generator.options.get_bool_option("equalities"))
   {
     strategy_solver=new strategy_solver_equalityt(
-      *static_cast<equality_domaint *>(domain), solver, SSA.ns);
+      *static_cast<equality_domaint *>(domain),
+      solver, assertions_check, SSA.ns);
     result=new equality_domaint::equ_valuet();
   }
   else
@@ -134,14 +138,15 @@ bool ssa_analyzert::operator()(
     {
       result=new tpolyhedra_domaint::templ_valuet();
       strategy_solver=new strategy_solver_enumerationt(
-        *static_cast<tpolyhedra_domaint *>(domain), solver, SSA.ns);
+        *static_cast<tpolyhedra_domaint *>(domain),
+        solver, assertions_check, SSA.ns);
     }
     else if(template_generator.options.get_bool_option("predabs-solver"))
     {
       result=new predabs_domaint::templ_valuet();
       strategy_solver=new strategy_solver_predabst(
-        *static_cast<predabs_domaint *>(domain), solver, 
-	assertions_check, SSA.ns);
+        *static_cast<predabs_domaint *>(domain),
+        solver, assertions_check, SSA.ns);
     }
     else if(template_generator.options.get_bool_option("binsearch-solver"))
     {
@@ -165,21 +170,15 @@ bool ssa_analyzert::operator()(
   }
   while(status==strategy_solver_baset::CHANGED);
 
-#ifdef DEBUG
-  std::cout << "Fixed-point after " << iteration_number
-            << " iteration(s)\n";
-  domain->output_value(std::cout,*result,SSA.ns);
-#endif
-
-  //get status of assertions
-  if(!assertions_check.is_false() && 
+  // get status of assertions
+  if(!assertions_check.is_false() &&
      status==strategy_solver_baset::FAILED)
   {
     nonpassed_assertionst::iterator it=nonpassed_assertions.begin();
     for(unsigned i=0;i<assertion_literals.size(); ++i)
     {
       if(!solver.solver->l_get(assertion_literals[i]).is_true())
-	nonpassed_assertions.erase(it++);
+        nonpassed_assertions.erase(it++);
       else ++it;
     }
   }
@@ -187,7 +186,7 @@ bool ssa_analyzert::operator()(
 
   solver.pop_context();
 
-  //statistics
+  // statistics
   solver_calls+=strategy_solver->get_number_of_solver_calls();
   solver_instances+=strategy_solver->get_number_of_solver_instances();
 

@@ -52,7 +52,7 @@ void summarizert::operator()(
 
   goto_functionst::function_mapt::const_iterator f_it=
     goto_model.goto_functions.function_map.find(id);
-  
+
   if(f_it==goto_model.goto_functions.function_map.end())
     throw "function not found";
 
@@ -76,18 +76,18 @@ void summarizert::summarize(
   const goto_functionst::function_mapt::const_iterator f_it)
 {
   status() << "** Analyzing " << f_it->first << messaget::eom;
-    
+
   summary_dbt summary_db;
-  
+
   summary_db.set_message_handler(get_message_handler());
   summary_db.read(id2string(f_it->first));
 
   const namespacet ns(goto_model.symbol_table);
-  
+
   // build SSA
   progress() << "Building SSA" << messaget::eom;
   local_SSAt SSA(f_it->second, ns);
-  
+
   // simplify, if requested
   if(simplify)
   {
@@ -95,7 +95,7 @@ void summarizert::summarize(
     ::simplify(SSA, ns);
   }
 
-  
+
   // fixed-point for loops
   #if 0
   progress() << "Fixed-point" << messaget::eom;
@@ -103,7 +103,7 @@ void summarizert::summarize(
   #endif
 
   update_function_signature(SSA, summary_db.summary);
-  
+
   summary_db.write();
 }
 
@@ -122,4 +122,4 @@ Function: summarizert::report_statistics()
 void summarizert::report_statistics()
 {
 }
-  
+

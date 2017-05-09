@@ -12,11 +12,10 @@ Author: Daniel Kroening, kroening@kroening.com
 #include <util/message.h>
 #include <goto-programs/property_checker.h>
 
-#include "../ssa/local_ssa.h"
-#include "../ssa/unwindable_local_ssa.h"
-#include "../domains/incremental_solver.h"
-#include "summarizer_bw_cex.h"
-#include "summarizer_bw_cex_complete.h"
+#include <ssa/local_ssa.h>
+#include <ssa/unwindable_local_ssa.h>
+#include <domains/incremental_solver.h>
+#include <solver/summarizer_bw_cex.h>
 
 /*******************************************************************\
 
@@ -49,7 +48,7 @@ struct goalt
 class cover_goals_extt:public messaget
 {
 public:
-  explicit inline cover_goals_extt(
+  cover_goals_extt(
     unwindable_local_SSAt &_SSA,
     incremental_solvert &_solver,
     property_checkert::property_mapt &_property_map,
@@ -75,7 +74,7 @@ public:
   {
     literalt condition;
     bool covered;
-    exprt cond_expression; 
+    exprt cond_expression;
 
     cover_goalt():covered(false)
     {

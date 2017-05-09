@@ -26,7 +26,8 @@ Function: strategy_solver_predabst::iterate
 
 \*******************************************************************/
 
-bool strategy_solver_predabst::iterate(invariantt &_inv)
+strategy_solver_predabst::progresst
+strategy_solver_predabst::iterate(invariantt &_inv)
 {
   predabs_domaint::templ_valuet &inv=
     static_cast<predabs_domaint::templ_valuet &>(_inv);
@@ -96,8 +97,8 @@ bool strategy_solver_predabst::iterate(invariantt &_inv)
 
     todo_preds.erase(e_it);
 
-    return true;
+    return CHANGED;
   }
 
-  return false;
+  return CONVERGED;
 }

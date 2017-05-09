@@ -21,7 +21,7 @@ Function: strategy_solver_equalityt::iterate
 
  Outputs:
 
- Purpose: Comment: assertion check is not possible 
+ Purpose: Comment: assertion check is not possible
           because this is a gfp solver
 
 \*******************************************************************/
@@ -84,7 +84,7 @@ strategy_solver_baset::progresst strategy_solver_equalityt::iterate(invariantt &
   {
     e_it=todo_disequs.begin();
     if(e_it==todo_disequs.end())
-      return false; // done
+      return CONVERGED; // done
 
     solver.new_context();
 

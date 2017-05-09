@@ -57,7 +57,7 @@ void datat::read(const xmlt &xml)
     if(it->name=="property")
     {
       propertyt property;
-    
+
       for(xmlt::elementst::const_iterator
           e_it=it->elements.begin();
           e_it!=it->elements.end();
@@ -72,7 +72,7 @@ void datat::read(const xmlt &xml)
         else if(e_it->name=="message")
           property.message=e_it->data;
       }
-      
+
       properties.push_back(property);
     }
     else if(it->name=="description")

@@ -81,6 +81,12 @@ protected:
     const domaint::kindt &kind,
     domaint::var_specst &var_specs);
   void add_vars(
+    const std::set<exprt> &vars_to_add,
+    const domaint::guardt &pre_guard,
+    const domaint::guardt &post_guard,
+    const domaint::kindt &kind,
+    domaint::var_specst &var_specs);
+  void add_vars(
     const var_listt &vars_to_add,
     const domaint::guardt &pre_guard,
     const domaint::guardt &post_guard,

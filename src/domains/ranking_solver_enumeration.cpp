@@ -142,7 +142,7 @@ ranking_solver_enumerationt::progresst ranking_solver_enumerationt::iterate(inva
           // update the current template
           linrank_domain.set_row_value(row, new_row_values, rank);
 
-          improved=true;
+          progress=CHANGED;
         }
         else
         {

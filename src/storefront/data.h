@@ -25,14 +25,14 @@ public:
 
   typedef std::vector<propertyt> propertiest;
   propertiest properties;
-  
+
   std::string description;
 
   inline void add(const propertyt &e)
   {
     properties.push_back(e);
   }
-  
+
   void read(const std::string &file);
   void read(const class xmlt &);
 };

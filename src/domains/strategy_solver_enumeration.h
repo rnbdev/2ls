@@ -17,11 +17,11 @@ class strategy_solver_enumerationt:public strategy_solver_baset
 public:
   strategy_solver_enumerationt(
     tpolyhedra_domaint &_tpolyhedra_domain,
-    incremental_solvert &_solver, 
+    incremental_solvert &_solver,
     literalt _assertion_check,
-    const namespacet &_ns): 
+    const namespacet &_ns):
     strategy_solver_baset(_solver,  _assertion_check, _ns),
-    tpolyhedra_domain(_tpolyhedra_domain) 
+    tpolyhedra_domain(_tpolyhedra_domain)
   {
   }
 

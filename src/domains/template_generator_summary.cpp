@@ -107,7 +107,7 @@ void template_generator_summaryt::collect_variables_inout(
   // add nondets for backwards analysis
   if(!forward)
   {
-    add_vars(SSA.nondets,first_guard,first_guard,
+    add_vars(SSA.nondets, first_guard, first_guard,
              domaint::OUT, var_specs);
   }
 }

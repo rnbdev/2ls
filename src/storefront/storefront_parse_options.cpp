@@ -33,7 +33,7 @@ storefront_parse_optionst::storefront_parse_optionst(
   parse_options_baset(STOREFRONT_OPTIONS, argc, argv)
 {
 }
-  
+
 /*******************************************************************\
 
 Function: storefront_parse_optionst::doit
@@ -61,13 +61,13 @@ int storefront_parse_optionst::doit()
       usage_error();
       return 10;
     }
-    
+
     // read config
     datat data;
-    
+
     for(unsigned i=0; i<cmdline.args.size(); i++)
       data.read(cmdline.args[i]);
-    
+
     // write views
     file_view(data);
     property_view(data);
@@ -79,13 +79,13 @@ int storefront_parse_optionst::doit()
     std::cerr << e << std::endl;
     return 13;
   }
-  
+
   catch(std::bad_alloc)
   {
     std::cerr << "Out of memory" << std::endl;
     return 14;
   }
-  
+
   return 0;
 }
 
@@ -105,7 +105,7 @@ void storefront_parse_optionst::help()
 {
   std::cout <<
     "\n"
-    "* *          STOREFRONT " DELTACHECK_VERSION " - Copyright (C) 2014-2015        * *\n"
+    "* *          STOREFRONT " DELTACHECK_VERSION "-Copyright (C) 2014-2015        * *\n"
     "* *                     Daniel Kroening                     * *\n"
     "* *      Oxford University, Computer Science Department     * *\n"
     "* *                 kroening@kroening.com                   * *\n"

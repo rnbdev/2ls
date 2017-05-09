@@ -68,8 +68,8 @@ strategy_solver_baset::progresst strategy_solver_enumerationt::iterate(invariant
   debug() << eom;
 #endif
 
-  solver << or_exprt(disjunction(strategy_cond_exprs), 
-		     literal_exprt(assertion_check));
+  solver << or_exprt(disjunction(strategy_cond_exprs),
+         literal_exprt(assertion_check));
 
 #ifdef DEBUG_OUTPUT
   debug() << "solve(): ";
@@ -148,11 +148,11 @@ strategy_solver_baset::progresst strategy_solver_enumerationt::iterate(invariant
         progress=CHANGED;
       }
     }
-    if(!progress==CHANGED) //only possible if assertion check fails
+    if(!progress==CHANGED) // only possible if assertion check fails
     {
       solver.pop_context();
       return FAILED;
-    } 
+    }
   }
   else
   {

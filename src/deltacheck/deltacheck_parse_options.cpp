@@ -48,7 +48,7 @@ deltacheck_parse_optionst::deltacheck_parse_optionst(
     "DeltaCheck " DELTACHECK_VERSION)
 {
 }
-  
+
 /*******************************************************************\
 
 Function: deltacheck_parse_optionst::eval_verbosity
@@ -65,7 +65,7 @@ void deltacheck_parse_optionst::eval_verbosity()
 {
   // our default verbosity
   int v=messaget::M_STATISTICS;
-  
+
   if(cmdline.isset("verbosity"))
   {
     v=unsafe_string2int(cmdline.get_value("verbosity"));
@@ -74,7 +74,7 @@ void deltacheck_parse_optionst::eval_verbosity()
     else if(v>10)
       v=10;
   }
-  
+
   ui_message_handler.set_verbosity(v);
 }
 
@@ -158,7 +158,7 @@ Function: deltacheck_parse_optionst::register_langauges
 
  Outputs:
 
- Purpose: 
+ Purpose:
 
 \*******************************************************************/
 
@@ -202,10 +202,10 @@ int deltacheck_parse_optionst::doit()
     options.set_option("simplify", true);
     options.set_option("assertions", true);
     options.set_option("assumptions", true);
-    
+
     if(cmdline.isset("function"))
       options.set_option("function", cmdline.get_value("function"));
-    
+
     if(cmdline.args.size()!=2)
     {
       usage_error();
@@ -216,33 +216,33 @@ int deltacheck_parse_optionst::doit()
       options.set_option("description-old", cmdline.get_value("description-old"));
     else
       options.set_option("description-old", cmdline.args[0]);
-    
+
     if(cmdline.isset("description-new"))
       options.set_option("description-new", cmdline.get_value("description-new"));
     else
       options.set_option("description-new", cmdline.args[1]);
-    
+
     status() << "Reading first GOTO program from file" << eom;
-    
+
     goto_modelt goto_model1;
 
     if(read_goto_binary(cmdline.args[0],
          goto_model1, get_message_handler()))
       return 10;
-      
+
     status() << "Reading second GOTO program from file" << eom;
-    
+
     goto_modelt goto_model2;
 
     if(read_goto_binary(cmdline.args[1],
          goto_model2, get_message_handler()))
       return 10;
-      
+
     if(cmdline.isset("show-diff"))
     {
       change_impactt change_impact;
       change_impact.set_message_handler(get_message_handler());
-    
+
       change_impact.diff(goto_model1, goto_model2);
       change_impact.output_diff(std::cout);
     }
@@ -250,7 +250,7 @@ int deltacheck_parse_optionst::doit()
     {
       change_impactt change_impact;
       change_impact.set_message_handler(get_message_handler());
-    
+
       status() << "Computing syntactic difference" << eom;
       change_impact.diff(goto_model1, goto_model2);
 
@@ -263,13 +263,13 @@ int deltacheck_parse_optionst::doit()
     {
       std::string path1=get_directory(cmdline.args[0]);
       std::string path2=get_directory(cmdline.args[1]);
-    
+
       deltacheck_analyzer(
         path1, goto_model1,
         path2, goto_model2,
         options, get_message_handler());
     }
-    
+
     return 0;
   }
 
@@ -284,18 +284,18 @@ int deltacheck_parse_optionst::doit()
     error() << e << eom;
     return 13;
   }
-  
+
   catch(int)
   {
     return 13;
   }
-  
+
   catch(std::bad_alloc)
   {
     error() << "Out of memory" << eom;
     return 14;
   }
-  
+
   return 0;
 }
 
@@ -315,7 +315,7 @@ void deltacheck_parse_optionst::help()
 {
   std::cout <<
     "\n"
-    "* *         DELTACHECK " DELTACHECK_VERSION " - Copyright (C) 2011-2015        * *\n"
+    "* *         DELTACHECK " DELTACHECK_VERSION "-Copyright (C) 2011-2015        * *\n"
     "* *                    based on CBMC " CBMC_VERSION "                    * *\n"
     "* *                     Daniel Kroening                     * *\n"
     "* *      Oxford University, Computer Science Department     * *\n"
@@ -337,8 +337,8 @@ void deltacheck_parse_optionst::help()
     " --pointer-check              add pointer checks\n"
     " --signed-overflow-check      add arithmetic over- and underflow checks\n"
     " --unsigned-overflow-check    add arithmetic over- and underflow checks\n"
-    " --nan-check                  add floating-point NaN checks\n"    
-    "\n"    
+    " --nan-check                  add floating-point NaN checks\n"
+    "\n"
     "Other options:\n"
     " --version                    show version and exit\n"
     " --xml-ui                     use XML-formatted output\n"

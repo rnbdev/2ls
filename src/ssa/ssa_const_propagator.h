@@ -19,7 +19,7 @@ class ssa_const_propagatort : public messaget
  public:
 
   void operator()(std::list<exprt> &dest,
-		  const local_SSAt &src);
+      const local_SSAt &src);
 
   struct valuest
   {
@@ -53,7 +53,7 @@ class ssa_const_propagatort : public messaget
     bool maps_to_top(const exprt &expr) const;
     bool set_to_top(const exprt &expr);
     bool set_to_top(const irep_idt &id);
-   
+
     bool iterate;
 
   };
@@ -63,18 +63,18 @@ class ssa_const_propagatort : public messaget
  protected:
 
   void assign(
-	      valuest &dest,
-	      const exprt &lhs,
-	      exprt rhs,
-	      const namespacet &ns) const;
+        valuest &dest,
+        const exprt &lhs,
+        exprt rhs,
+        const namespacet &ns) const;
 
   exprt evaluate_casts_in_constants(
-				    exprt expr,
-				    const typet& parent_type,
-				    bool &valid) const;
-  
-  
-  
+            exprt expr,
+            const typet& parent_type,
+            bool &valid) const;
+
+
+
 };
 
 #endif

@@ -18,7 +18,7 @@ public:
     summary_checker_baset(_options)
   {
   }
-  
+
   virtual resultt operator()(const goto_modelt &);
 
 };

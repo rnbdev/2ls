@@ -13,7 +13,8 @@ Author: Daniel Kroening, kroening@kroening.com
 
 #include <goto-programs/goto_functions.h>
 
-#include "../domains/incremental_solver.h"
+#include <domains/incremental_solver.h>
+
 #include "ssa_domain.h"
 #include "guard_map.h"
 #include "ssa_object.h"
@@ -58,10 +59,10 @@ public:
     inline nodet(
       locationt _location,
       std::list<nodet>::iterator _loophead):
+        function_calls_inlined(false),
         enabling_expr(true_exprt()),
         marked(false),
-        function_calls_inlined(false),
-        location(_location), 
+        location(_location),
         loophead(_loophead)
       {
       }
@@ -111,13 +112,13 @@ public:
 
   void mark_nodes()
   {
-    for(auto &n : nodes) 
-      marked=true;
+    for(auto &n : nodes)
+      n.marked=true;
   }
   void unmark_nodes()
   {
-    for(auto &n : nodes) 
-      marked=false;
+    for(auto &n : nodes)
+      n.marked=false;
   }
 
   // for incremental unwinding
@@ -129,7 +130,7 @@ public:
   typedef std::set<symbol_exprt> var_sett;
   var_listt params;
   var_sett globals_in, globals_out;
-  std::set<exprt> nondets;  
+  std::set<exprt> nondets;
 
   bool has_function_calls() const;
 
@@ -204,7 +205,7 @@ public:
     return it->second;
   }
   locationt find_location_by_number(unsigned location_number) const;
-  
+
 protected:
   typedef std::map<unsigned, locationt> location_mapt;
   location_mapt location_map;
@@ -219,7 +220,7 @@ protected:
   void build_function_call(locationt loc);
   void build_assertions(locationt loc);
   void build_assumptions(locationt loc);
-  
+
   // custom templates
   void collect_custom_templates();
   replace_mapt template_newvars;

@@ -1,6 +1,6 @@
 /*******************************************************************\
 
-Module: Counterexample-based Backward Analysis 
+Module: Counterexample-based Backward Analysis
 
 Author: Kumar Madhukar, Peter Schrammel
 
@@ -39,20 +39,20 @@ Function: summarizer_bw_cex_allt::summarize()
 void summarizer_bw_cex_allt::summarize(const exprt &_error_assertion)
 {
   status() << "\nBackward error analysis (all)..." << eom;
-  error_assertion = _error_assertion;
+  error_assertion=_error_assertion;
 
   summarizer_bw_cex_concrete.summarize(error_assertion);
-  result = summarizer_bw_cex_concrete.check();
+  result=summarizer_bw_cex_concrete.check();
 
-  if(result == property_checkert::UNKNOWN)
+  if(result==property_checkert::UNKNOWN)
   {
     summarizer_bw_cex_ai.summarize(error_assertion);
-    result = summarizer_bw_cex_ai.check();
+    result=summarizer_bw_cex_ai.check();
 
-    if(result == property_checkert::UNKNOWN)
+    if(result==property_checkert::UNKNOWN)
     {
       summarizer_bw_cex_complete.summarize(error_assertion);
-      result = summarizer_bw_cex_complete.check();
+      result=summarizer_bw_cex_complete.check();
     }
   }
 }
@@ -65,7 +65,7 @@ Function: summarizer_bw_cex_allt::check()
 
  Outputs:
 
- Purpose: 
+ Purpose:
 
 \*******************************************************************/
 

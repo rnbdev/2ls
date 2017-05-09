@@ -85,6 +85,8 @@ Function: local_SSAt::get_entry_exit_vars
 
 void local_SSAt::get_entry_exit_vars()
 {
+  goto_programt::const_targett first=goto_function.body.instructions.begin();
+
   // get parameters
   const code_typet::parameterst &parameter_types=
     goto_function.type.parameters();
@@ -102,7 +104,7 @@ void local_SSAt::get_entry_exit_vars()
     {
       exprt param=read_rhs(symbol->symbol_expr(), first);
 #if 0
-      std::cout << "param: " 
+      std::cout << "param: "
                 << from_expr(ns, "", param) << std::endl;
 #endif
       forall_operands(it, param)
@@ -113,7 +115,6 @@ void local_SSAt::get_entry_exit_vars()
   }
 
   // get globals in
-  goto_programt::const_targett first=goto_function.body.instructions.begin();
   get_globals(first, globals_in, true, false); // filters out #return_value
 
   // get globals out (includes return value)
@@ -121,7 +122,7 @@ void local_SSAt::get_entry_exit_vars()
     last=goto_function.body.instructions.end(); last--;
   get_globals(last, globals_out, true, true, last->function);
 
-  //get nondeterministic variables
+  // get nondeterministic variables
   get_nondet_vars();
 }
 
@@ -148,7 +149,7 @@ void local_SSAt::get_nondet_vars(const exprt &expr)
 
 void local_SSAt::get_nondet_vars()
 {
-  for(nodest::iterator n_it=nodes.begin(); 
+  for(nodest::iterator n_it=nodes.begin();
       n_it!=nodes.end(); n_it++)
   {
     for(nodet::equalitiest::const_iterator
@@ -202,8 +203,8 @@ void local_SSAt::get_globals(
                 << std::endl;
 #endif
       bool is_return=id2string(it->get_identifier()).find(
-	"#return_value")!=std::string::npos;
-      if(!with_returns && is_return) 
+  "#return_value")!=std::string::npos;
+      if(!with_returns && is_return)
         continue;
 
       // filter out return values of other functions
@@ -215,10 +216,10 @@ void local_SSAt::get_globals(
 
       if(rhs_value)
       {
-        //workaround for the problem that 
+        // workaround for the problem that
         //  rhs() for a return value is always the "input" return value
-	const exprt &expr=is_return ? 
-          read_lhs(it->get_expr(),--loc) : read_rhs(it->get_expr(),loc);
+  const exprt &expr=is_return ?
+          read_lhs(it->get_expr(), --loc) : read_rhs(it->get_expr(), loc);
         globals.insert(to_symbol_expr(expr));
       }
       else
@@ -628,20 +629,20 @@ void local_SSAt::build_function_call(locationt loc)
     {
       symbol_exprt arg(
         id2string(fname)+"#"+i2string(loc->location_number)+
-	"#arg"+i2string(i),it->type());
+  "#arg"+i2string(i), it->type());
       const typet &argtype=ns.follow(it->type());
       if(argtype.id()==ID_struct)
       {
-	exprt lhs = read_rhs(arg, loc);
-	for(size_t j=0; j<lhs.operands().size(); ++j)
+  exprt lhs=read_rhs(arg, loc);
+  for(size_t j=0; j<lhs.operands().size(); ++j)
         {
-	   n_it->equalities.push_back(
+     n_it->equalities.push_back(
              equal_exprt(lhs.operands()[j], it->operands()[j]));
         }
       }
       else
       {
-        n_it->equalities.push_back(equal_exprt(arg,*it));
+        n_it->equalities.push_back(equal_exprt(arg, *it));
       }
       *it=arg;
     }
@@ -1569,7 +1570,7 @@ void local_SSAt::nodet::output(
   std::ostream &out,
   const namespacet &ns) const
 {
-  if(!enabling_expr.is_true()) 
+  if(!enabling_expr.is_true())
     out << "(enable) " << from_expr(ns, "", enabling_expr) << "\n";
 #if 0
   if(!marked)
@@ -1660,6 +1661,52 @@ Function: local_SSAt::operator <<
 
 \*******************************************************************/
 
+std::vector<exprt> &operator<<(
+  std::vector<exprt> &dest,
+  const local_SSAt &src)
+{
+  for(local_SSAt::nodest::const_iterator n_it=src.nodes.begin();
+      n_it!=src.nodes.end(); n_it++)
+  {
+    if(n_it->marked)
+      continue;
+    for(local_SSAt::nodet::equalitiest::const_iterator
+          e_it=n_it->equalities.begin();
+        e_it!=n_it->equalities.end();
+        e_it++)
+    {
+      if(!n_it->enabling_expr.is_true())
+        dest.push_back(implies_exprt(n_it->enabling_expr, *e_it));
+      else
+        dest.push_back(*e_it);
+    }
+
+    for(local_SSAt::nodet::constraintst::const_iterator
+          c_it=n_it->constraints.begin();
+        c_it!=n_it->constraints.end();
+        c_it++)
+    {
+      if(!n_it->enabling_expr.is_true())
+        dest.push_back(implies_exprt(n_it->enabling_expr, *c_it));
+      else
+        dest.push_back(*c_it);
+    }
+  }
+  return dest;
+}
+
+/*******************************************************************\
+
+Function: local_SSAt::operator <<
+
+  Inputs:
+
+ Outputs:
+
+ Purpose:
+
+\*******************************************************************/
+
 std::list<exprt> &operator<<(
   std::list<exprt> &dest,
   const local_SSAt &src)
@@ -1674,8 +1721,8 @@ std::list<exprt> &operator<<(
         e_it!=n_it->equalities.end();
         e_it++)
     {
-      if(!n_it->enabling_expr.is_true()) 
-        dest.push_back(implies_exprt(n_it->enabling_expr,*e_it));
+      if(!n_it->enabling_expr.is_true())
+        dest.push_back(implies_exprt(n_it->enabling_expr, *e_it));
       else
         dest.push_back(*e_it);
     }
@@ -1685,8 +1732,8 @@ std::list<exprt> &operator<<(
         c_it!=n_it->constraints.end();
         c_it++)
     {
-      if(!n_it->enabling_expr.is_true()) 
-        dest.push_back(implies_exprt(n_it->enabling_expr,*c_it));
+      if(!n_it->enabling_expr.is_true())
+        dest.push_back(implies_exprt(n_it->enabling_expr, *c_it));
       else
         dest.push_back(*c_it);
     }
@@ -1720,10 +1767,24 @@ decision_proceduret &operator<<(
         e_it!=n_it->equalities.end();
         e_it++)
     {
-      if(!n_it->enabling_expr.is_true()) 
-        dest.push_back(implies_exprt(n_it->enabling_expr,*e_it));
+      if(!n_it->enabling_expr.is_true())
+        dest << implies_exprt(n_it->enabling_expr, *e_it);
       else
-        dest.push_back(*e_it);
+        dest << *e_it;
+
+#if 0
+      // freeze cond variables
+      if(e_it->op0().id()==ID_symbol &&
+         e_it->op0().type().id()==ID_bool)
+      {
+        const symbol_exprt &symbol=to_symbol_expr(e_it->op0());
+        if(id2string(symbol.get_identifier()).find("ssa::$cond")!=
+           std::string::npos)
+        {
+          dest.solver->set_frozen(dest.solver->convert(symbol));
+        }
+      }
+#endif
     }
 
     for(local_SSAt::nodet::constraintst::const_iterator
@@ -1731,10 +1792,10 @@ decision_proceduret &operator<<(
         c_it!=n_it->constraints.end();
         c_it++)
     {
-      if(!n_it->enabling_expr.is_true()) 
-        dest.push_back(implies_exprt(n_it->enabling_expr,*c_it));
+      if(!n_it->enabling_expr.is_true())
+        dest << implies_exprt(n_it->enabling_expr, *c_it);
       else
-        dest.push_back(*c_it);
+        dest << *c_it;
     }
   }
   return dest;
@@ -1816,10 +1877,10 @@ exprt local_SSAt::get_enabling_exprs() const
 {
   exprt::operandst result;
   result.reserve(enabling_exprs.size());
-  for(std::list<symbol_exprt>::const_iterator it=enabling_exprs.begin();
+  for(std::vector<exprt>::const_iterator it=enabling_exprs.begin();
       it!=enabling_exprs.end(); ++it)
   {
-    std::list<symbol_exprt>::const_iterator lh=it; ++lh;
+    std::vector<exprt>::const_iterator lh=it; ++lh;
     if(lh!=enabling_exprs.end())
       result.push_back(not_exprt(*it));
     else

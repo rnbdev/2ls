@@ -6,7 +6,7 @@ Author: Daniel Kroening, kroening@kroening.com
 
 \*******************************************************************/
 
-// may wish to try http://www.gnu.org/software/src-highlite/
+// may wish to try http:// www.gnu.org/software/src-highlite/
 
 #include <map>
 #include <ostream>
@@ -29,7 +29,7 @@ Function: is_keyword
 \*******************************************************************/
 
 const char *keywords[]=
-{ 
+{
   "auto", "_Bool", "break", "case", "char", "_Complex", "const", "continue",
   "default", "do", "double", "else", "enum", "extern", "float", "for",
   "goto", "if", "inline", "int", "long", "register", "restrict", "return",
@@ -51,10 +51,10 @@ bool is_keyword(const std::string &token)
     if(strcmp(keywords[i], token.c_str())==0)
       return true;
   }
-  
+
   return false;
 }
-  
+
 /*******************************************************************\
 
    Class: tokenizert
@@ -65,16 +65,16 @@ bool is_keyword(const std::string &token)
 
 const char *tokens[]=
 { "++", "+=", "--", "-=", "&&", "&=", "||", "|=", "/*",
-  "*/", "//", "%=", "/=", "<<", ">>", "<<=", ">>=", "==",
+  "*/", "// ", "%=", "/=", "<<", ">>", "<<=", ">>=", "==",
   "!=", "<=", ">=", "::", "->", "##", ".*", "->*", NULL };
-  
+
 class tokenizert
 {
 public:
   explicit tokenizert(const std::string &_buf):buf(_buf)
   {
   }
-  
+
   std::string get();
   std::string peek();
   std::string buf;
@@ -87,7 +87,7 @@ public:
     buf.erase(0, 1);
     return result;
   }
-  
+
   static inline bool is_identifier_char(char ch)
   {
     return isalnum(ch) || ch=='_';
@@ -111,9 +111,9 @@ std::string tokenizert::peek()
   if(buf.empty()) return buf;
 
   char first=buf[0];
-  
+
   unsigned pos=1;
-  
+
   if(is_identifier_char(first))
   {
     // identifier or keyword or number
@@ -137,7 +137,7 @@ std::string tokenizert::peek()
     for(pos=1; pos<buf.size(); pos++)
     {
       bool match=false;
-    
+
       for(unsigned t=0; tokens[t]!=NULL; t++)
       {
         if(strncmp(tokens[t], buf.c_str(), pos)==0)
@@ -155,7 +155,7 @@ std::string tokenizert::peek()
       }
     }
   }
-  
+
   return buf.substr(0, pos);
 }
 
@@ -193,21 +193,21 @@ Function: syntax_highlightingt::operator()
 void syntax_highlightingt::operator()(const std::string &line)
 {
   tokenizert tokenizer(line);
-  
+
   while(true)
   {
     std::string token=tokenizer.peek();
     if(token==" ") out << tokenizer.get(); else break;
   }
 
-  // open tags  
+  // open tags
   if(!strong_class.empty())
     out << "<strong class=\"" << strong_class << "\">";
-    
+
   if(comment) out << "<cite>";
 
-  std::string token;  
-  
+  std::string token;
+
   std::map<std::string, unsigned> var_count;
 
   while(!tokenizer.eol())
@@ -216,7 +216,7 @@ void syntax_highlightingt::operator()(const std::string &line)
     {
       std::string buf;
       bool end_of_comment=false;
-      
+
       while(!end_of_comment)
       {
         char ch=tokenizer.get_char();
@@ -225,7 +225,7 @@ void syntax_highlightingt::operator()(const std::string &line)
         if(buf.size()>=2 && buf[buf.size()-2]=='*' && buf[buf.size()-1]=='/')
           end_of_comment=true;
       }
-      
+
       out << html_escape(buf);
 
       if(end_of_comment)
@@ -251,13 +251,13 @@ void syntax_highlightingt::operator()(const std::string &line)
         {
           if(identifier_tooltip)
             out << "<var onMouseOver=\"var_tooltip('"
-                << token << id_suffix << "', '" << line_no 
+                << token << id_suffix << "', '" << line_no
                 << "." << ++var_count[token] << "');\""
                    " onMouseOut=\"tooltip.hide();\""
                    ">";
           else
             out << "<var>";
-          
+
           out << html_escape(token);
 
           out << "</var>";
@@ -268,7 +268,7 @@ void syntax_highlightingt::operator()(const std::string &line)
         comment=true;
         out << "<cite>" << token;
       }
-      else if(token=="//")
+      else if(token=="// ")
       {
         out << "<cite>" << token;
         while(!(token=tokenizer.get()).empty())
@@ -297,10 +297,10 @@ void syntax_highlightingt::operator()(const std::string &line)
     }
   }
 
-  // close tags  
+  // close tags
   if(comment) out << "</cite>";
   if(!strong_class.empty()) out << "</strong>";
-  
+
   out << "\n";
 }
 

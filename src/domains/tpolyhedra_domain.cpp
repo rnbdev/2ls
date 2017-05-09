@@ -55,7 +55,7 @@ void tpolyhedra_domaint::initialize(valuet &value)
       v[row]=false_exprt(); // marker for -oo
   }
 
-  refine(); //initialise refinements
+  refine(); // initialise refinements
 }
 
 /*******************************************************************\
@@ -980,11 +980,11 @@ bool tpolyhedra_domaint::is_row_value_inf(
     to_integer(row_value, rvalue);
     const typet &inner_type=row_expr.op0().op0().type();
     mp_integer smallest;
-    if(inner_type.id()==ID_unsignedbv) 
+    if(inner_type.id()==ID_unsignedbv)
       smallest=to_unsignedbv_type(inner_type).smallest();
-    else if(inner_type.id()==ID_signedbv) 
+    else if(inner_type.id()==ID_signedbv)
       smallest=to_signedbv_type(inner_type).smallest();
-    else 
+    else
       return false;
     if(smallest==rvalue)
       return true;
@@ -1250,40 +1250,40 @@ Function: tpolyhedra_domaint::refine
 
 void tpolyhedra_domaint::replace_comparison(exprt &expr, bool greater)
 {
-  //TODO
+  // TODO
 }
 
 bool tpolyhedra_domaint::refine()
 {
   return false;
 
-  //TODO
-  if(current_refinement==0) //initialise
+  // TODO
+  if(current_refinement==0) // initialise
   {
     if(refinement_exprs.size()==0)
     {
-      max_refinements = 0;
+      max_refinements=0;
       return false;
     }
-    max_refinements = 3;
-    current_refinement = 1;
+    max_refinements=3;
+    current_refinement=1;
     exprt::operandst c;
-    //TODO    
-    current_refinement_expr = conjunction(c);
+    // TODO
+    current_refinement_expr=conjunction(c);
     return true;
   }
 
-  if(current_refinement>max_refinements) 
+  if(current_refinement>max_refinements)
     return false;
 
   if(current_refinement==1)
   {
     exprt::operandst c;
-    //TODO    
-    current_refinement_expr = conjunction(c);
+    // TODO
+    current_refinement_expr=conjunction(c);
   }
   else if(current_refinement==2)
-    current_refinement_expr = true_exprt();
+    current_refinement_expr=true_exprt();
 
   current_refinement++;
   return true;

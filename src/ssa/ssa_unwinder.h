@@ -46,10 +46,9 @@ public:
 
   // TODO: this should be loop specific in future,
   // maybe move to unwindable_local_ssa as it is not really unwinder related
-  void compute_loop_continuation_conditions();
   void compute_enable_expr();
   void loop_continuation_conditions(exprt::operandst &loop_cont) const;
-  void loop_continuation_conditions(const locationt& loop_id, 
+  void loop_continuation_conditions(const locationt& loop_id,
                                     exprt::operandst &loop_cont) const;
 
 #if 0
@@ -59,13 +58,10 @@ public:
     symbol_exprt &var, const local_SSAt::nodet &node, bool pre) const;
 #endif
 
-  //TODO: this must go away, should use SSA.rename instead
+  // TODO: this must go away, should use SSA.rename instead
   void unwinder_rename(symbol_exprt &var,
-		       const local_SSAt::nodet &node, bool pre) const;
-protected:
-  const irep_idt fname;
-  unwindable_local_SSAt& SSA;
-  bool is_kinduction,is_bmc;
+
+  const local_SSAt::nodet &node, bool pre) const;
 
   class loopt // loop tree
   {
@@ -123,9 +119,9 @@ protected:
   void build_exit_conditions();
 
   void unwind(loopt &loop, unsigned k, bool is_new_parent,
-	      bool propagate = false, unsigned prop_unwind = 0,
-	      unsigned prop_loc = 0, bool propagate_all = false);
-  
+        bool propagate=false, unsigned prop_unwind=0,
+        unsigned prop_loc=0, bool propagate_all=false);
+
   exprt get_continuation_condition(const loopt& loop) const;
   void loop_continuation_conditions(
     const loopt& loop, exprt::operandst &loop_cont) const;
@@ -154,7 +150,7 @@ public:
 
   void init(bool is_kinduction, bool is_bmc);
   void init_localunwinders();
-  
+
   void unwind_loop_alone(const irep_idt fname, unsigned loc, unsigned k);
   unsigned unwind_loop_once_more(const irep_idt fname, unsigned loc);
   void unwind(const irep_idt fname, unsigned k);

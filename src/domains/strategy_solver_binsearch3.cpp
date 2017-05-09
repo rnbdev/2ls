@@ -31,12 +31,13 @@ Function: strategy_solver_binsearch3t::iterate
 
 \*******************************************************************/
 
-strategy_solver_baset::progresst strategy_solver_binsearch3t::iterate(invariantt &_inv)
+strategy_solver_baset::progresst
+strategy_solver_binsearch3t::iterate(invariantt &_inv)
 {
   tpolyhedra_domaint::templ_valuet &inv=
     static_cast<tpolyhedra_domaint::templ_valuet &>(_inv);
 
-  progresst progress = CONVERGED;
+  progresst progress=CONVERGED;
 
   solver.new_context(); // for improvement check
 
@@ -109,7 +110,7 @@ strategy_solver_baset::progresst strategy_solver_binsearch3t::iterate(invariantt
   }
   solver.pop_context(); // improvement check
 
-  if(progress!=CHANGED) //done
+  if(progress!=CHANGED) // done
   {
 #if 0
     debug() << "UNSAT" << eom;
@@ -151,7 +152,7 @@ strategy_solver_baset::progresst strategy_solver_binsearch3t::iterate(invariantt
   // do not solve system if we have just reached a new loop
   //   (the system will be very large!)
   if(improved_from_neginf)
-    return improved;
+    return progress;
 
   solver.new_context(); // symbolic value system
   solver << pre_inv_expr;

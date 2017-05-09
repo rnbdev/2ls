@@ -32,7 +32,7 @@ bool replace_symbol_extt::replace(exprt &dest) const
   if(have_to_replace(dest.type()))
     if(!replace_symbolt::replace(dest.type()))
       result=false;
-      
+
   // now do expression itself
 
   if(!have_to_replace(dest))
@@ -40,14 +40,14 @@ bool replace_symbol_extt::replace(exprt &dest) const
 
   if(dest.id()==ID_address_of)
   {
-    const exprt &object = to_address_of_expr(dest).object();
+    const exprt &object=to_address_of_expr(dest).object();
     if(object.id()==ID_symbol)
     {
       expr_mapt::const_iterator it=
       expr_map.find(object.get(ID_identifier));
 
       if(it!=expr_map.end())
-	return false;
+  return false;
     }
   }
   else if(dest.id()==ID_symbol)

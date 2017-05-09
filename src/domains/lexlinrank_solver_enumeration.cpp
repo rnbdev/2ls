@@ -1,6 +1,6 @@
 /*******************************************************************\
 
-Module: Enumeration-based solver for lexicographic linear ranking 
+Module: Enumeration-based solver for lexicographic linear ranking
         functions
 
 Author: Peter Schrammel
@@ -189,7 +189,7 @@ lexlinrank_solver_enumerationt::progresst lexlinrank_solver_enumerationt::iterat
             }
           }
 
-	  progress=CHANGED;
+    progress=CHANGED;
 
           // update the current template
           lexlinrank_domain.set_row_value(row, new_row_values, rank);
@@ -220,7 +220,7 @@ lexlinrank_solver_enumerationt::progresst lexlinrank_solver_enumerationt::iterat
           if(lexlinrank_domain.refine())
           {
             debug() << "refining..." << eom;
-            improved=true; // refinement possible
+            progress=CHANGED; // refinement possible
 
             if(!refinement_constraint.is_true())
               inner_solver->pop_context();

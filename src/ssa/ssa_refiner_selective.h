@@ -11,7 +11,7 @@ Author: Peter Schrammel, Madhukar Kumar
 
 #include "ssa_refiner.h"
 
-#include "../summarizer/ssa_db.h"
+#include <ssa/ssa_db.h>
 #include "ssa_inliner.h"
 #include "ssa_unwinder.h"
 
@@ -22,10 +22,10 @@ class ssa_refiner_selectivet : public ssa_refinert
  public:
   struct reason_infot
   {
-    typedef local_SSAt::locationt function_infot; //call_site; restriction: we assume that there is a single function call in an SSA node
+    typedef local_SSAt::locationt function_infot; // call_site; restriction: we assume that there is a single function call in an SSA node
     typedef local_SSAt::locationt loop_infot;
     std::set<function_infot> functions;
-    std::set<loop_infot> loops; 
+    std::set<loop_infot> loops;
   };
 
   class reasont : public std::map<irep_idt, reason_infot>
@@ -33,11 +33,11 @@ class ssa_refiner_selectivet : public ssa_refinert
   public:
     void merge(const reasont &other)
     {
-      for(reasont::const_iterator it = other.begin();
-          it != other.end(); ++it)
+      for(reasont::const_iterator it=other.begin();
+          it!=other.end(); ++it)
       {
-        reason_infot &r = (*this)[it->first];
-        r.functions.insert(it->second.functions.begin(), 
+        reason_infot &r=(*this)[it->first];
+        r.functions.insert(it->second.functions.begin(),
                            it->second.functions.end());
         r.loops.insert(it->second.loops.begin(), it->second.loops.end());
       }
@@ -51,7 +51,7 @@ class ssa_refiner_selectivet : public ssa_refinert
     unsigned _max_unwind,
     ssa_inlinert &_ssa_inliner,
     reasont &_reason
-    ) : 
+    ) :
       ssa_db(_ssa_db),
       ssa_unwinder(_ssa_unwinder),
       max_unwind(_max_unwind),
@@ -60,9 +60,9 @@ class ssa_refiner_selectivet : public ssa_refinert
       reason(_reason)
     {}
 
-    virtual bool operator()(); 
+    virtual bool operator()();
     virtual unsigned get_unwind() { return unwind; }
-  
+
  protected:
   ssa_dbt &ssa_db;
   ssa_unwindert &ssa_unwinder;

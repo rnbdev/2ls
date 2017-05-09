@@ -29,6 +29,7 @@ OBJ+= $(CBMC)/src/ansi-c/ansi-c$(LIBEXT) \
       ../domains/domains$(LIBEXT) \
       ../ssa/ssa$(LIBEXT) \
       ../solver/solver$(LIBEXT) \
+      # empty last line
 
 CP_CXXFLAGS+= $(TWOLSFLAGS)
 

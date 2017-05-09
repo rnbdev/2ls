@@ -1,6 +1,6 @@
 /*******************************************************************\
 
-Module: Enumeration-based solver for lexicographic linear ranking 
+Module: Enumeration-based solver for lexicographic linear ranking
         functions
 
 Author: Peter Schrammel
@@ -26,7 +26,7 @@ class lexlinrank_solver_enumerationt:public strategy_solver_baset
     const namespacet &_ns,
     unsigned _max_elements, // lexicographic components
     unsigned _max_inner_iterations):
-    strategy_solver_baset(_solver, _ns),
+    strategy_solver_baset(_solver, const_literal(true), _ns),
     lexlinrank_domain(_lexlinrank_domain),
     max_elements(_max_elements),
     max_inner_iterations(_max_inner_iterations),

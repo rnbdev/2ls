@@ -24,7 +24,7 @@ public:
     fixed_point(false)
   {
   }
-  
+
   bool simplify, fixed_point;
 
   void operator()(const goto_modelt &);

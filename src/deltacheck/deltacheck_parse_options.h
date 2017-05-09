@@ -45,7 +45,7 @@ protected:
   virtual void get_command_line_options(optionst &options);
 
   void eval_verbosity();
-  
+
   ui_message_handlert ui_message_handler;
 };
 

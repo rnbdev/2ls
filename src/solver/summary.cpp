@@ -16,6 +16,8 @@ Author: Peter Schrammel
 
 // #define PRETTY_PRINT
 
+const summaryt::call_sitet summaryt::entry_call_site;
+
 /*******************************************************************\
 
 Function: summaryt::output
@@ -77,17 +79,17 @@ void summaryt::output(std::ostream &out, const namespacet &ns) const
 #endif
   out << std::endl;
   out << "terminates: " << threeval2string(terminates) << std::endl;
-  for(error_summariest::const_iterator 
-	it = error_summaries.begin();
-      it != error_summaries.end(); it++)
+  for(error_summariest::const_iterator
+  it=error_summaries.begin();
+      it!=error_summaries.end(); it++)
   {
     out << "error summary for ";
-    if(it->first == entry_call_site) 
+    if(it->first==entry_call_site)
       out << "entry point";
     else
       out << "location " << it->first.location_number;
     out << ": " << std::endl
-        << "  " << from_expr(ns,"",it->second) << std::endl;
+        << "  " << from_expr(ns, "", it->second) << std::endl;
   }
 }
 

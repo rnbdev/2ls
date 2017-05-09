@@ -39,7 +39,7 @@ deltagit_parse_optionst::deltagit_parse_optionst(
   parse_options_baset(DELTACHECK_OPTIONS, argc, argv)
 {
 }
-  
+
 /*******************************************************************\
 
 Function: deltagit_parse_optionst::doit
@@ -69,7 +69,7 @@ int deltagit_parse_optionst::doit()
     }
 
     const std::string command=cmdline.args[0];
-    
+
     if(command=="jobs")
     {
       show_jobs(std::cout);
@@ -153,13 +153,13 @@ int deltagit_parse_optionst::doit()
     std::cerr << e << std::endl;
     return 13;
   }
-  
+
   catch(std::bad_alloc)
   {
     std::cerr << "Out of memory" << std::endl;
     return 14;
   }
-  
+
   return 0;
 }
 
@@ -179,7 +179,7 @@ void deltagit_parse_optionst::help()
 {
   std::cout <<
     "\n"
-    "* *           DELTAGIT " DELTACHECK_VERSION " - Copyright (C) 2012-2013        * *\n"
+    "* *           DELTAGIT " DELTACHECK_VERSION "-Copyright (C) 2012-2013        * *\n"
     "* *                     Daniel Kroening                     * *\n"
     "* *      Oxford University, Computer Science Department     * *\n"
     "* *                 kroening@kroening.com                   * *\n"
@@ -198,7 +198,7 @@ void deltagit_parse_optionst::help()
     "Reporting options:\n"
     " --partial-html               generate a partial HTML file \"include.html\"\n"
     " --max-revs <nr>              report on the last <nr> revisions\n"
-    "\n"    
+    "\n"
     "Other options:\n"
     " --version                    show version and exit\n"
     " --xml-ui                     use XML-formatted output\n"

@@ -32,7 +32,7 @@ class strategy_solver_baset:public messaget
     solver_calls(0)
   {}
 
-  virtual bool iterate(invariantt &inv) { assert(false); }
+  virtual progresst iterate(invariantt &inv) { assert(false); }
 
   unsigned get_number_of_solver_calls() { return solver_calls; }
   unsigned get_number_of_solver_instances() { return solver_instances; }

@@ -21,8 +21,9 @@ class strategy_solver_binsearch3t:public strategy_solver_baset
     tpolyhedra_domaint &_tpolyhedra_domain,
     incremental_solvert &_solver,
     local_SSAt& _SSA,
+    literalt _assertion_check,
     const namespacet &_ns):
-    strategy_solver_baset(_solver, _ns),
+    strategy_solver_baset(_solver, _assertion_check, _ns),
     SSA(_SSA),
     tpolyhedra_domain(_tpolyhedra_domain),
     sum_bound_counter(0) {}
