@@ -19,3 +19,7 @@ tests.log
 
 # binaries
 src/2ls/2ls
+
+*.orig
+*.bak
+*\#
