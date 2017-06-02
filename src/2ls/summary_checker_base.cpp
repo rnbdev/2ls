@@ -230,7 +230,7 @@ summary_checker_baset::resultt summary_checker_baset::check_properties(
       show_ssa_symbols(*f_it->second, std::cerr);
 #endif
 
-      check_properties(f_it);
+      check_properties(f_it, f_it->first);
 
       if(options.get_bool_option("show-invariants"))
       {
@@ -464,8 +464,7 @@ void summary_checker_baset::check_properties(
   {
     // Our goal is to falsify a property.
     // The following is TRUE if the conjunction is empty.
-    literalt p=!solver.convert(conjunction(it->second.conjuncts));
-    cover_goals.add(p);
+    cover_goals.add(conjunction(it->second.conjuncts));
   }
 
   status() << "Running " << solver.solver->decision_procedure_text() << eom;

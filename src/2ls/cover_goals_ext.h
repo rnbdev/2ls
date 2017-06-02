@@ -106,12 +106,6 @@ public:
 
   // managing the goals
 
-  inline void add(const literalt condition)
-  {
-    goals.push_back(cover_goalt());
-    goals.back().condition=condition;
-  }
-
   inline void add(const exprt cond_expression)
   {
     goals.push_back(cover_goalt());
