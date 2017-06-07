@@ -307,8 +307,10 @@ void summary_checker_baset::check_properties(
   // invariant, calling contexts
   if(summary_db.exists(f_it->first))
   {
-    solver << summary_db.get(f_it->first).fw_invariant;
-    solver << summary_db.get(f_it->first).fw_precondition;
+    if(!summary_db.get(f_it->first).fw_invariant.is_nil())
+      solver << summary_db.get(f_it->first).fw_invariant;
+    if(!summary_db.get(f_it->first).fw_precondition.is_nil())
+      solver << summary_db.get(f_it->first).fw_precondition;
   }
 
   // callee summaries
