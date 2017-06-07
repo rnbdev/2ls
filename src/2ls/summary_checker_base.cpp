@@ -166,6 +166,12 @@ summary_checker_baset::resultt summary_checker_baset::check_properties()
   return check_properties("", "", seen_function_calls, false);
 }
 
+summary_checker_baset::resultt summary_checker_baset::check_properties(irep_idt entry_function)
+{
+  std::set<irep_idt> seen_function_calls;
+  return check_properties(entry_function, entry_function, seen_function_calls, false);
+}
+
 summary_checker_baset::resultt summary_checker_baset::check_properties(
   irep_idt function_name,
   irep_idt entry_function,
