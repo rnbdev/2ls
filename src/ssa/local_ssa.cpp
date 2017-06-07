@@ -218,8 +218,11 @@ void local_SSAt::get_globals(
       {
         // workaround for the problem that
         //  rhs() for a return value is always the "input" return value
+        #if 0 // --loc may be invalid
   const exprt &expr=is_return ?
           read_lhs(it->get_expr(), --loc) : read_rhs(it->get_expr(), loc);
+        #endif
+        const exprt &expr=read_rhs(it->get_expr(), loc);
         globals.insert(to_symbol_expr(expr));
       }
       else

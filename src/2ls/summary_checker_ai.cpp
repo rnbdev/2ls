@@ -77,7 +77,10 @@ property_checkert::resultt summary_checker_ait::operator()(
     return property_checkert::UNKNOWN;
 #endif
 
-  property_checkert::resultt result=check_properties();
+  property_checkert::resultt result=
+    options.get_bool_option("all-functions")?
+    check_properties():
+    check_properties(goto_model.goto_functions.entry_point());
   report_statistics();
   return result;
 }
