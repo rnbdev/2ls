@@ -109,7 +109,7 @@ public:
   inline void add(const exprt cond_expression)
   {
     goals.push_back(cover_goalt());
-    goals.back().condition=!solver.convert(not_exprt(cond_expression));
+    goals.back().condition=!solver.convert(cond_expression);
     goals.back().cond_expression=cond_expression;
   }
 
