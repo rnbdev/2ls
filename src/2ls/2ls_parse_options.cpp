@@ -60,6 +60,8 @@ Author: Daniel Kroening, Peter Schrammel
 #define IGNORE_THREADS 1
 #define EXPLICIT_NONDET_LOCALS 0
 #define FILTER_ASSERTIONS 1
+#define ASSUME_AFTER_ASSERT 0
+
 
 /*******************************************************************\
 
@@ -1094,10 +1096,12 @@ bool twols_parse_optionst::process_goto_program(
       inline_main(goto_model);
     }
 
+#ifdef ASSUME_AFTER_ASSERT
     if(!cmdline.isset("independent-properties"))
     {
       add_assumptions_after_assertions(goto_model);
     }
+#endif
 
 #ifdef FILTER_ASSERTIONS
     filter_assertions(goto_model);
