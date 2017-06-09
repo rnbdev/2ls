@@ -166,6 +166,12 @@ summary_checker_baset::resultt summary_checker_baset::check_properties()
   return check_properties("", "", seen_function_calls, false);
 }
 
+summary_checker_baset::resultt summary_checker_baset::check_properties(irep_idt entry_function)
+{
+  std::set<irep_idt> seen_function_calls;
+  return check_properties(entry_function, entry_function, seen_function_calls, false);
+}
+
 summary_checker_baset::resultt summary_checker_baset::check_properties(
   irep_idt function_name,
   irep_idt entry_function,
@@ -307,8 +313,10 @@ void summary_checker_baset::check_properties(
   // invariant, calling contexts
   if(summary_db.exists(f_it->first))
   {
-    solver << summary_db.get(f_it->first).fw_invariant;
-    solver << summary_db.get(f_it->first).fw_precondition;
+    if(!summary_db.get(f_it->first).fw_invariant.is_nil())
+      solver << summary_db.get(f_it->first).fw_invariant;
+    if(!summary_db.get(f_it->first).fw_precondition.is_nil())
+      solver << summary_db.get(f_it->first).fw_precondition;
   }
 
   // callee summaries

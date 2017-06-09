@@ -81,6 +81,7 @@ protected:
     bool termination=false);
 
   property_checkert::resultt check_properties();
+  property_checkert::resultt check_properties(irep_idt entry_function);
   property_checkert::resultt check_properties(
     irep_idt function_name,
     irep_idt entry_function,
