@@ -91,18 +91,18 @@ Function: summarizer_bw_cex_concretet::check()
 
 property_checkert::resultt summarizer_bw_cex_concretet::check()
 {
-  property_checkert::resultt result=property_checkert::FAIL;
-  if(!summary_db.exists(entry_function))
-  {
-    result=property_checkert::UNKNOWN;
-  }
-  else
+  property_checkert::resultt result=property_checkert::UNKNOWN;
+  if(summary_db.exists(entry_function))
   {
     const summaryt &summary=summary_db.get(entry_function);
-    if(summary.error_summaries.empty() ||
-       summary.error_summaries.begin()->second.is_nil() ||
-       summary.error_summaries.begin()->second.is_true())
-      result=property_checkert::UNKNOWN;
+    if(!summary.error_summaries.empty() &&
+       !summary.error_summaries.begin()->second.is_nil())
+    {
+      if(summary.error_summaries.begin()->second.is_false())
+        result=property_checkert::PASS;
+      else
+        result=property_checkert::FAIL;
+    }
   }
 
   // we are only complete if everything was inlined
